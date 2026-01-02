@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탈래말래 - 로그인</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
+
+        :root {
+            --tm-primary: #4F46E5;
+            --tm-dark: #1E1B4B;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(30, 27, 75, 0.1);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .input-focus:focus-within {
+            border-color: var(--tm-primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        /* 소셜 로그인 버튼 스타일 */
+        .social-btn {
+            transition: all 0.2s ease;
+        }
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="login-card">
+        <!-- 상단 헤더 -->
+        <div class="p-8 pb-4 flex flex-col items-center text-center">
+            <div class="flex items-center gap-2 mb-6 cursor-pointer">
+                <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-100">
+                    <i data-lucide="car-front" class="text-white w-6 h-6"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-indigo-900">탈래말래</h1>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900">다시 오셨군요!</h2>
+            <p class="text-slate-500 mt-2 text-sm">함께 탈 파트너가 기다리고 있어요.</p>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form class="px-8 py-4 space-y-4" onsubmit="event.preventDefault();">
+            
+            <div class="space-y-1.5">
+                <div class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl transition-all input-focus">
+                    <i data-lucide="mail" class="absolute left-4 w-5 h-5 text-slate-400"></i>
+                    <input type="email" placeholder="이메일 주소" 
+                           class="w-full pl-12 pr-4 py-4 bg-transparent rounded-xl focus:outline-none text-sm">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl transition-all input-focus">
+                    <i data-lucide="lock" class="absolute left-4 w-5 h-5 text-slate-400"></i>
+                    <input type="password" placeholder="비밀번호" 
+                           class="w-full pl-12 pr-4 py-4 bg-transparent rounded-xl focus:outline-none text-sm">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs px-1">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-slate-500 group-hover:text-slate-700">로그인 상태 유지</span>
+                </label>
+                <a href="#" class="text-indigo-600 font-semibold hover:underline">비밀번호를 잊으셨나요?</a>
+            </div>
+
+            <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] mt-2">
+                로그인하기
+            </button>
+
+            <!-- 구분선 -->
+            <div class="relative my-8">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-100"></div>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase">
+                    <span class="bg-white px-3 text-slate-400 font-medium">또는 간편 로그인</span>
+                </div>
+            </div>
+
+            <!-- 소셜 로그인 -->
+            <div class="grid grid-cols-2 gap-3">
+                <button class="social-btn flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="w-4 h-4" alt="Google">
+                    <span class="text-sm font-semibold text-slate-600">Google</span>
+                </button>
+                <button class="social-btn flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-yellow-500 fill-current"></i>
+                    <span class="text-sm font-semibold text-slate-600">Kakao</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- 하단 안내 -->
+        <div class="p-8 pt-4 text-center">
+            <p class="text-sm text-slate-500">
+                아직 회원이 아니신가요? 
+                <a href="signup_template.html" class="text-indigo-600 font-bold hover:underline ml-1">회원가입</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Lucide Icons 초기화
+        lucide.createIcons();
+    </script>
+</body>
+</html>

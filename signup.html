@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탈래말래 - 회원가입</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
+
+        :root {
+            /* 탈래말래 시그니처 컬러 제안 */
+            --tm-primary: #4F46E5;    /* Indigo */
+            --tm-secondary: #10B981;  /* Mint / Emerald */
+            --tm-dark: #1E1B4B;       /* Deep Navy */
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(30, 27, 75, 0.1);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .input-group:focus-within label {
+            color: var(--tm-primary);
+        }
+
+        .custom-checkbox:checked {
+            background-color: var(--tm-primary);
+            border-color: var(--tm-primary);
+        }
+
+        /* 위트있는 로고 애니메이션 */
+        .logo-bounce:hover i {
+            transform: translateY(-3px) rotate(5deg);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="signup-card">
+        <!-- 상단 헤더 -->
+        <div class="p-8 pb-0 flex flex-col items-center text-center">
+            <div class="logo-bounce flex items-center gap-2 mb-4 cursor-default">
+                <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-100 transition-transform">
+                    <i data-lucide="car-front" class="text-white w-7 h-7"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-indigo-900">탈래말래</h1>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800">반가워요! 같이 타실래요?</h2>
+            <p class="text-slate-500 mt-2 text-sm leading-relaxed">
+                더 이상 비싼 택시비 고민하지 마세요.<br>탈래말래에서 합리적인 동승 파트너를 찾으세요.
+            </p>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <form class="p-8 space-y-5" onsubmit="event.preventDefault();">
+            
+            <!-- 이메일/ID -->
+            <div class="input-group">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">이메일 계정</label>
+                <div class="relative">
+                    <input type="email" placeholder="example@tallemalle.com" 
+                           class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    <i data-lucide="mail" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
+                </div>
+            </div>
+
+            <!-- 비밀번호 -->
+            <div class="input-group">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">비밀번호 설정</label>
+                <div class="relative">
+                    <input type="password" placeholder="8자리 이상 입력해주세요" 
+                           class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    <i data-lucide="lock" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
+                </div>
+            </div>
+
+            <!-- 별명 -->
+            <div class="input-group">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">서비스 별명</label>
+                <div class="relative">
+                    <input type="text" placeholder="예: 판교동승왕" 
+                           class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    <i data-lucide="user" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
+                </div>
+            </div>
+
+            <!-- 약관 동의 -->
+            <div class="pt-2 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">이용약관 및 개인정보 처리방침 동의 (필수)</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">대학생/직장인 인증 참여 (선택)</span>
+                </label>
+            </div>
+
+            <!-- 가입 버튼 -->
+            <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
+                <span>지금 가입하고 같이 타기</span>
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </form>
+
+        <!-- 하단 링크 -->
+        <div class="p-6 bg-slate-50 text-center border-t border-slate-100">
+            <p class="text-sm text-slate-500">이미 계정이 있으신가요? <a href="#" class="text-indigo-600 font-bold hover:underline">로그인</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Lucide Icons 초기화
+        lucide.createIcons();
+    </script>
+</body>
+</html>

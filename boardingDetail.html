@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탈래말래 - 대시보드</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
+
+        :root {
+            --tm-primary: #4F46E5;
+            --tm-mint: #10B981;
+            --tm-dark: #1E1B4B;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Fake Map Background */
+        .map-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
+        }
+
+        /* Detail Panel Transition */
+        #detailPanel {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+            width: 0;
+        }
+
+        #detailPanel.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            width: 400px;
+        }
+
+        /* Nav Item Hover */
+        .nav-item {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .nav-item.active {
+            color: #4F46E5;
+            background-color: #EEF2FF;
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 3px;
+            background-color: #4F46E5;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- 지도 영역 -->
+    <div class="map-container flex items-center justify-center">
+        <div class="text-slate-300 flex flex-col items-center select-none">
+            <i data-lucide="map" class="w-16 h-16 mb-4 opacity-20"></i>
+            <p class="font-medium text-slate-400">지도가 연동되는 영역입니다</p>
+        </div>
+    </div>
+
+    <!-- 메인 레이아웃 컨테이너 -->
+    <div class="absolute top-0 left-0 h-full flex z-10 p-4 pointer-events-none gap-4 w-full">
+        
+        <!-- 1. 슬림 네비게이션 바 (아이콘 전용) -->
+        <div class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto border border-white/50">
+            <div class="mb-12">
+                <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200">
+                    <i data-lucide="car-front" class="text-white w-6 h-6"></i>
+                </div>
+            </div>
+            
+            <div class="flex-1 flex flex-col gap-4">
+                <button class="nav-item active p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                    <i data-lucide="home" class="w-6 h-6"></i>
+                </button>
+                <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                    <i data-lucide="message-circle" class="w-6 h-6"></i>
+                </button>
+                <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                    <i data-lucide="wallet" class="w-6 h-6"></i>
+                </button>
+                <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                    <i data-lucide="settings" class="w-6 h-6"></i>
+                </button>
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-xs overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 좌측 사이드바: 목록 -->
+        <div class="glass-panel w-[380px] h-full rounded-[2.5rem] flex flex-col pointer-events-auto overflow-hidden border border-white/50">
+            <div class="p-8 border-b border-slate-100">
+                <div class="flex items-center justify-between mb-8">
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">탈래말래</h1>
+                    <div class="relative">
+                        <button class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors text-slate-500">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                        </button>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="relative group">
+                        <i data-lucide="map-pin" class="absolute left-4 top-4 w-4 h-4 text-emerald-500"></i>
+                        <input type="text" placeholder="출발지" value="강남역 2번 출구" class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none">
+                    </div>
+                    <div class="relative group">
+                        <i data-lucide="navigation" class="absolute left-4 top-4 w-4 h-4 text-rose-500"></i>
+                        <input type="text" placeholder="목적지" value="판교역" class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 모집 리스트 -->
+            <div id="recruitList" class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4">
+                <div class="flex items-center justify-between px-1 mb-2">
+                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        실시간 모집 <span class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg font-bold">2</span>
+                    </h3>
+                    <button class="text-xs font-bold text-slate-400 hover:text-indigo-600">필터 <i data-lucide="sliders-horizontal" class="inline w-3 h-3 ml-1"></i></button>
+                </div>
+
+                <!-- 아이템 카드 1 -->
+                <div onclick="openDetail(1)" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">지금 출발가능</span>
+                        <span class="text-[11px] text-slate-400 font-medium">3분 전</span>
+                    </div>
+                    <div class="space-y-3 mb-5">
+                        <p class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">강남역 → 판교역</p>
+                        <div class="flex items-center gap-3">
+                            <div class="flex -space-x-2">
+                                <div class="w-7 h-7 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[8px] font-bold shadow-sm">👤</div>
+                                <div class="w-7 h-7 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-bold shadow-sm">👤</div>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium">2 / 4 명 참여 중</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                        <span class="text-sm font-bold text-indigo-600">인당 약 4,500원</span>
+                        <div class="p-2 bg-slate-900 text-white rounded-xl group-hover:bg-indigo-600 transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 아이템 카드 2 -->
+                <div onclick="openDetail(2)" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">20:30 출발</span>
+                        <span class="text-[11px] text-slate-400 font-medium">10분 전</span>
+                    </div>
+                    <div class="space-y-3 mb-5">
+                        <p class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">서울역 → 합정역</p>
+                        <div class="flex items-center gap-3">
+                            <div class="flex -space-x-2">
+                                <div class="w-7 h-7 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[8px] font-bold shadow-sm">👤</div>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium">1 / 4 명 참여 중</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                        <span class="text-sm font-bold text-indigo-600">인당 약 3,200원</span>
+                        <div class="p-2 bg-slate-900 text-white rounded-xl group-hover:bg-indigo-600 transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상세 페이지 패널 -->
+        <div id="detailPanel" class="glass-panel h-full rounded-[2.5rem] flex flex-col pointer-events-auto overflow-hidden border border-white/50 shadow-2xl relative">
+            <div id="detailContent" class="flex flex-col h-full">
+                <!-- JS Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 우측 상단 컨트롤 -->
+    <div class="absolute top-6 right-6 z-10 flex flex-col gap-3">
+        <div class="glass-panel p-2.5 rounded-2xl flex items-center gap-3 pr-5 border border-white/50">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-100">판교</div>
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-900 leading-none mb-1">판교동승왕님</span>
+                <span class="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                    <i data-lucide="thermometer" class="w-3 h-3"></i> 37.5°C
+                </span>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2">
+            <button class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center text-slate-600 hover:text-indigo-600 pointer-events-auto border border-white/50 active:scale-95 transition-all"><i data-lucide="plus" class="w-5 h-5"></i></button>
+            <button class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center text-slate-600 hover:text-indigo-600 pointer-events-auto border border-white/50 active:scale-95 transition-all"><i data-lucide="minus" class="w-5 h-5"></i></button>
+            <button class="glass-panel w-12 h-12 mt-4 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100 pointer-events-auto active:scale-95 transition-all"><i data-lucide="locate-fixed" class="w-5 h-5"></i></button>
+        </div>
+    </div>
+
+    <!-- 하단 고정 바 -->
+    <div id="bottomBar" class="absolute bottom-8 left-[500px] right-8 z-10 transition-all duration-500">
+        <div class="glass-panel p-6 rounded-[2.5rem] flex items-center justify-between gap-12 pointer-events-auto border border-white/50 shadow-xl">
+            <div class="flex-1 flex items-center gap-10">
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">예약 출발시간</span>
+                    <div class="flex items-center gap-2.5 font-bold text-slate-800">
+                        <div class="p-1.5 bg-indigo-50 rounded-lg text-indigo-600"><i data-lucide="clock" class="w-4 h-4"></i></div>
+                        <span>지금 바로</span>
+                    </div>
+                </div>
+                <div class="h-10 w-px bg-slate-100"></div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">동승 인원</span>
+                    <div class="flex items-center gap-2.5 font-bold text-slate-800">
+                        <div class="p-1.5 bg-emerald-50 rounded-lg text-emerald-600"><i data-lucide="users" class="w-4 h-4"></i></div>
+                        <span>최대 4명</span>
+                    </div>
+                </div>
+            </div>
+            <button class="bg-slate-900 hover:bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-2xl shadow-slate-200 group">
+                <span>동승 모집 시작</span>
+                <i data-lucide="rocket" class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            1: { title: "강남역 2번 출구 → 판교역", cost: "약 4,500원", rawCost: 4500, time: "지금 출발", users: 2, desc: "신분당선 고장으로 택시 타려고 합니다. 매너 좋으신 분 환영해요!", tags: ["#비흡연", "#조용히이동", "#직장인"] },
+            2: { title: "서울역 → 합정역 7번출구", cost: "약 3,200원", rawCost: 3200, time: "20:30 출발", users: 1, desc: "기차 타고 도착하시는 분들 같이 이동해요. 짐이 좀 있습니다.", tags: ["#캐리어환영", "#여성전용", "#안심귀가"] }
+        };
+
+        function openDetail(id) {
+            const item = data[id];
+            const panel = document.getElementById('detailPanel');
+            const content = document.getElementById('detailContent');
+            const bottomBar = document.getElementById('bottomBar');
+
+            panel.classList.add('active');
+            bottomBar.style.left = "920px"; // 사이드바(380) + 네비바(80) + 패널(400) + 간격 고려
+
+            content.innerHTML = `
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-900 text-lg">동승 상세 정보</h3>
+                    <button onclick="closeDetail()" class="p-2.5 hover:bg-slate-100 rounded-xl transition-colors text-slate-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8">
+                    <div>
+                        <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg mb-4 inline-block">${item.time}</span>
+                        <h2 class="text-2xl font-bold text-slate-900 leading-tight">${item.title}</h2>
+                    </div>
+                    
+                    <div class="bg-slate-50/80 p-5 rounded-3xl border border-slate-100">
+                        <p class="text-[14px] text-slate-600 leading-relaxed">${item.desc}</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        ${item.tags.map(tag => `<span class="text-[11px] font-bold bg-white border border-slate-100 text-slate-500 px-4 py-2 rounded-xl shadow-sm">${tag}</span>`).join('')}
+                    </div>
+
+                    <div class="pt-2">
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">정산 방식</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="pay-type" value="pre" class="hidden peer" checked>
+                                <div class="p-4 border-2 border-slate-50 rounded-2xl bg-white peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 transition-all">
+                                    <p class="text-xs font-bold text-slate-700 mb-1">선결제</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight group-hover:text-slate-500">앱 내 포인트로<br>자동 정산</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="pay-type" value="post" class="hidden peer">
+                                <div class="p-4 border-2 border-slate-50 rounded-2xl bg-white peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 transition-all">
+                                    <p class="text-xs font-bold text-slate-700 mb-1">후결제</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight group-hover:text-slate-500">도착 후 직접<br>개별 송금</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5 pt-4 border-t border-slate-50">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">참여 멤버</span>
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">${item.users} / 4</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-xs">👤</div>
+                            ${item.users > 1 ? '<div class="w-12 h-12 rounded-2xl bg-emerald-100 border-2 border-white shadow-sm flex items-center justify-center text-xs">👤</div>' : ''}
+                            <div class="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300"><i data-lucide="plus" class="w-5 h-5"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-4">
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-slate-400 font-bold mb-1">인당 예상 결제 금액</span>
+                            <span class="text-[11px] text-slate-400 italic">전체 택시비: ${(item.rawCost * 4).toLocaleString()}원</span>
+                        </div>
+                        <span class="text-2xl font-black text-indigo-600">${item.cost}</span>
+                    </div>
+                    <button onclick="handleJoinChat()" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95">동승 채팅방 입장</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function handleJoinChat() {
+            const payType = document.querySelector('input[name="pay-type"]:checked').value;
+            const msg = payType === 'pre' 
+                ? "보유하신 포인트에서 예상 금액이 선결제됩니다. 채팅방에 입장하시겠습니까?" 
+                : "채팅방에 입장하시겠습니까?\n(정산은 하차 시 방장에게 개별 송금하는 방식입니다)";
+            
+            if(confirm(msg)) {
+                alert("채팅방으로 연결됩니다!");
+            }
+        }
+
+        function closeDetail() {
+            const panel = document.getElementById('detailPanel');
+            const bottomBar = document.getElementById('bottomBar');
+            panel.classList.remove('active');
+            bottomBar.style.left = "500px";
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
