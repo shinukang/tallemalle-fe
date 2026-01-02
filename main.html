@@ -6,6 +6,12 @@
     <title>탈래말래 - 통합 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script
+      type="text/javascript"
+      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f37807b77cb80bec5b35db61d2ad7dba&libraries=services&autoload=false"
+    ></script>
+
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
 
@@ -18,19 +24,17 @@
       body {
         font-family: "Pretendard", sans-serif;
         overflow: hidden;
+        background-color: #f8fafc;
       }
 
-      /* Fake Map Background */
-      .map-container {
+      /* 지도 스타일: 전체 화면 채우기 */
+      #map {
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #f8fafc;
-        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-        background-size: 30px 30px;
-        z-index: 1;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
       }
 
       .custom-scroll::-webkit-scrollbar {
@@ -42,10 +46,10 @@
       }
 
       .glass-panel {
-        background: rgba(255, 255, 255, 0.92);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 8px 32px rgba(30, 27, 75, 0.08);
       }
 
       /* Detail Panel Transition */
@@ -91,13 +95,8 @@
       }
     </style>
   </head>
-  <body class="bg-slate-50">
-    <div class="map-container flex items-center justify-center">
-      <div class="text-slate-300 flex flex-col items-center select-none">
-        <i data-lucide="map" class="w-16 h-16 mb-4 opacity-20"></i>
-        <p class="font-medium text-slate-400">지도가 연동되는 영역입니다</p>
-      </div>
-    </div>
+  <body>
+    <div id="map"></div>
 
     <div
       class="absolute inset-0 z-10 flex p-4 pointer-events-none w-full h-full"
@@ -438,16 +437,19 @@
       </div>
       <div class="flex flex-col gap-2">
         <button
+          onclick="zoomIn()"
           class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600"
         >
           <i data-lucide="plus" class="w-5 h-5"></i>
         </button>
         <button
+          onclick="zoomOut()"
           class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600"
         >
           <i data-lucide="minus" class="w-5 h-5"></i>
         </button>
         <button
+          onclick="panToCurrent()"
           class="glass-panel w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mt-2 shadow-lg shadow-indigo-100"
         >
           <i data-lucide="locate-fixed" class="w-5 h-5"></i>
@@ -456,7 +458,42 @@
     </div>
 
     <script>
-      // 데이터 베이스
+      // 1. 아이콘 우선 생성
+      lucide.createIcons();
+
+      // 2. 지도 전역 변수
+      var map;
+
+      // 3. 지도 로딩 (autoload=false 일 때 필수)
+      if (window.kakao && window.kakao.maps) {
+        kakao.maps.load(function () {
+          var mapContainer = document.getElementById("map");
+          var mapOption = {
+            center: new kakao.maps.LatLng(37.498095, 127.02761), // 강남역
+            level: 3,
+          };
+          // 지도 생성
+          map = new kakao.maps.Map(mapContainer, mapOption);
+          console.log("지도 생성 성공!");
+        });
+      } else {
+        console.error("Kakao Map SDK가 로드되지 않았습니다.");
+      }
+
+      function zoomIn() {
+        if (map) map.setLevel(map.getLevel() - 1);
+      }
+      function zoomOut() {
+        if (map) map.setLevel(map.getLevel() + 1);
+      }
+      function panToCurrent() {
+        if (map) {
+          var moveLatLon = new kakao.maps.LatLng(37.498095, 127.02761);
+          map.panTo(moveLatLon);
+        }
+      }
+
+      // --- 기타 데이터 로직 ---
       const data = {
         1: {
           title: "강남역 2번 출구 → 판교역",
@@ -480,7 +517,6 @@
 
       let currentCount = 4;
 
-      // 상세 보기 열기
       function openDetail(id) {
         const item = data[id];
         const panel = document.getElementById("detailPanel");
@@ -543,7 +579,6 @@
         document.getElementById("bottomBar").style.left = "500px";
       }
 
-      // 모집 생성 모달 제어
       function openCreate() {
         document.getElementById("createPanel").classList.add("active");
       }
@@ -560,8 +595,6 @@
         alert("동승 모집이 성공적으로 시작되었습니다!");
         closeCreate();
       }
-
-      lucide.createIcons();
     </script>
   </body>
 </html>
