@@ -6,6 +6,9 @@
     <title>탈래말래 - 실시간 채팅</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script src="nav.js"></script>
+
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
 
@@ -50,65 +53,10 @@
     </style>
   </head>
 
-  <body class="h-screen flex overflow-hidden">
-    <div
-      class="glass-panel w-20 h-[calc(100vh-2rem)] rounded-[2.5rem] flex flex-col items-center py-8 shrink-0 m-4"
-    >
-      <div class="mb-12 cursor-pointer" onclick="location.href='./main.html'">
-        <div
-          class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200"
-        >
-          <i data-lucide="car-front" class="text-white w-6 h-6"></i>
-        </div>
-      </div>
+  <body class="h-screen flex overflow-hidden p-4 gap-4"> 
+    <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
 
-      <div class="flex-1 flex flex-col gap-4">
-        <button
-          onclick="location.href='./main.html'"
-          class="p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-        >
-          <i data-lucide="home" class="w-6 h-6"></i>
-        </button>
-        <button
-          onclick="location.href='userReview.html'"
-          class="p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-        >
-          <i data-lucide="star" class="w-6 h-6"></i>
-        </button>
-        <button
-          class="p-3 rounded-2xl text-indigo-600 bg-indigo-50 transition-all shadow-sm"
-        >
-          <i data-lucide="message-circle" class="w-6 h-6"></i>
-        </button>
-      </div>
-
-      <div class="flex flex-col gap-4 items-center">
-        <button
-          onclick="location.href='./setting.html'"
-          class="p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-        >
-          <i data-lucide="settings" class="w-6 h-6"></i>
-        </button>
-        <div
-          onclick="location.href='mypage.html'"
-          class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:border-indigo-400 transition-all"
-        >
-          <img
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-            alt="profile"
-          />
-        </div>
-        <button
-          onclick="location.href='login.html'"
-          class="nav-item p-3 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all mt-2"
-          title="로그아웃"
-        >
-          <i data-lucide="log-out" class="w-6 h-6"></i>
-        </button>
-      </div>
-    </div>
-
-    <main class="flex-1 flex gap-6 p-6 overflow-hidden">
+    <main class="flex-1 flex gap-6 overflow-hidden">
       <div
         class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden"
       >
@@ -347,6 +295,9 @@
     </main>
 
     <script>
+      // [수정됨] 네비게이션 로드 및 활성화 (채팅 페이지이므로 nav-chat 활성화)
+      loadNavbar('nav-chat');
+      
       lucide.createIcons();
     </script>
   </body>
