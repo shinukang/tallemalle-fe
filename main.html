@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- nav.js 연결 (부드러운 이동 기능 포함) -->
   <script src="nav.js"></script>
 
   <script type="text/javascript"
@@ -130,6 +131,7 @@
       </div>
       <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4">
         <h3 class="font-bold text-slate-800 text-lg px-1">실시간 모집</h3>
+        <!-- 클릭 시 openDetail(1) 실행 -->
         <div onclick="openDetail(1)"
           class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group">
           <div class="flex justify-between mb-4">
@@ -147,6 +149,7 @@
             </div>
           </div>
         </div>
+        <!-- 클릭 시 openDetail(2) 실행 -->
         <div onclick="openDetail(2)"
           class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group">
           <div class="flex justify-between mb-4">
@@ -298,37 +301,28 @@
   </div>
 
   <script>
-    // [수정됨] 1. 네비게이션 로드 및 활성화 (main 페이지이므로 nav-home 활성화)
+    // 1. 네비게이션 로드 및 활성화
     loadNavbar('nav-home');
 
-    // 2. 다른 UI 아이콘 생성
+    // 2. 아이콘 생성
     lucide.createIcons();
 
-    // 3. 지도 전역 변수
+    // 3. 지도 설정
     var map;
-
-    // 4. 지도 로딩
     if (window.kakao && window.kakao.maps) {
       kakao.maps.load(function () {
         var mapContainer = document.getElementById("map");
         var mapOption = {
-          center: new kakao.maps.LatLng(37.498095, 127.02761), // 강남역
+          center: new kakao.maps.LatLng(37.498095, 127.02761),
           level: 3,
         };
-        // 지도 생성
         map = new kakao.maps.Map(mapContainer, mapOption);
         console.log("지도 생성 성공!");
       });
-    } else {
-      console.error("Kakao Map SDK가 로드되지 않았습니다.");
     }
 
-    function zoomIn() {
-      if (map) map.setLevel(map.getLevel() - 1);
-    }
-    function zoomOut() {
-      if (map) map.setLevel(map.getLevel() + 1);
-    }
+    function zoomIn() { if (map) map.setLevel(map.getLevel() - 1); }
+    function zoomOut() { if (map) map.setLevel(map.getLevel() + 1); }
     function panToCurrent() {
       if (map) {
         var moveLatLon = new kakao.maps.LatLng(37.498095, 127.02761);
@@ -341,28 +335,35 @@
       1: {
         title: "강남역 2번 출구 → 판교역",
         cost: "약 4,500원",
-        rawCost: 4500,
         time: "지금 출발",
-        users: 2,
         desc: "신분당선 고장으로 택시 타려고 합니다. 매너 좋으신 분 환영해요!",
         tags: ["#비흡연", "#조용히이동"],
       },
       2: {
         title: "서울역 → 합정역 7번출구",
         cost: "약 3,200원",
-        rawCost: 3200,
         time: "20:30 출발",
-        users: 1,
         desc: "기차 타고 도착하시는 분들 같이 이동해요. 짐이 좀 있습니다.",
         tags: ["#캐리어환영", "#여성전용"],
       },
     };
 
     let currentCount = 4;
+    // [수정됨] 현재 열려있는 아이템의 ID를 추적하는 변수
+    let currentDetailId = null; 
 
     function openDetail(id) {
-      const item = data[id];
       const panel = document.getElementById("detailPanel");
+      
+      // [핵심 로직] 이미 열려있는 창의 ID와 지금 누른 ID가 같으면? -> 닫기
+      if (currentDetailId === id && panel.classList.contains("active")) {
+          closeDetail();
+          return;
+      }
+
+      // 다르다면? -> 현재 ID 업데이트하고 내용 보여주기
+      currentDetailId = id; 
+      const item = data[id];
       const content = document.getElementById("detailContent");
       const bottomBar = document.getElementById("bottomBar");
 
@@ -376,20 +377,12 @@
                 </div>
                 <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8">
                     <div>
-                        <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg mb-4 inline-block">${item.time
-        }</span>
-                        <h2 class="text-2xl font-bold text-slate-900 leading-tight">${item.title
-        }</h2>
+                        <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg mb-4 inline-block">${item.time}</span>
+                        <h2 class="text-2xl font-bold text-slate-900 leading-tight">${item.title}</h2>
                     </div>
-                    <p class="text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-3xl">${item.desc
-        }</p>
+                    <p class="text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-3xl">${item.desc}</p>
                     <div class="flex flex-wrap gap-2">
-                        ${item.tags
-          .map(
-            (tag) =>
-              `<span class="text-[11px] font-bold border border-slate-100 px-4 py-2 rounded-xl bg-white shadow-sm">${tag}</span>`
-          )
-          .join("")}
+                        ${item.tags.map((tag) =>`<span class="text-[11px] font-bold border border-slate-100 px-4 py-2 rounded-xl bg-white shadow-sm">${tag}</span>`).join("")}
                     </div>
                     <div class="pt-4 border-t border-slate-50">
                         <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">정산 방식</div>
@@ -404,10 +397,10 @@
                 <div class="p-8 bg-slate-50/50 border-t border-slate-100">
                     <div class="flex justify-between items-end mb-4">
                         <span class="text-xs text-slate-400 font-bold">인당 예상 결제 금액</span>
-                        <span class="text-2xl font-black text-indigo-600">${item.cost
-        }</span>
+                        <span class="text-2xl font-black text-indigo-600">${item.cost}</span>
                     </div>
-                    <button onclick="location.href='./chat.html'" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl transition-all shadow-xl">동승 채팅방 입장</button>
+                    <!-- [수정됨] location.href -> smoothMove로 변경 -->
+                    <button onclick="smoothMove('chat.html')" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl transition-all shadow-xl">동승 채팅방 입장</button>
                 </div>
             `;
       lucide.createIcons();
@@ -416,25 +409,20 @@
     function closeDetail() {
       document.getElementById("detailPanel").classList.remove("active");
       document.getElementById("bottomBar").style.left = "500px";
+      // [추가] 닫히면 현재 ID 정보도 초기화
+      currentDetailId = null;
     }
 
-    function openCreate() {
-      document.getElementById("createPanel").classList.add("active");
-    }
-    function closeCreate() {
-      document.getElementById("createPanel").classList.remove("active");
-    }
-
+    function openCreate() { document.getElementById("createPanel").classList.add("active"); }
+    function closeCreate() { document.getElementById("createPanel").classList.remove("active"); }
     function updateCount(val) {
       currentCount = Math.max(2, Math.min(4, currentCount + val));
       document.getElementById("memberCount").innerText = currentCount + "명";
     }
-
     function handleFinishCreate() {
       alert("동승 모집이 성공적으로 시작되었습니다!");
       closeCreate();
     }
   </script>
 </body>
-
 </html>
