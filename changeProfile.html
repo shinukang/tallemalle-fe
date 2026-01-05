@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>탈래말래 - 회원 정보 수정</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 외부 파일인 nav.js 로드 가정 -->
+    <script src="nav.js"></script>
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
+
+        body {
+            font-family: "Pretendard", sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .input-focus {
+            transition: all 0.2s ease;
+        }
+
+        .input-focus:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .tag-checkbox:checked + label {
+            background-color: #eef2ff;
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden">
+    <div class="flex h-screen p-4 gap-4">
+        
+        <!-- 내비게이션 바 컨테이너 (기존 nav.js 활용) -->
+        <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
+
+        <!-- 메인 수정 영역 -->
+        <div class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
+            <!-- 헤더 -->
+            <div class="p-8 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <button onclick="history.back()" class="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">회원 정보 수정</h1>
+                        <p class="text-sm text-slate-400 font-medium mt-1">프로필 정보를 변경하고 저장하세요.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="history.back()" class="px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">취소</button>
+                    <button class="px-8 py-2.5 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                        변경사항 저장
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scroll p-8">
+                <div class="max-w-2xl mx-auto space-y-10">
+                    
+                    <!-- 섹션 1: 프로필 이미지 수정 -->
+                    <div class="flex flex-col items-center">
+                        <div class="relative group cursor-pointer">
+                            <div class="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl bg-slate-100 transition-transform group-hover:scale-[1.02]">
+                                <img id="profile-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile" class="w-full h-full object-cover" />
+                            </div>
+                            <label for="avatar-upload" class="absolute -bottom-2 -right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl border-4 border-white cursor-pointer hover:bg-indigo-700 transition-all">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
+                                <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                        <p class="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">클릭하여 사진 변경</p>
+                    </div>
+
+                    <!-- 섹션 2: 기본 정보 -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-indigo-600 rounded-full"></span>
+                            기본 정보
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">닉네임</label>
+                                <input type="text" value="판교동승왕님" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus" placeholder="닉네임을 입력하세요">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">이메일 주소</label>
+                                <input type="email" value="pangyo_king@gmail.com" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-400 cursor-not-allowed" readonly>
+                                <p class="mt-2 text-[10px] text-slate-400 ml-1">이메일은 변경할 수 없습니다. 고객센터에 문의해주세요.</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">한 줄 소개</label>
+                                <textarea class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus h-24 resize-none" placeholder="자신을 짧게 소개해 주세요.">매일 판교로 출근하는 직장인입니다! 조용히 가는 걸 선호해요.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 섹션 3: 동승 스타일 (태그 선택) -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                            동승 스타일 선택
+                        </h3>
+                        <div class="flex flex-wrap gap-3">
+                            <div>
+                                <input type="checkbox" id="style-1" class="hidden tag-checkbox" checked>
+                                <label for="style-1" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🤫 조용한 이동 선호</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="style-2" class="hidden tag-checkbox">
+                                <label for="style-2" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🎵 음악 감상</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="style-3" class="hidden tag-checkbox" checked>
+                                <label for="style-3" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">☕ 커피 취식 가능</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="style-4" class="hidden tag-checkbox">
+                                <label for="style-4" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">💬 대화 선호</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="style-5" class="hidden tag-checkbox" checked>
+                                <label for="style-5" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🚭 금연 필수</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 계정 관리 하단 버튼 -->
+                    <div class="pt-10 border-t border-slate-100 flex justify-between items-center">
+                        <button class="text-xs font-bold text-rose-500 hover:underline">회원 탈퇴</button>
+                        <button class="text-xs font-bold text-slate-400 hover:text-slate-600">비밀번호 변경</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 기존 nav.js 로직 호출
+        if (typeof loadNavbar === 'function') {
+            loadNavbar('nav-mypage');
+        }
+
+        lucide.createIcons();
+
+        // 이미지 미리보기 기능
+        document.getElementById('avatar-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('profile-preview').src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
