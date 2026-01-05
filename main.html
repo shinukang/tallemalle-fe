@@ -8,6 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- 외부 네비게이션 스크립트 연결 -->
+  <script src="nav.js"></script>
+
   <!-- Kakao Maps API -->
   <script type="text/javascript"
     src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f37807b77cb80bec5b35db61d2ad7dba&libraries=services&autoload=false"></script>
@@ -53,7 +56,7 @@
       box-shadow: 0 8px 32px rgba(30, 27, 75, 0.08);
     }
 
-    /* Detail Panel Transition */
+    /* 상세 패널 트랜지션 */
     #detailPanel {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 0;
@@ -70,7 +73,7 @@
       margin-left: 1rem;
     }
 
-    /* Create Modal Transition */
+    /* 모집 생성 모달 트랜지션 */
     #createPanel {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 0;
@@ -99,7 +102,7 @@
       background-color: #eef2ff !important;
     }
 
-    /* Toast Notification */
+    /* 토스트 알림 */
     #toast {
       position: fixed;
       bottom: 2rem;
@@ -126,6 +129,7 @@
 
   <div class="absolute inset-0 z-10 flex p-4 pointer-events-none w-full h-full">
 
+    <!-- 외부 nav.js에 의해 채워질 네비게이션 컨테이너 -->
     <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem] pointer-events-auto"></div>
 
     <div
@@ -135,19 +139,16 @@
           탈래말래
         </h1>
         <div class="space-y-3">
-          <!-- 출발지 입력 -->
           <div class="relative group">
             <i data-lucide="map-pin" class="absolute left-4 top-4 w-4 h-4 text-emerald-500"></i>
             <input type="text" id="startInput" placeholder="출발지 (예: 강남역)" value="강남역"
               class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 transition-all outline-none" />
           </div>
-          <!-- 목적지 입력 -->
           <div class="relative group">
             <i data-lucide="navigation" class="absolute left-4 top-4 w-4 h-4 text-rose-500"></i>
             <input type="text" id="destInput" placeholder="목적지 (예: 판교역)" value="판교역"
               class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 transition-all outline-none" />
           </div>
-          <!-- 검색 버튼 -->
           <button onclick="handleSearch()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2 mt-2 group">
             <i data-lucide="list-filter" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
             조건에 맞는 모집 찾기
@@ -155,7 +156,6 @@
         </div>
       </div>
       
-      <!-- 실시간 모집 리스트 컨테이너 -->
       <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4" id="recruitList">
         <h3 class="font-bold text-slate-800 text-lg px-1 mb-2">실시간 모집</h3>
       </div>
@@ -166,16 +166,13 @@
     </div>
   </div>
 
-  <!-- 모집 생성 패널 -->
   <div id="createPanel" class="fixed inset-0 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
     <div
       class="modal-content glass-panel w-full max-w-2xl rounded-[3rem] overflow-hidden pointer-events-auto shadow-2xl flex flex-col max-h-[90vh]">
       <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-white/50">
         <div>
           <h2 class="text-2xl font-bold text-slate-900">동승 모집하기</h2>
-          <p class="text-sm text-slate-500 mt-2">
-            경로와 시간을 확인하고 모집을 시작하세요.
-          </p>
+          <p class="text-sm text-slate-500 mt-2">경로와 시간을 확인하고 모집을 시작하세요.</p>
         </div>
         <button onclick="closeCreate()" class="p-3 hover:bg-slate-100 rounded-2xl transition-colors text-slate-400">
           <i data-lucide="x" class="w-6 h-6"></i>
@@ -195,8 +192,7 @@
         <div class="grid grid-cols-2 gap-8">
           <div class="space-y-4">
             <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">출발 시간</label>
-            <select
-              class="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none appearance-none">
+            <select class="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none appearance-none">
               <option>지금 바로</option>
               <option>10분 후</option>
               <option>20분 후</option>
@@ -205,22 +201,15 @@
           <div class="space-y-4">
             <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">모집 인원</label>
             <div class="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-              <button onclick="updateCount(-1)"
-                class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">
-                <i data-lucide="minus" class="w-4 h-4"></i>
-              </button>
+              <button onclick="updateCount(-1)" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all"><i data-lucide="minus" class="w-4 h-4"></i></button>
               <span id="memberCount" class="flex-1 text-center font-bold text-slate-800">4명</span>
-              <button onclick="updateCount(1)"
-                class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-              </button>
+              <button onclick="updateCount(1)" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all"><i data-lucide="plus" class="w-4 h-4"></i></button>
             </div>
           </div>
         </div>
         <div class="space-y-4">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">동승 메모 (선택)</label>
-          <textarea placeholder="메시지를 입력하세요..."
-            class="w-full p-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm focus:bg-white transition-all h-24 resize-none outline-none"></textarea>
+          <textarea placeholder="메시지를 입력하세요..." class="w-full p-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm focus:bg-white transition-all h-24 resize-none outline-none"></textarea>
         </div>
         <div class="bg-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100/50 flex justify-between items-center">
           <span class="text-sm font-bold text-indigo-900">1/N 예상 부담금</span>
@@ -228,22 +217,14 @@
         </div>
       </div>
       <div class="p-8 bg-white border-t border-slate-100 grid grid-cols-2 gap-4">
-        <button onclick="closeCreate()"
-          class="py-5 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all">
-          취소
-        </button>
-        <button onclick="handleFinishCreate()"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white py-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 transition-all">
-          모집 시작하기
-        </button>
+        <button onclick="closeCreate()" class="py-5 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all">취소</button>
+        <button onclick="handleFinishCreate()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 transition-all">모집 시작하기</button>
       </div>
     </div>
   </div>
 
-  <!-- 하단 정보 바 -->
   <div id="bottomBar" class="absolute bottom-8 left-[500px] right-8 z-10 transition-all duration-500 flex justify-end">
-    <div
-      class="glass-panel p-6 rounded-[2.5rem] flex items-center justify-between gap-12 pointer-events-auto border border-white/50 shadow-xl w-full max-w-4xl">
+    <div class="glass-panel p-6 rounded-[2.5rem] flex items-center justify-between gap-12 pointer-events-auto border border-white/50 shadow-xl w-full max-w-4xl">
       <div class="flex-1 flex items-center gap-10 pl-4">
         <div class="flex flex-col">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">경로 정보</span>
@@ -258,260 +239,143 @@
           <span class="font-bold text-slate-800">4명</span>
         </div>
       </div>
-      <button onclick="openCreate()"
-        class="bg-slate-900 hover:bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-xl group">
+      <button onclick="openCreate()" class="bg-slate-900 hover:bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-xl group">
         <span>모집 시작</span>
-        <i data-lucide="rocket"
-          class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+        <i data-lucide="rocket" class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
       </button>
     </div>
   </div>
 
-  <!-- 우측 지도 컨트롤 -->
   <div class="absolute top-6 right-6 z-10 flex flex-col gap-3 pointer-events-auto">
     <div class="glass-panel p-2.5 rounded-2xl flex items-center gap-3 pr-5">
-      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold">
-        판교
-      </div>
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold">판교</div>
       <div class="flex flex-col">
         <span class="text-sm font-bold text-slate-900">판교동승왕</span>
         <span class="text-[11px] text-emerald-600 font-bold">37.5°C</span>
       </div>
     </div>
     <div class="flex flex-col gap-2">
-      <button onclick="zoomIn()"
-        class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600">
-        <i data-lucide="plus" class="w-5 h-5"></i>
-      </button>
-      <button onclick="zoomOut()"
-        class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600">
-        <i data-lucide="minus" class="w-5 h-5"></i>
-      </button>
-      <button onclick="panToCurrent()"
-        class="glass-panel w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mt-2 shadow-lg shadow-indigo-100">
-        <i data-lucide="locate-fixed" class="w-5 h-5"></i>
-      </button>
+      <button onclick="zoomIn()" class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600"><i data-lucide="plus" class="w-5 h-5"></i></button>
+      <button onclick="zoomOut()" class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:text-indigo-600"><i data-lucide="minus" class="w-5 h-5"></i></button>
+      <button onclick="panToCurrent()" class="glass-panel w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mt-2 shadow-lg shadow-indigo-100"><i data-lucide="locate-fixed" class="w-5 h-5"></i></button>
     </div>
   </div>
 
   <script>
     /**
-     * 데이터 베이스 (모집 리스트)
+     * 메인 대시보드 데이터 및 로직
      */
     const recruitmentData = [
-      {
-        id: 1,
-        start: "강남역",
-        dest: "판교역",
-        title: "강남역 → 판교역",
-        cost: "약 4,500원",
-        time: "Now",
-        update: "3분 전",
-        desc: "신분당선 고장으로 택시 타려고 합니다. 매너 좋으신 분 환영해요!",
-        tags: ["#비흡연", "#조용히이동"],
-      },
-      {
-        id: 2,
-        start: "서울역",
-        dest: "합정역",
-        title: "서울역 → 합정역",
-        cost: "약 3,200원",
-        time: "20:30",
-        update: "10분 전",
-        desc: "기차 타고 도착하시는 분들 같이 이동해요. 짐이 좀 있습니다.",
-        tags: ["#캐리어환영", "#여성전용"],
-      },
-      {
-        id: 3,
-        start: "강남역",
-        dest: "역삼역",
-        title: "강남역 → 역삼역",
-        cost: "약 2,000원",
-        time: "Now",
-        update: "1분 전",
-        desc: "비가 너무 많이 와서 짧은 거리지만 같이 타실 분!",
-        tags: ["#우천동승"],
-      },
-      {
-        id: 4,
-        start: "잠실역",
-        dest: "판교역",
-        title: "잠실역 → 판교역",
-        cost: "약 5,500원",
-        time: "19:00",
-        update: "5분 전",
-        desc: "퇴근길 같이 가요. 테크노밸리 근처 하차 예정입니다.",
-        tags: ["#직장인환영", "#판교테크노밸리"],
-      }
+      { id: 1, start: "강남역", dest: "판교역", cost: "약 4,500원", time: "Now", update: "3분 전", desc: "신분당선 고장으로 택시 타려고 합니다. 매너 좋으신 분 환영해요!", tags: ["#비흡연", "#조용히이동"] },
+      { id: 2, start: "서울역", dest: "합정역", cost: "약 3,200원", time: "20:30", update: "10분 전", desc: "기차 타고 도착하시는 분들 같이 이동해요. 짐이 좀 있습니다.", tags: ["#캐리어환영", "#여성전용"] },
+      { id: 3, start: "강남역", dest: "역삼역", cost: "약 2,000원", time: "Now", update: "1분 전", desc: "비가 너무 많이 와서 짧은 거리지만 같이 타실 분!", tags: ["#우천동승"] },
+      { id: 4, start: "잠실역", dest: "판교역", cost: "약 5,500원", time: "19:00", update: "5분 전", desc: "퇴근길 같이 가요. 테크노밸리 근처 하차 예정입니다.", tags: ["#직장인환영", "#판교테크노밸리"] }
     ];
 
-    /**
-     * 리스트 렌더링 함수
-     */
     function renderRecruitList(list) {
-        const container = document.getElementById('recruitList');
-        if (!container) return;
-        
-        container.innerHTML = `<h3 class="font-bold text-slate-800 text-lg px-1 mb-2">실시간 모집 (${list.length})</h3>`;
-        
-        if (list.length === 0) {
-            container.innerHTML += `
-                <div class="flex flex-col items-center justify-center py-20 text-slate-400">
-                    <i data-lucide="search-x" class="w-12 h-12 mb-4 opacity-20"></i>
-                    <p class="text-sm font-medium">검색 결과가 없습니다.</p>
-                </div>
-            `;
-            lucide.createIcons();
-            return;
-        }
-
-        list.forEach(item => {
-            const card = document.createElement('div');
-            card.onclick = () => openDetail(item.id);
-            card.className = "bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group mb-4";
-            card.innerHTML = `
-                <div class="flex justify-between mb-4">
-                    <span class="${item.time === 'Now' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'} text-[10px] font-bold px-2.5 py-1.5 rounded-lg uppercase">${item.time}</span>
-                    <span class="text-[11px] text-slate-400">${item.update}</span>
-                </div>
-                <p class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors mb-4">${item.start} → ${item.dest}</p>
-                <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <span class="text-sm font-bold text-indigo-600">인당 ${item.cost}</span>
-                    <div class="p-2 bg-slate-900 text-white rounded-xl group-hover:bg-indigo-600 transition-colors">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
+      const container = document.getElementById('recruitList');
+      if (!container) return;
+      container.innerHTML = `<h3 class="font-bold text-slate-800 text-lg px-1 mb-2">실시간 모집 (${list.length})</h3>`;
+      
+      if (list.length === 0) {
+        container.innerHTML += `<div class="flex flex-col items-center justify-center py-20 text-slate-400"><i data-lucide="search-x" class="w-12 h-12 mb-4 opacity-20"></i><p class="text-sm font-medium">검색 결과가 없습니다.</p></div>`;
         lucide.createIcons();
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.onclick = () => openDetail(item.id);
+        card.className = "bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group mb-4";
+        card.innerHTML = `
+          <div class="flex justify-between mb-4">
+            <span class="${item.time === 'Now' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'} text-[10px] font-bold px-2.5 py-1.5 rounded-lg uppercase">${item.time}</span>
+            <span class="text-[11px] text-slate-400">${item.update}</span>
+          </div>
+          <p class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors mb-4">${item.start} → ${item.dest}</p>
+          <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+            <span class="text-sm font-bold text-indigo-600">인당 ${item.cost}</span>
+            <div class="p-2 bg-slate-900 text-white rounded-xl group-hover:bg-indigo-600 transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+          </div>`;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
     }
 
-    /**
-     * 경로 검색/필터링 실행 함수
-     */
     function handleSearch() {
-        const startVal = document.getElementById('startInput').value.trim();
-        const destVal = document.getElementById('destInput').value.trim();
-        
-        const filtered = recruitmentData.filter(item => {
-            const matchStart = !startVal || item.start.includes(startVal);
-            const matchDest = !destVal || item.dest.includes(destVal);
-            return matchStart && matchDest;
-        });
+      const startVal = document.getElementById('startInput').value.trim();
+      const destVal = document.getElementById('destInput').value.trim();
+      const filtered = recruitmentData.filter(item => (!startVal || item.start.includes(startVal)) && (!destVal || item.dest.includes(destVal)));
 
-        document.getElementById('displayRoute').innerText = `${startVal || '미지정'} → ${destVal || '미지정'}`;
-        document.getElementById('createStart').innerText = startVal || '미지정';
-        document.getElementById('createDest').innerText = destVal || '미지정';
+      document.getElementById('displayRoute').innerText = `${startVal || '미지정'} → ${destVal || '미지정'}`;
+      document.getElementById('createStart').innerText = startVal || '미지정';
+      document.getElementById('createDest').innerText = destVal || '미지정';
 
-        renderRecruitList(filtered);
-        showNotification(`${filtered.length}개의 모집 정보를 찾았습니다.`);
-        
-        if (map && typeof kakao !== 'undefined' && kakao.maps && kakao.maps.LatLng && startVal === "강남역") {
-            try {
-                map.panTo(new kakao.maps.LatLng(37.498095, 127.02761));
-            } catch (e) {
-                console.error("Map panTo error:", e);
-            }
-        }
+      renderRecruitList(filtered);
+      showNotification(`${filtered.length}개의 모집 정보를 찾았습니다.`);
+      
+      if (map && typeof kakao !== 'undefined' && kakao.maps && kakao.maps.LatLng && startVal === "강남역") {
+        map.panTo(new kakao.maps.LatLng(37.498095, 127.02761));
+      }
     }
 
-    /**
-     * 상세 정보 표시
-     * [수정] 정산 방식 선택 섹션을 다시 추가함
-     */
     let currentDetailId = null;
     function openDetail(id) {
-        const panel = document.getElementById("detailPanel");
-        if (currentDetailId === id && panel.classList.contains("active")) {
-            closeDetail();
-            return;
-        }
+      const panel = document.getElementById("detailPanel");
+      if (currentDetailId === id && panel.classList.contains("active")) { closeDetail(); return; }
 
-        currentDetailId = id;
-        const item = recruitmentData.find(d => d.id === id);
-        const content = document.getElementById("detailContent");
-        const bottomBar = document.getElementById("bottomBar");
+      currentDetailId = id;
+      const item = recruitmentData.find(d => d.id === id);
+      const content = document.getElementById("detailContent");
+      const bottomBar = document.getElementById("bottomBar");
 
-        panel.classList.add("active");
-        bottomBar.style.left = "920px";
+      panel.classList.add("active");
+      bottomBar.style.left = "920px";
 
-        content.innerHTML = `
-            <div class="p-8 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-900 text-lg">상세 정보</h3>
-                <button onclick="closeDetail()" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+      content.innerHTML = `
+        <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-bold text-slate-900 text-lg">상세 정보</h3>
+          <button onclick="closeDetail()" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8">
+          <div>
+            <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg mb-4 inline-block">${item.time} 출발</span>
+            <h2 class="text-2xl font-bold text-slate-900 leading-tight">${item.start} → ${item.dest}</h2>
+          </div>
+          <p class="text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-3xl">${item.desc}</p>
+          <div class="flex flex-wrap gap-2">${item.tags.map(tag => `<span class="text-[11px] font-bold border border-slate-100 px-4 py-2 rounded-xl bg-white shadow-sm">${tag}</span>`).join("")}</div>
+          <div class="pt-6 border-t border-slate-100">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">정산 방식</div>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="cursor-pointer group"><input type="radio" name="pay-type" class="hidden peer" checked><div class="p-4 border-2 border-slate-50 rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-xs font-bold text-center text-slate-700">선결제</div></label>
+              <label class="cursor-pointer group"><input type="radio" name="pay-type" class="hidden peer"><div class="p-4 border-2 border-slate-50 rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-xs font-bold text-center text-slate-700">후결제</div></label>
             </div>
-            <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8">
-                <div>
-                    <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg mb-4 inline-block">${item.time} 출발</span>
-                    <h2 class="text-2xl font-bold text-slate-900 leading-tight">${item.start} → ${item.dest}</h2>
-                </div>
-                <p class="text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-3xl">${item.desc}</p>
-                <div class="flex flex-wrap gap-2">
-                    ${item.tags.map(tag => `<span class="text-[11px] font-bold border border-slate-100 px-4 py-2 rounded-xl bg-white shadow-sm">${tag}</span>`).join("")}
-                </div>
-                
-                <!-- 정산 방식 섹션 복구 -->
-                <div class="pt-6 border-t border-slate-100">
-                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">정산 방식</div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="pay-type" class="hidden peer" checked>
-                            <div class="p-4 border-2 border-slate-50 rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-xs font-bold text-center text-slate-700">선결제</div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="pay-type" class="hidden peer">
-                            <div class="p-4 border-2 border-slate-50 rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-xs font-bold text-center text-slate-700">후결제</div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="p-8 bg-slate-50/50 border-t border-slate-100">
-                <div class="flex justify-between items-end mb-4">
-                    <span class="text-xs text-slate-400 font-bold">인당 예상 결제 금액</span>
-                    <span class="text-2xl font-black text-indigo-600">${item.cost}</span>
-                </div>
-                <button onclick="smoothMove('chat')" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl transition-all shadow-xl">동승 채팅방 입장</button>
-            </div>
-        `;
-        lucide.createIcons();
+          </div>
+        </div>
+        <div class="p-8 bg-slate-50/50 border-t border-slate-100">
+          <div class="flex justify-between items-end mb-4">
+            <span class="text-xs text-slate-400 font-bold">인당 예상 결제 금액</span>
+            <span class="text-2xl font-black text-indigo-600">${item.cost}</span>
+          </div>
+          <button onclick="smoothMove('chat')" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl transition-all shadow-xl">동승 채팅방 입장</button>
+        </div>`;
+      lucide.createIcons();
     }
 
     function closeDetail() {
-        document.getElementById("detailPanel").classList.remove("active");
-        document.getElementById("bottomBar").style.left = "500px";
-        currentDetailId = null;
-    }
-
-    // --- 기타 초기화 및 유틸리티 ---
-    function loadNavbar(activeId) {
-        const container = document.getElementById('navbar-container');
-        if (!container) return;
-        container.innerHTML = `
-            <div class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto shrink-0">
-                <div class="mb-12"><div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200"><i data-lucide="car-front" class="text-white w-6 h-6"></i></div></div>
-                <div class="flex-1 flex flex-col gap-4">
-                    <button class="nav-item ${activeId === 'nav-home' ? 'active' : ''} p-3 rounded-2xl text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="home" class="w-6 h-6"></i></button>
-                    <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="star" class="w-6 h-6"></i></button>
-                    <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="message-circle" class="w-6 h-6"></i></button>
-                </div>
-                <div class="flex flex-col gap-4">
-                    <button class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="settings" class="w-6 h-6"></i></button>
-                    <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden shadow-sm"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"></div>
-                </div>
-            </div>`;
-        lucide.createIcons();
+      document.getElementById("detailPanel").classList.remove("active");
+      document.getElementById("bottomBar").style.left = "500px";
+      currentDetailId = null;
     }
 
     function showNotification(msg) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        toast.innerText = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function smoothMove(target) { showNotification(`${target} 페이지로 이동합니다.`); }
     function openCreate() { document.getElementById("createPanel").classList.add("active"); }
     function closeCreate() { document.getElementById("createPanel").classList.remove("active"); }
     function updateCount(val) {
@@ -524,32 +388,28 @@
     function handleFinishCreate() { showNotification("모집이 시작되었습니다!"); closeCreate(); }
 
     var map;
-    // 초기 실행
     window.onload = () => {
+      // nav.js에 정의된 loadNavbar 함수 호출
+      if (typeof loadNavbar === 'function') {
         loadNavbar('nav-home');
-        renderRecruitList(recruitmentData);
-        
-        if (window.kakao && window.kakao.maps) {
-            kakao.maps.load(() => {
-                const mapContainer = document.getElementById("map");
-                if (mapContainer && kakao.maps.LatLng) {
-                    const mapOption = { 
-                        center: new kakao.maps.LatLng(37.498095, 127.02761), 
-                        level: 3 
-                    };
-                    map = new kakao.maps.Map(mapContainer, mapOption);
-                }
-            });
-        }
+      }
+      
+      renderRecruitList(recruitmentData);
+      
+      if (window.kakao && window.kakao.maps) {
+        kakao.maps.load(() => {
+          const mapContainer = document.getElementById("map");
+          if (mapContainer && kakao.maps.LatLng) {
+            const mapOption = { center: new kakao.maps.LatLng(37.498095, 127.02761), level: 3 };
+            map = new kakao.maps.Map(mapContainer, mapOption);
+          }
+        });
+      }
     };
 
     function zoomIn() { if (map) map.setLevel(map.getLevel() - 1); }
     function zoomOut() { if (map) map.setLevel(map.getLevel() + 1); }
-    function panToCurrent() { 
-        if (map && kakao.maps.LatLng) {
-            map.panTo(new kakao.maps.LatLng(37.498095, 127.02761)); 
-        }
-    }
+    function panToCurrent() { if (map && kakao.maps.LatLng) { map.panTo(new kakao.maps.LatLng(37.498095, 127.02761)); } }
   </script>
 </body>
 </html>
