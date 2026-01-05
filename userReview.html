@@ -48,18 +48,16 @@
         border-radius: 99px;
       }
 
-      /* 별점 스타일 수정: 안쪽 채우기 */
+      /* 별점 스타일: 선택 시 내부가 채워짐 */
       .star-btn {
         transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         color: #e2e8f0;
       }
       
-      /* 선택된 별 스타일: 색상을 적용하고 내부를 채움 */
       .star-btn.active {
         color: var(--tm-star);
       }
       
-      /* Lucide SVG 내부 fill 속성 제어 */
       .star-btn.active svg {
         fill: currentColor;
       }
@@ -146,11 +144,6 @@
             <div>
               <h1 class="text-2xl font-bold text-slate-900">프로필 및 매너</h1>
             </div>
-            <!-- 사용자 차단 버튼 -->
-            <button id="block-user-btn" class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
-              <i data-lucide="ban" class="w-4 h-4"></i>
-              사용자 차단
-            </button>
           </header>
 
           <!-- 매너 점수 정보 카드 -->
@@ -199,8 +192,8 @@
               동승은 어떠셨나요?
             </h3>
 
-            <!-- 제목 아이콘 정렬에 맞춘 들여쓰기 pl-7 -->
-            <div class="space-y-10 pl-7">
+            <!-- [수정됨] 제목 아이콘 정렬에 맞춘 좌우 패딩 동일화 (pl-7 -> px-7) -->
+            <div class="space-y-10 px-7">
               <!-- 별점 선택 -->
               <div>
                 <p class="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest">만족도를 별점으로 표현해주세요</p>
@@ -240,6 +233,14 @@
               <!-- 자유 경험 작성 -->
               <div>
                 <textarea id="review-text" class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm resize-none" placeholder="동승 경험을 자유롭게 적어주세요(선택)"></textarea>
+              </div>
+
+              <!-- 사용자 차단 버튼 - 텍스트 입력창과 등록 버튼 사이 -->
+              <div class="flex justify-end px-2">
+                <button id="block-user-btn" class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
+                  <i data-lucide="ban" class="w-4 h-4"></i>
+                  이 사용자 차단하기
+                </button>
               </div>
 
               <!-- 제출 버튼 -->
@@ -292,12 +293,12 @@
         modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
         modal.innerHTML = `
           <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-            <div class="w-16 h-16 ${iconBg} ${iconColor} rounded-full flex items-center justify-center mx-auto mb-6">
-              <i data-lucide="${icon}" class="w-8 h-8"></i>
+            <div class=\"w-16 h-16 ${iconBg} ${iconColor} rounded-full flex items-center justify-center mx-auto mb-6\">
+              <i data-lucide=\"${icon}\" class=\"w-8 h-8\"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-900 mb-2">${title}</h3>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">${message}</p>
-            <button id="modal-confirm-btn" class="w-full py-4 ${buttonClass} text-white rounded-2xl font-bold text-sm transition-all active:scale-95">
+            <h3 class=\"text-xl font-bold text-slate-900 mb-2\">${title}</h3>
+            <p class=\"text-sm text-slate-500 mb-8 leading-relaxed\">${message}</p>
+            <button id=\"modal-confirm-btn\" class=\"w-full py-4 ${buttonClass} text-white rounded-2xl font-bold text-sm transition-all active:scale-95\">
               ${buttonText}
             </button>
           </div>
@@ -348,7 +349,6 @@
       submitBtn.addEventListener('click', () => {
         const selectedTags = document.querySelectorAll('.review-tag.active, .review-tag-bad.active');
         
-        // 별점 미선택 검증
         if (selectedStars === 0) {
           showModal({
             icon: 'star',
@@ -362,7 +362,6 @@
           return;
         }
 
-        // 태그 미선택 검증
         if (selectedTags.length === 0) {
           showModal({
             icon: 'alert-circle',
@@ -397,16 +396,16 @@
         confirmModal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
         confirmModal.innerHTML = `
           <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <i data-lucide="user-x" class="w-8 h-8"></i>
+            <div class=\"w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6\">
+              <i data-lucide=\"user-x\" class=\"w-8 h-8\"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-900 mb-2">사용자를 차단할까요?</h3>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">차단하면 더 이상 이 사용자와 매칭되지 않으며 대화가 제한됩니다.</p>
-            <div class="flex gap-3">
-              <button id="cancel-block" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">
+            <h3 class=\"text-xl font-bold text-slate-900 mb-2\">사용자를 차단할까요?</h3>
+            <p class=\"text-sm text-slate-500 mb-8 leading-relaxed\">차단하면 더 이상 이 사용자와 매칭되지 않으며 대화가 제한됩니다.</p>
+            <div class=\"flex gap-3\">
+              <button id=\"cancel-block\" class=\"flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all\">
                 취소
               </button>
-              <button id="confirm-block" class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-100">
+              <button id=\"confirm-block\" class=\"flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-100\">
                 차단하기
               </button>
             </div>
@@ -421,13 +420,13 @@
 
         document.getElementById('confirm-block').addEventListener('click', () => {
           confirmModal.innerHTML = `
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="check-circle" class="w-8 h-8"></i>
+            <div class=\"bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up\">
+              <div class=\"w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6\">
+                <i data-lucide=\"check-circle\" class=\"w-8 h-8\"></i>
               </div>
-              <h3 class="text-xl font-bold text-slate-900 mb-2">차단 완료</h3>
-              <p class="text-sm text-slate-500 mb-8">해당 사용자가 차단되었습니다.</p>
-              <button onclick="window.location.reload()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm">
+              <h3 class=\"text-xl font-bold text-slate-900 mb-2\">차단 완료</h3>
+              <p class=\"text-sm text-slate-500 mb-8\">해당 사용자가 차단되었습니다.</p>
+              <button onclick=\"window.location.reload()\" class=\"w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm\">
                 확인
               </button>
             </div>
