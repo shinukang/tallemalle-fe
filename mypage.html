@@ -35,13 +35,23 @@
       border-radius: 10px;
     }
 
-    .nav-item.active {
-      color: #4f46e5;
-      background-color: #eef2ff;
+    .score-gradient {
+      background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
     }
 
-    .temp-gradient {
-      background: linear-gradient(90deg, #f43f5e 0%, #10b981 100%);
+    /* 탭 전환 애니메이션 */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* 모달 애니메이션 */
@@ -67,7 +77,6 @@
       transform: translateY(0);
     }
 
-    /* 경로 수직선 디자인 */
     .route-line {
       position: relative;
     }
@@ -93,125 +102,210 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <div class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
-      <div class="p-8 border-b border-slate-100 flex justify-between items-center">
+      <!-- 상단 타이틀 및 설명 -->
+      <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white/50">
         <div>
-          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">설정 및 프로필</h1>
-          <p class="text-sm text-slate-400 font-medium mt-1">회원 정보 및 서비스 설정을 관리합니다.</p>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">마이페이지</h1>
+          <p class="text-sm text-slate-400 font-medium mt-1">나의 동승 기록과 프로필 정보를 한눈에 관리하세요.</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">누적 동승</p>
+                <p class="text-lg font-black text-indigo-600">128회</p>
+            </div>
+            <div class="w-px h-8 bg-slate-200 self-center"></div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">절약 금액</p>
+                <p class="text-lg font-black text-emerald-600">24.5만</p>
+            </div>
         </div>
       </div>
 
       <div class="flex-1 overflow-y-auto custom-scroll p-8">
-        <div class="max-w-5xl mx-auto grid grid-cols-12 gap-8">
+        <div class="max-w-6xl mx-auto grid grid-cols-12 gap-8">
 
-          <!-- 좌측 사이드바: 프로필 및 매너온도 -->
-          <div class="col-span-12 lg:col-span-4 space-y-6">
-            <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm text-center">
-              <div class="relative w-24 h-24 mx-auto mb-4">
+          <!-- 좌측 사이드바 -->
+          <div class="col-span-12 lg:col-span-4 space-y-6 flex flex-col">
+            <!-- 프로필 카드 -->
+            <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm text-center relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-24 bg-slate-50"></div>
+              <div class="relative w-28 h-28 mx-auto mb-4 mt-4">
                 <img id="profilePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile"
-                  class="w-full h-full rounded-full bg-slate-100 border-4 border-white shadow-md object-cover" />
-
+                  class="w-full h-full rounded-full bg-white border-4 border-white shadow-xl object-cover" />
                 <input type="file" id="imageInput" accept="image/*" class="hidden" />
-
                 <button id="uploadButton" type="button"
-                  class="absolute bottom-0 right-0 p-2 bg-indigo-600 text-white rounded-full shadow-lg border-2 border-white hover:bg-indigo-700 transition-colors">
-                  <i data-lucide="camera" class="w-3 h-3"></i>
+                  class="absolute bottom-1 right-1 p-2.5 bg-indigo-600 text-white rounded-full shadow-lg border-2 border-white hover:bg-indigo-700 transition-colors">
+                  <i data-lucide="camera" class="w-4 h-4"></i>
                 </button>
               </div>
               <h2 class="text-xl font-bold text-slate-900">판교동승왕님</h2>
               <p class="text-xs text-slate-400 mb-6">pangyo_king@gmail.com</p>
               <button onclick="location.href='changeProfile.html'"
-                class="w-full py-3 bg-slate-50 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all border border-slate-100 active:scale-95">
-                회원 정보 수정
+                class="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-indigo-600 transition-all active:scale-95 shadow-lg shadow-indigo-100">
+                개인정보 수정
               </button>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
-              <div class="flex justify-between items-end mb-4">
-                <div class="flex flex-col">
-                  <span class="text-xs font-bold text-slate-400 mb-1">매너 온도</span>
-                  <span class="text-2xl font-black text-emerald-600">37.5°C</span>
+            <!-- 매너 점수 시스템 -->
+            <div class="bg-white rounded-[2.5rem] p-7 border border-slate-100 shadow-sm">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">나의 매너 등급</span>
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl font-black text-indigo-600 tracking-tighter">85</span>
+                    <span class="text-sm font-bold text-slate-300">/ 100</span>
+                  </div>
                 </div>
-                <i data-lucide="smile" class="text-emerald-500 w-8 h-8 opacity-50"></i>
+                <div class="bg-indigo-50 p-3 rounded-2xl">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-indigo-600"></i>
+                </div>
               </div>
-              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div class="temp-gradient h-full rounded-full" style="width: 37.5%"></div>
+              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-4">
+                <div class="score-gradient h-full rounded-full shadow-sm" style="width: 85%"></div>
               </div>
-              <p class="text-[11px] text-slate-400 mt-3 leading-relaxed text-center">동승자 82%가 다시 함께 이동하고 싶어해요!</p>
+              <div class="flex justify-between text-[10px] font-bold text-slate-300">
+                  <span>기본 50점</span>
+                  <span class="text-indigo-400">BEST 100점</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-4 leading-relaxed text-center font-medium">
+                평점 4.8/5.0 <span class="text-indigo-600">상위 5%</span>의 매너를 가진 이용자입니다!
+              </p>
+            </div>
+
+            <div class="flex-1"></div>
+
+            <!-- 회원탈퇴 버튼 -->
+            <div class="pt-4 flex justify-center mt-auto">
+                <button class="flex items-center gap-1.5 text-slate-300 hover:text-rose-500 transition-all font-bold text-[11px]">
+                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
+                    탈래말래 탈퇴하기
+                </button>
             </div>
           </div>
 
-          <!-- 우측 메인: 결제 및 기록 -->
+          <!-- 우측 메인 영역 -->
           <div class="col-span-12 lg:col-span-8 space-y-6">
-            <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <!-- 결제 수단 카드 -->
+            <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
               <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                  <i data-lucide="credit-card" class="w-5 h-5 text-indigo-600"></i> 결제 수단 관리
+                  <i data-lucide="credit-card" class="w-5 h-5 text-indigo-600"></i> 나의 결제 수단
                 </h3>
-                <button class="text-xs font-bold text-indigo-600" onclick="location.href='editPayment.html'">+
-                  추가하기</button>
+                <button class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-all" onclick="location.href='editPayment.html'">카드 추가</button>
               </div>
-              <div class="space-y-3">
-                <div class="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white shadow-xl shadow-slate-200">
                   <div class="flex items-center gap-4">
-                    <div
-                      class="w-12 h-8 bg-blue-600 rounded flex items-center justify-center text-[10px] text-white font-bold italic">
-                      VISA</div>
+                    <div class="w-10 h-7 bg-white/10 rounded flex items-center justify-center text-[8px] font-black italic">VISA</div>
                     <div>
-                      <p class="text-sm font-bold text-slate-700">신한카드 (4215)</p>
-                      <p class="text-[11px] text-slate-400 font-medium">기본 결제 수단</p>
+                      <p class="text-xs font-bold">신한카드 (4215)</p>
+                      <p class="text-[10px] text-slate-400">기본 결제 수단</p>
                     </div>
                   </div>
-                  <button class="text-xs text-slate-300 hover:text-rose-500">삭제</button>
+                  <i data-lucide="check-circle-2" class="w-5 h-5 text-indigo-400"></i>
                 </div>
               </div>
             </div>
 
-            <!-- 탭 섹션 -->
-            <div
-              class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[400px]">
+            <!-- 탭 전환 컨텐츠 영역 -->
+            <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+              <!-- 탭 헤더 -->
               <div class="flex border-b border-slate-50">
-                <button
-                  class="flex-1 py-5 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/30">최근
-                  탑승 기록</button>
-                <button class="flex-1 py-5 text-sm font-bold text-slate-400 hover:text-slate-600 bg-white">받은 리뷰 <span
-                    class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md ml-1">12</span></button>
+                <button id="tab-history" onclick="switchTab('history')"
+                  class="flex-1 py-6 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/30 transition-all">
+                  최근 탑승 기록
+                </button>
+                <button id="tab-reviews" onclick="switchTab('reviews')"
+                  class="flex-1 py-6 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 bg-white transition-all">
+                  받은 리뷰 <span class="ml-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-md">12</span>
+                </button>
               </div>
 
-              <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4">
+              <!-- 탭 1: 탑승 기록 리스트 -->
+              <div id="content-history" class="tab-content active flex-1 overflow-y-auto custom-scroll p-6 space-y-4">
                 <!-- 기록 아이템 1 -->
                 <div onclick="openRideDetail(1)"
-                  class="flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer group">
-                  <div
-                    class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                  class="flex items-center gap-5 p-5 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-3xl transition-all cursor-pointer group">
+                  <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0 group-hover:scale-110 transition-transform">
+                    <i data-lucide="map-pin" class="w-6 h-6"></i>
                   </div>
                   <div class="flex-1">
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-start mb-1">
                       <p class="text-sm font-bold text-slate-800">강남역 2번 출구 → 판교역</p>
-                      <span class="text-[11px] font-bold text-slate-400">어제</span>
+                      <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">어제</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">4,500원 결제 완료 · 동승 4명</p>
+                    <div class="flex items-center gap-3">
+                        <p class="text-xs text-slate-400 font-medium">4,500원 결제 · 동승 4명</p>
+                        <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <p class="text-xs text-indigo-500 font-bold italic">정산 완료</p>
+                    </div>
                   </div>
-                  <i data-lucide="chevron-right"
-                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-all"></i>
+                  <i data-lucide="arrow-right" class="w-5 h-5 text-slate-200 group-hover:text-indigo-600 transform translate-x-0 group-hover:translate-x-1 transition-all"></i>
                 </div>
 
                 <!-- 기록 아이템 2 -->
                 <div onclick="openRideDetail(2)"
-                  class="flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer group">
-                  <div
-                    class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 shrink-0">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                  class="flex items-center gap-5 p-5 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-3xl transition-all cursor-pointer group">
+                  <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 shrink-0 group-hover:scale-110 transition-transform">
+                    <i data-lucide="map-pin" class="w-6 h-6"></i>
                   </div>
                   <div class="flex-1">
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-start mb-1">
                       <p class="text-sm font-bold text-slate-800">합정역 → 서울역</p>
-                      <span class="text-[11px] font-bold text-slate-400">3일 전</span>
+                      <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">3일 전</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">3,200원 결제 완료 · 동승 2명</p>
+                    <div class="flex items-center gap-3">
+                        <p class="text-xs text-slate-400 font-medium">3,200원 결제 · 동승 2명</p>
+                        <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <p class="text-xs text-indigo-500 font-bold italic">정산 완료</p>
+                    </div>
                   </div>
-                  <i data-lucide="chevron-right"
-                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-all"></i>
+                  <i data-lucide="arrow-right" class="w-5 h-5 text-slate-200 group-hover:text-indigo-600 transform translate-x-0 group-hover:translate-x-1 transition-all"></i>
+                </div>
+              </div>
+
+              <!-- 탭 2: 받은 리뷰 리스트 -->
+              <div id="content-reviews" class="tab-content flex-1 overflow-y-auto custom-scroll p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 리뷰 카드 1 -->
+                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative group hover:bg-white hover:shadow-xl hover:shadow-indigo-50 transition-all">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Luna" class="w-10 h-10 rounded-full bg-white border">
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">루나님</p>
+                                <p class="text-[10px] text-slate-400">강남역 → 판교역 동승</p>
+                            </div>
+                        </div>
+                        <i data-lucide="quote" class="absolute top-6 right-6 w-4 h-4 text-slate-200"></i>
+                        <p class="text-sm text-slate-600 leading-relaxed italic">"시간 약속을 정말 칼같이 지키셔서 너무 좋았어요! 매너도 최고십니다."</p>
+                        <div class="mt-4 flex gap-1">
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- 리뷰 카드 2 -->
+                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative group hover:bg-white hover:shadow-xl hover:shadow-indigo-50 transition-all">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kai" class="w-10 h-10 rounded-full bg-white border">
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">카이님</p>
+                                <p class="text-[10px] text-slate-400">합정역 → 서울역 동승</p>
+                            </div>
+                        </div>
+                        <i data-lucide="quote" class="absolute top-6 right-6 w-4 h-4 text-slate-200"></i>
+                        <p class="text-sm text-slate-600 leading-relaxed italic">"조용하게 이동하고 싶었는데 딱 배려해주셔서 편안하게 왔습니다. 감사해요!"</p>
+                        <div class="mt-4 flex gap-1">
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                        </div>
+                    </div>
                 </div>
               </div>
             </div>
@@ -226,7 +320,6 @@
     class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
     <div
       class="modal-content glass-panel w-full max-w-lg rounded-[3rem] overflow-hidden pointer-events-auto shadow-2xl flex flex-col max-h-[90vh]">
-      <!-- 모달 헤더 -->
       <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-white/50">
         <div>
           <h2 class="text-xl font-bold text-slate-900 tracking-tight">탑승 상세 요약</h2>
@@ -236,59 +329,32 @@
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
-
-      <!-- 모달 바디 -->
-      <div id="rideHistoryContent" class="flex-1 overflow-y-auto custom-scroll p-8 space-y-10">
-        <!-- JS에서 동적으로 채워짐 -->
+      <div id="rideHistoryContent" class="flex-1 overflow-y-auto custom-scroll p-8 space-y-10 text-slate-800">
+        <!-- JS 동적 내용 -->
       </div>
-
-      <!-- 모달 푸터 -->
       <div class="p-8 bg-slate-50/50 border-t border-slate-100">
         <button onclick="closeRideDetail()"
-          class="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-bold hover:bg-indigo-600 transition-all shadow-xl active:scale-95">상세
-          요약 확인 완료</button>
+          class="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-bold hover:bg-indigo-600 transition-all shadow-xl active:scale-95">확인 완료</button>
       </div>
     </div>
   </div>
 
   <script>
-    // 1. 탑승 기록 데이터 (상세 정보 및 기사님 정보 보강)
     const rideHistory = {
       1: {
-        start: "강남역 2번 출구",
-        dest: "판교역",
-        date: "2024.03.24 (일)",
-        startTime: "18:30",
-        endTime: "18:52",
-        distance: "12.4 km",
-        duration: "22분",
-        partners: ["Felix", "Luna", "Kai"],
-        taxiModel: "그랜저 (모범)",
-        taxiNumber: "서울 34 바 1234",
-        driverName: "김철수 기사님",
-        payment: "신한카드 (4215)",
-        totalCost: "18,000원",
-        cost: "4,500원"
+        start: "강남역 2번 출구", dest: "판교역", date: "2024.03.24 (일)", startTime: "18:30", endTime: "18:52",
+        distance: "12.4 km", duration: "22분", partners: ["Felix", "Luna", "Kai"],
+        taxiModel: "그랜저 (모범)", taxiNumber: "서울 34 바 1234", driverName: "김철수 기사님",
+        payment: "신한카드 (4215)", totalCost: "18,000원", cost: "4,500원"
       },
       2: {
-        start: "합정역 7번 출구",
-        dest: "서울역",
-        date: "2024.03.21 (목)",
-        startTime: "21:15",
-        endTime: "21:30",
-        distance: "7.2 km",
-        duration: "15분",
-        partners: ["Chloe", "James"],
-        taxiModel: "쏘나타 (중형)",
-        taxiNumber: "경기 12 가 5678",
-        driverName: "이영희 기사님",
-        payment: "현대카드 (1004)",
-        totalCost: "9,600원",
-        cost: "3,200원"
+        start: "합정역 7번 출구", dest: "서울역", date: "2024.03.21 (목)", startTime: "21:15", endTime: "21:30",
+        distance: "7.2 km", duration: "15분", partners: ["Chloe", "James"],
+        taxiModel: "쏘나타 (중형)", taxiNumber: "경기 12 가 5678", driverName: "이영희 기사님",
+        payment: "현대카드 (1004)", totalCost: "9,600원", cost: "3,200원"
       }
     };
 
-    // 2. 초기화 로직
     window.onload = function () {
       if (typeof loadNavbar === 'function') {
         loadNavbar('nav-mypage');
@@ -296,138 +362,96 @@
       lucide.createIcons();
     };
 
-    // 3. 팝업 열기 함수
+    // 탭 전환 함수
+    function switchTab(tabName) {
+      const historyTab = document.getElementById('tab-history');
+      const reviewsTab = document.getElementById('tab-reviews');
+      const historyContent = document.getElementById('content-history');
+      const reviewsContent = document.getElementById('content-reviews');
+
+      if (tabName === 'history') {
+        // 탑승 기록 활성화
+        historyTab.classList.add('border-indigo-600', 'text-indigo-600', 'bg-indigo-50/30');
+        historyTab.classList.remove('border-transparent', 'text-slate-400', 'bg-white');
+        
+        reviewsTab.classList.remove('border-indigo-600', 'text-indigo-600', 'bg-indigo-50/30');
+        reviewsTab.classList.add('border-transparent', 'text-slate-400', 'bg-white');
+
+        historyContent.classList.add('active');
+        reviewsContent.classList.remove('active');
+      } else {
+        // 받은 리뷰 활성화
+        reviewsTab.classList.add('border-indigo-600', 'text-indigo-600', 'bg-indigo-50/30');
+        reviewsTab.classList.remove('border-transparent', 'text-slate-400', 'bg-white');
+        
+        historyTab.classList.remove('border-indigo-600', 'text-indigo-600', 'bg-indigo-50/30');
+        historyTab.classList.add('border-transparent', 'text-slate-400', 'bg-white');
+
+        reviewsContent.classList.add('active');
+        historyContent.classList.remove('active');
+      }
+      lucide.createIcons();
+    }
+
     function openRideDetail(id) {
       const data = rideHistory[id];
       if (!data) return;
-
       const contentEl = document.getElementById('rideHistoryContent');
-      const dateEl = document.getElementById('modalDate');
-
-      dateEl.innerText = `${data.date} 탑승 정보`;
+      document.getElementById('modalDate').innerText = `${data.date} 탑승 정보`;
 
       contentEl.innerHTML = `
-          <!-- 상세 경로 시각화 -->
           <div class="route-line space-y-8">
             <div class="flex items-start gap-4">
               <div class="w-4 h-4 rounded-full bg-emerald-500 border-4 border-emerald-100 shrink-0 mt-1 relative z-10"></div>
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">출발 (${data.startTime})</span>
-                <p class="font-bold text-slate-800">${data.start}</p>
-              </div>
+              <div><span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">출발 (${data.startTime})</span><p class="font-bold">${data.start}</p></div>
             </div>
             <div class="flex items-start gap-4">
               <div class="w-4 h-4 rounded-full bg-rose-500 border-4 border-rose-100 shrink-0 mt-1 relative z-10"></div>
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">도착 (${data.endTime})</span>
-                <p class="font-bold text-slate-800">${data.dest}</p>
-              </div>
+              <div><span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">도착 (${data.endTime})</span><p class="font-bold">${data.dest}</p></div>
             </div>
           </div>
-
-          <!-- 운행 및 차량 정보 정보 요약 -->
           <div class="grid grid-cols-2 gap-4">
             <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 col-span-2 space-y-3">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="car" class="w-4 h-4 text-indigo-500"></i>
-                    <span class="text-[10px] text-slate-400 font-bold uppercase">이용 차량 및 기사님 정보</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <p class="text-sm font-bold text-slate-800">${data.taxiModel}</p>
-                    <p class="text-sm font-black text-indigo-600">${data.taxiNumber}</p>
-                </div>
-                <div class="flex justify-between items-center pt-2 border-t border-slate-200/60">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">담당 기사님</span>
-                    <p class="text-sm font-bold text-slate-700">${data.driverName}</p>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-              <div class="flex items-center gap-2 mb-1">
-                <i data-lucide="milestone" class="w-3.5 h-3.5 text-indigo-500"></i>
-                <span class="text-[10px] text-slate-400 font-bold uppercase">총 이동거리</span>
-              </div>
-              <p class="text-base font-black text-slate-800">${data.distance}</p>
-            </div>
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-              <div class="flex items-center gap-2 mb-1">
-                <i data-lucide="timer" class="w-3.5 h-3.5 text-indigo-500"></i>
-                <span class="text-[10px] text-slate-400 font-bold uppercase">소요 시간</span>
-              </div>
-              <p class="text-base font-black text-slate-800">${data.duration}</p>
+                <div class="flex items-center gap-2"><i data-lucide="car" class="w-4 h-4 text-indigo-500"></i><span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">차량 정보</span></div>
+                <div class="flex justify-between items-center"><p class="text-sm font-bold">${data.taxiModel}</p><p class="text-sm font-black text-indigo-600">${data.taxiNumber}</p></div>
             </div>
           </div>
-
-          <!-- 함께 이동한 파트너 (리스트 형식) -->
           <div class="space-y-4">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">함께 이동한 파트너</h4>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">동승 파트너</h4>
             <div class="flex flex-col gap-3">
               ${data.partners.map(p => `
-                <div class="flex items-center justify-between bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
+                <div class="flex items-center justify-between bg-white border border-slate-100 p-4 rounded-2xl">
                   <div class="flex items-center gap-3">
                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p}" class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100">
-                    <div>
-                      <p class="text-sm font-bold text-slate-800">${p}</p>
-                      <span class="text-[10px] font-medium text-emerald-600">37.5°C 신뢰도</span>
-                    </div>
+                    <div><p class="text-sm font-bold text-slate-800">${p}</p><span class="text-[10px] font-bold text-indigo-500">점수 85점</span></div>
                   </div>
-                  <!-- 리뷰 쓰기 버튼으로 교체 -->
-                  <button onclick="location.href='userReview.html'" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold hover:bg-indigo-600 hover:text-white transition-all">
-                    리뷰쓰기
-                  </button>
+                  <button class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold">리뷰쓰기</button>
                 </div>
               `).join('')}
             </div>
           </div>
-
-          <!-- 결제 및 N빵 정보 상세 -->
-          <div class="pt-2 space-y-4">
-            <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
-              <span class="font-medium text-slate-400">총 결제 금액 (전체)</span>
-              <!-- 취소선 제거 -->
-              <span class="font-bold text-slate-800">${data.totalCost}</span>
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="font-medium text-slate-400">결제 수단</span>
-              <span class="font-bold text-slate-800">${data.payment}</span>
-            </div>
-            <div class="flex justify-between items-end">
-              <div class="flex flex-col">
-                <span class="text-[10px] font-bold text-indigo-500 uppercase mb-1">1/${data.partners.length + 1} 정산 완료</span>
-                <span class="font-bold text-slate-900">최종 본인 부담금</span>
-              </div>
+          <div class="pt-2 border-t border-slate-100 flex justify-between items-end">
+              <div><span class="text-[10px] font-bold text-indigo-500 uppercase mb-1 block">정산 금액</span><p class="font-bold">최종 본인 부담금</p></div>
               <span class="text-3xl font-black text-indigo-600 tracking-tight">${data.cost}</span>
-            </div>
           </div>
         `;
-
       document.getElementById('rideHistoryModal').classList.add('active');
       lucide.createIcons();
     }
 
-    // 4. 팝업 닫기 함수
     function closeRideDetail() {
       document.getElementById('rideHistoryModal').classList.remove('active');
     }
 
-    // 프로필 이미지 업로드 로직
     const uploadButton = document.getElementById('uploadButton');
     const imageInput = document.getElementById('imageInput');
     const profilePreview = document.getElementById('profilePreview');
-
-    uploadButton.addEventListener('click', () => {
-      imageInput.click();
-    });
-
+    uploadButton.addEventListener('click', () => imageInput.click());
     imageInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
-
       if (file) {
         const reader = new FileReader();
-
-        reader.onload = (e) => {
-          profilePreview.src = e.target.result;
-        };
-
+        reader.onload = (e) => profilePreview.src = e.target.result;
         reader.readAsDataURL(file);
       }
     });
