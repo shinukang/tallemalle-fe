@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- 외부 네비게이션 스크립트 사용 -->
     <script src="nav.js"></script>
 
     <style>
@@ -38,7 +39,6 @@
         border-radius: 10px;
       }
 
-      /* [수정됨] 네비게이션 활성화 스타일 추가 */
       .nav-item.active {
         color: #4f46e5;
         background-color: #eef2ff;
@@ -56,103 +56,103 @@
         border: 1px solid #f1f5f9;
         border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
       }
+
+      /* 플러스 버튼 메뉴 애니메이션 */
+      #plus-menu {
+        transform: translateY(15px) scale(0.95);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform-origin: bottom left;
+      }
+
+      #plus-menu.active {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .menu-item {
+        transition: all 0.2s;
+      }
+      .menu-item:hover {
+        transform: translateY(-3px);
+      }
+      
+      #plus-btn {
+        transition: transform 0.3s ease;
+      }
     </style>
   </head>
 
   <body class="h-screen flex overflow-hidden p-4 gap-4"> 
+    <!-- 네비게이션 컨테이너 -->
     <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
 
     <main class="flex-1 flex gap-6 overflow-hidden">
-      <div
-        class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden"
-      >
-        <div
-          class="p-6 border-b border-slate-50 flex items-center justify-between bg-white/50"
-        >
+      <!-- 메인 채팅창 영역 -->
+      <div class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden relative">
+        <!-- 채팅 헤더 -->
+        <div class="p-6 border-b border-slate-50 flex items-center justify-between bg-white/50">
           <div class="flex items-center gap-4">
-            <div
-              class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600"
-            >
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
               <i data-lucide="map-pin" class="w-6 h-6"></i>
             </div>
             <div>
               <h2 class="font-bold text-slate-900">강남역 2번 출구 → 판교역</h2>
-              <p class="text-xs text-slate-400">
-                현재 3명 참여 중 · 5분 후 출발
-              </p>
+              <p class="text-xs text-slate-400">현재 3명 참여 중 · 5분 후 출발</p>
             </div>
           </div>
-          <button
-            class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all"
-          >
+          <button class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
             <i data-lucide="log-out" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll">
+        <!-- 메시지 리스트 -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll" id="chat-messages">
           <div class="flex justify-center">
-            <span
-              class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase"
-              >Today</span
-            >
+            <span class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase">Today</span>
           </div>
 
+          <!-- 상대방 메시지 -->
           <div class="flex items-end gap-3">
-            <div
-              class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm"
-            >
-              <img
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden"
-                alt="user"
-              />
+            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
               <span class="text-[10px] text-slate-400 ml-1">에이든</span>
-              <div
-                class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm"
-              >
+              <div class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm">
                 안녕하세요! 지금 2번 출구 앞에 노란색 카카오 택시 옆에 서있어요.
               </div>
             </div>
             <span class="text-[10px] text-slate-300 mb-1">18:21</span>
           </div>
 
+          <!-- 내 메시지 -->
           <div class="flex items-end gap-3 justify-end">
             <span class="text-[10px] text-slate-300 mb-1">18:22</span>
             <div class="flex flex-col gap-1 max-w-[70%] items-end">
-              <div
-                class="chat-bubble-me p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100"
-              >
-                네, 확인했습니다! 저 지금 에스컬레이터 타고 올라가고 있어요.
-                1분만 기다려주세요!
+              <div class="chat-bubble-me p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100">
+                네, 확인했습니다! 저 지금 에스컬레이터 타고 올라가고 있어요. 1분만 기다려주세요!
               </div>
             </div>
           </div>
 
+          <!-- 알림 메시지 -->
           <div class="flex justify-center">
-            <div
-              class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50"
-            >
-              <p class="text-[11px] text-indigo-400 font-medium">
-                ✨ '지수'님이 그룹에 참여했습니다.
-              </p>
+            <div class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50">
+              <p class="text-[11px] text-indigo-400 font-medium">✨ '지수'님이 그룹에 참여했습니다.</p>
             </div>
           </div>
 
+          <!-- 상대방 메시지 2 -->
           <div class="flex items-end gap-3">
-            <div
-              class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm"
-            >
-              <img
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su"
-                alt="user"
-              />
+            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
               <span class="text-[10px] text-slate-400 ml-1">지수</span>
-              <div
-                class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm"
-              >
+              <div class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm">
                 안녕하세요~ 저도 지금 거의 다 왔어요!
               </div>
             </div>
@@ -160,121 +160,100 @@
           </div>
         </div>
 
+        <!-- 플러스 메뉴 팝업 -->
+        <div id="plus-menu" class="absolute bottom-24 left-6 w-72 glass-panel rounded-[2rem] p-5 z-30 grid grid-cols-4 gap-4">
+          <button class="menu-item flex flex-col items-center gap-2 group" title="사진 라이브러리">
+            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
+              <i data-lucide="image" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500">사진</span>
+          </button>
+          <button class="menu-item flex flex-col items-center gap-2 group" title="카메라 촬영">
+            <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm">
+              <i data-lucide="camera" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500">카메라</span>
+          </button>
+          <button class="menu-item flex flex-col items-center gap-2 group" title="현재 위치 공유">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+              <i data-lucide="map-pin" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500">위치</span>
+          </button>
+          <button class="menu-item flex flex-col items-center gap-2 group" title="이모지">
+            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all shadow-sm">
+              <i data-lucide="smile" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500">이모지</span>
+          </button>
+        </div>
+
+        <!-- 하단 메시지 입력창 -->
         <div class="p-6 bg-white border-t border-slate-50">
-          <div
-            class="flex items-center gap-3 bg-slate-50 p-2 rounded-[1.5rem] border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all"
-          >
-            <button
-              class="p-2 text-slate-400 hover:text-indigo-600 transition-all"
-            >
+          <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-[1.5rem] border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all">
+            <button id="plus-btn" class="p-2 text-slate-400 hover:text-indigo-600 transition-all focus:outline-none">
               <i data-lucide="plus-circle" class="w-6 h-6"></i>
             </button>
-            <input
-              type="text"
-              placeholder="메시지를 입력하세요..."
-              class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 py-2"
-            />
-            <button
-              class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-100 hover:scale-105 transition-all active:scale-95"
-            >
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 py-2" />
+            <button class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-100 hover:scale-105 transition-all active:scale-95">
               <i data-lucide="send" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="w-80 flex flex-col gap-6 h-full overflow-hidden">
+      <!-- 우측 사이드바 -->
+      <aside class="w-80 flex flex-col gap-6 h-full overflow-hidden">
+        <!-- 여정 정보 -->
         <div class="glass-panel p-6 rounded-[2.5rem] shrink-0">
           <h3 class="font-bold text-slate-900 mb-4">여정 정보</h3>
           <div class="space-y-4">
             <div class="flex items-start gap-3">
-              <div
-                class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-              ></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">
-                  Start
-                </p>
-                <p class="text-xs font-bold text-slate-700">
-                  강남역 2번 출구 앞
-                </p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Start</p>
+                <p class="text-xs font-bold text-slate-700">강남역 2번 출구 앞</p>
               </div>
             </div>
-            <div
-              class="ml-0.5 border-l-2 border-dashed border-slate-100 h-6"
-            ></div>
+            <div class="ml-0.5 border-l-2 border-dashed border-slate-100 h-6"></div>
             <div class="flex items-start gap-3">
-              <div
-                class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-              ></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shadow-[0_0_8px_rgba(244,63,94,0.5)]"></div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">
-                  Destination
-                </p>
-                <p class="text-xs font-bold text-slate-700">
-                  판교역 지하철 입구
-                </p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Destination</p>
+                <p class="text-xs font-bold text-slate-700">판교역 지하철 입구</p>
               </div>
             </div>
           </div>
-          <div
-            class="mt-6 pt-6 border-t border-slate-50 flex justify-between items-center"
-          >
+          <div class="mt-6 pt-6 border-t border-slate-50 flex justify-between items-center">
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase">
-                Estimated Fare
-              </p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase">Estimated Fare</p>
               <p class="text-sm font-bold text-indigo-600">인당 4,500원</p>
             </div>
             <div class="text-right">
-              <p class="text-[10px] font-bold text-slate-400 uppercase">
-                Status
-              </p>
-              <span
-                class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md"
-                >매칭 완료</span
-              >
+              <p class="text-[10px] font-bold text-slate-400 uppercase">Status</p>
+              <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md">매칭 완료</span>
             </div>
           </div>
         </div>
 
-        <div
-          class="glass-panel p-6 rounded-[2.5rem] flex-1 overflow-y-auto custom-scroll"
-        >
-          <h3 class="font-bold text-slate-900 mb-4">
-            참여 멤버 <span class="text-indigo-600">(3/4)</span>
-          </h3>
+        <!-- 참여 멤버 정보 -->
+        <div class="glass-panel p-6 rounded-[2.5rem] flex-1 overflow-y-auto custom-scroll">
+          <h3 class="font-bold text-slate-900 mb-4">참여 멤버 <span class="text-indigo-600">(3/4)</span></h3>
           <div class="space-y-4">
             <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border-2 border-indigo-600"
-              >
-                <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                  alt="user"
-                />
+              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border-2 border-indigo-600">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="user" />
               </div>
               <div>
-                <p
-                  class="text-sm font-bold text-slate-900 flex items-center gap-1"
-                >
-                  판교동승왕
-                  <span
-                    class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md"
-                    >나</span
-                  >
+                <p class="text-sm font-bold text-slate-900 flex items-center gap-1">
+                  판교동승왕 <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">나</span>
                 </p>
                 <p class="text-xs text-slate-400">매너온도 42.5°C</p>
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm"
-              >
-                <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden"
-                  alt="user"
-                />
+              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">에이든</p>
@@ -282,13 +261,8 @@
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm"
-              >
-                <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su"
-                  alt="user"
-                />
+              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">지수</p>
@@ -297,14 +271,34 @@
             </div>
           </div>
         </div>
-      </div>
+      </aside>
     </main>
 
     <script>
-      // [수정됨] 네비게이션 로드 및 활성화 (채팅 페이지이므로 nav-chat 활성화)
-      loadNavbar('nav-chat');
-      
+      // [중요] 외부 nav.js를 사용하여 사이드바 로드 및 활성화
+      if (typeof loadNavbar === 'function') {
+        loadNavbar('nav-chat');
+      }
       lucide.createIcons();
+
+      // 플러스 메뉴 제어 로직
+      const plusBtn = document.getElementById('plus-btn');
+      const plusMenu = document.getElementById('plus-menu');
+
+      plusBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isActive = plusMenu.classList.toggle('active');
+        plusBtn.style.transform = isActive ? 'rotate(45deg)' : 'rotate(0deg)';
+        plusBtn.classList.toggle('text-indigo-600', isActive);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
+          plusMenu.classList.remove('active');
+          plusBtn.style.transform = 'rotate(0deg)';
+          plusBtn.classList.remove('text-indigo-600');
+        }
+      });
     </script>
   </body>
 </html>
