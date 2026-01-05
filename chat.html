@@ -16,6 +16,8 @@
       :root {
         --tm-primary: #4f46e5;
         --tm-dark: #1e1b4b;
+        --tm-secondary: #eef2ff;
+        --tm-danger: #f43f5e;
       }
 
       body {
@@ -72,15 +74,83 @@
         pointer-events: auto;
       }
 
-      .menu-item {
-        transition: all 0.2s;
+      /* --- 프로필 팝업 모달 스타일 --- */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        padding: 1rem;
       }
-      .menu-item:hover {
-        transform: translateY(-3px);
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-content {
+        background: white;
+        width: 100%;
+        max-width: 580px;
+        max-height: 85vh;
+        border-radius: 2.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: scale(0.95) translateY(20px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1) translateY(0);
+      }
+
+      .manner-score-bar {
+        height: 10px;
+        border-radius: 99px;
+        background: #e2e8f0;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .manner-score-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #4f46e5, #ef4444);
+        transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border-radius: 99px;
+      }
+
+      .btn-blocked {
+        background-color: var(--tm-danger) !important;
+        color: white !important;
+        border-color: var(--tm-danger) !important;
+      }
+
+      .profile-trigger {
+        cursor: pointer;
+        transition: transform 0.2s;
       }
       
-      #plus-btn {
-        transition: transform 0.3s ease;
+      .profile-trigger:hover {
+        transform: scale(1.05);
+      }
+
+      .stat-badge {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+      }
+      
+      .review-item.hidden {
+        display: none;
       }
     </style>
   </head>
@@ -114,9 +184,9 @@
             <span class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase">Today</span>
           </div>
 
-          <!-- 상대방 메시지 -->
+          <!-- 상대방 메시지 (Aiden) - 트리거 적용 -->
           <div class="flex items-end gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm">
+            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger" onclick="handleProfileClick('Aiden')">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
@@ -138,16 +208,16 @@
             </div>
           </div>
 
-          <!-- 알림 메시지 -->
+          <!-- 참여 알림 -->
           <div class="flex justify-center">
             <div class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50">
               <p class="text-[11px] text-indigo-400 font-medium">✨ '지수'님이 그룹에 참여했습니다.</p>
             </div>
           </div>
 
-          <!-- 상대방 메시지 2 -->
+          <!-- 상대방 메시지 2 (Ji-su) - 트리거 적용 -->
           <div class="flex items-end gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm">
+            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger" onclick="handleProfileClick('Ji-su')">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
@@ -195,7 +265,7 @@
               <i data-lucide="plus-circle" class="w-6 h-6"></i>
             </button>
             <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 py-2" />
-            <button class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-100 hover:scale-105 transition-all active:scale-95">
+            <button class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md">
               <i data-lucide="send" class="w-4 h-4"></i>
             </button>
           </div>
@@ -206,7 +276,7 @@
       <aside class="w-80 flex flex-col gap-6 h-full overflow-hidden">
         <!-- 여정 정보 -->
         <div class="glass-panel p-6 rounded-[2.5rem] shrink-0">
-          <h3 class="font-bold text-slate-900 mb-4">여정 정보</h3>
+          <h3 class="font-bold text-slate-900 mb-4 text-sm">여정 정보</h3>
           <div class="space-y-4">
             <div class="flex items-start gap-3">
               <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
@@ -224,21 +294,11 @@
               </div>
             </div>
           </div>
-          <div class="mt-6 pt-6 border-t border-slate-50 flex justify-between items-center">
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase">Estimated Fare</p>
-              <p class="text-sm font-bold text-indigo-600">인당 4,500원</p>
-            </div>
-            <div class="text-right">
-              <p class="text-[10px] font-bold text-slate-400 uppercase">Status</p>
-              <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md">매칭 완료</span>
-            </div>
-          </div>
         </div>
 
-        <!-- 참여 멤버 정보 -->
+        <!-- 참여 멤버 정보 - 트리거 적용 -->
         <div class="glass-panel p-6 rounded-[2.5rem] flex-1 overflow-y-auto custom-scroll">
-          <h3 class="font-bold text-slate-900 mb-4">참여 멤버 <span class="text-indigo-600">(3/4)</span></h3>
+          <h3 class="font-bold text-slate-900 mb-4 text-sm">참여 멤버 <span class="text-indigo-600">(3/4)</span></h3>
           <div class="space-y-4">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border-2 border-indigo-600">
@@ -248,25 +308,25 @@
                 <p class="text-sm font-bold text-slate-900 flex items-center gap-1">
                   판교동승왕 <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">나</span>
                 </p>
-                <p class="text-xs text-slate-400">매너온도 42.5°C</p>
+                <p class="text-xs text-slate-400">매너점수 42점</p>
               </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 profile-trigger" onclick="handleProfileClick('Aiden')">
               <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">에이든</p>
-                <p class="text-xs text-slate-400">매너온도 38.2°C</p>
+                <p class="text-xs text-indigo-500 font-medium italic">프로필 보기</p>
               </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 profile-trigger" onclick="handleProfileClick('Ji-su')">
               <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">지수</p>
-                <p class="text-xs text-slate-400">매너온도 36.5°C</p>
+                <p class="text-xs text-indigo-500 font-medium italic">프로필 보기</p>
               </div>
             </div>
           </div>
@@ -274,17 +334,88 @@
       </aside>
     </main>
 
+    <!-- [통합됨] 프로필 팝업 모달 본체 (숨김 상태) -->
+    <div id="profile-modal" class="modal-overlay" onclick="closeProfile()">
+      <div class="modal-content flex flex-col" onclick="event.stopPropagation()">
+        <!-- 모달 헤더 -->
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+          <h3 class="font-bold text-slate-900">프로필 정보</h3>
+          <div class="flex items-center gap-2">
+            <button id="modal-block-btn" class="p-2.5 bg-slate-50 border border-slate-100 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+              <i data-lucide="ban" class="w-5 h-5"></i>
+            </button>
+            <button onclick="closeProfile()" class="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 모달 본문 -->
+        <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8" id="modal-body">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-24 h-24 rounded-[2.2rem] bg-indigo-50 border-4 border-white shadow-xl overflow-hidden mb-5">
+              <img id="modal-profile-img" src="" alt="profile" class="w-full h-full object-cover" />
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center justify-center gap-2">
+                <h2 id="modal-profile-name" class="text-2xl font-black text-slate-900 tracking-tight">사용자</h2>
+                <span id="modal-profile-lv" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-lg font-bold">LV. 1</span>
+              </div>
+              <p id="modal-profile-meta" class="text-xs text-slate-400 font-medium">가입 정보 로딩 중...</p>
+            </div>
+            <div id="modal-profile-bio" class="mt-6 w-full max-w-xs p-4 bg-slate-50/80 rounded-2xl text-xs text-slate-600 leading-relaxed font-medium">소개글</div>
+          </div>
+
+          <!-- 점수바 -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-end px-1">
+              <div class="flex items-center gap-1">
+                <span id="modal-score-text" class="text-3xl font-black text-indigo-600 italic">0</span><span class="text-sm font-bold text-slate-300">점</span>
+              </div>
+              <span id="modal-score-rank" class="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">상위 0%</span>
+            </div>
+            <div class="manner-score-bar"><div id="modal-score-fill" class="manner-score-fill"></div></div>
+          </div>
+
+          <!-- 특징 통계 -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i>주요 특징</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="stat-badge p-3 rounded-2xl flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-600">⏰ 시간 약속</span>
+                <span id="modal-stat-time" class="text-xs font-black text-indigo-600">0회</span>
+              </div>
+              <div class="stat-badge p-3 rounded-2xl flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-600">🤫 정숙한 이동</span>
+                <span id="modal-stat-silent" class="text-xs font-black text-indigo-600">0회</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 후기 리스트 -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4 text-indigo-600"></i>동승자 후기</h4>
+              <button id="modal-view-all-reviews" class="text-[10px] font-bold text-indigo-600 underline cursor-pointer hidden">전체보기</button>
+            </div>
+            <div class="space-y-3" id="modal-review-list"></div>
+          </div>
+        </div>
+
+        <div class="p-6 bg-white border-t border-slate-50">
+          <button onclick="closeProfile()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all">확인</button>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // [중요] 외부 nav.js를 사용하여 사이드바 로드 및 활성화
-      if (typeof loadNavbar === 'function') {
-        loadNavbar('nav-chat');
-      }
+      // 네비게이션 및 아이콘 초기화
+      if (typeof loadNavbar === 'function') loadNavbar('nav-chat');
       lucide.createIcons();
 
-      // 플러스 메뉴 제어 로직
+      // 플러스 메뉴 로직
       const plusBtn = document.getElementById('plus-btn');
       const plusMenu = document.getElementById('plus-menu');
-
       plusBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const isActive = plusMenu.classList.toggle('active');
@@ -298,6 +429,108 @@
           plusBtn.style.transform = 'rotate(0deg)';
           plusBtn.classList.remove('text-indigo-600');
         }
+      });
+
+      // --- 프로필 팝업 데이터 및 로직 통합 ---
+      const modal = document.getElementById('profile-modal');
+      const scoreFill = document.getElementById('modal-score-fill');
+      const reviewContainer = document.getElementById('modal-review-list');
+      const viewAllBtn = document.getElementById('modal-view-all-reviews');
+      let reviewsExpanded = false;
+
+      // 유저 데이터 (클릭 시 동적 반영용)
+      const usersData = {
+        'Ji-su': {
+          name: '지수', lv: 'LV. 8', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su',
+          meta: '가입 124일째 · 동승 48회', bio: '"주로 평일 아침 출근 시간에 판교역 근처에서 활동해요! 😊"',
+          score: 88, rank: '상위 5%', stats: { time: 24, silent: 18 },
+          reviews: [
+            { author: '에이든', date: '3일 전', content: '정말 친절하시고 시간도 딱 맞춰서 와주셨어요!' },
+            { author: '판교동승왕', date: '1주일 전', content: '매너가 정말 좋으세요. 정산도 바로 해주셨습니다.' },
+            { author: '사라', date: '2주일 전', content: '조용히 가고 싶었는데 배려해주셔서 너무 감사했어요.' },
+            { author: '민수', date: '한달 전', content: '차량 내부도 쾌적하고 매너가 훌륭하십니다.' }
+          ]
+        },
+        'Aiden': {
+          name: '에이든', lv: 'LV. 5', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden',
+          meta: '가입 42일째 · 동승 12회', bio: '"매너 있는 동승을 추구합니다. 조용히 가는 걸 선호해요!"',
+          score: 72, rank: '상위 15%', stats: { time: 8, silent: 10 },
+          reviews: [
+            { author: '지수', date: '1일 전', content: '대화가 정말 즐거웠습니다! 좋은 분이에요.' },
+            { author: '철수', date: '5일 전', content: '매너가 좋으신 승객분입니다.' }
+          ]
+        }
+      };
+
+      /** 팝업 트리거 */
+      function handleProfileClick(userId) {
+        const data = usersData[userId];
+        if (!data) return;
+
+        // 모달 데이터 채우기
+        document.getElementById('modal-profile-img').src = data.img;
+        document.getElementById('modal-profile-name').innerText = data.name;
+        document.getElementById('modal-profile-lv').innerText = data.lv;
+        document.getElementById('modal-profile-meta').innerText = data.meta;
+        document.getElementById('modal-profile-bio').innerText = data.bio;
+        document.getElementById('modal-score-text').innerText = data.score;
+        document.getElementById('modal-score-rank').innerText = data.rank;
+        document.getElementById('modal-stat-time').innerText = `${data.stats.time}회`;
+        document.getElementById('modal-stat-silent').innerText = `${data.stats.silent}회`;
+
+        // 후기 렌더링 (최대 3개 로직)
+        renderReviews(data.reviews);
+
+        // 모달 표시 및 애니메이션
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => { scoreFill.style.width = `${data.score}%`; }, 400);
+      }
+
+      function renderReviews(reviews) {
+        reviewContainer.innerHTML = '';
+        reviewsExpanded = false;
+        viewAllBtn.innerText = '전체보기';
+        viewAllBtn.classList.toggle('hidden', reviews.length <= 3);
+
+        reviews.forEach((r, i) => {
+          const div = document.createElement('div');
+          div.className = `review-item p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 ${i >= 3 ? 'hidden' : ''}`;
+          div.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-700">${r.author}</span>
+              <span class="text-[9px] text-slate-300">${r.date}</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">${r.content}</p>
+          `;
+          reviewContainer.appendChild(div);
+        });
+      }
+
+      // 후기 전체보기 토글
+      viewAllBtn.addEventListener('click', () => {
+        const items = reviewContainer.querySelectorAll('.review-item');
+        reviewsExpanded = !reviewsExpanded;
+        items.forEach((item, i) => { if (i >= 3) item.classList.toggle('hidden', !reviewsExpanded); });
+        viewAllBtn.innerText = reviewsExpanded ? '접기' : '전체보기';
+      });
+
+      function closeProfile() {
+        scoreFill.style.width = '0%';
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      // 차단 버튼 토글
+      const modalBlockBtn = document.getElementById('modal-block-btn');
+      let isBlocked = false;
+      modalBlockBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isBlocked = !isBlocked;
+        modalBlockBtn.classList.toggle('btn-blocked', isBlocked);
+        const icon = modalBlockBtn.querySelector('i');
+        icon.setAttribute('data-lucide', isBlocked ? 'user-check' : 'ban');
+        lucide.createIcons();
       });
     </script>
   </body>
