@@ -1,184 +1,597 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>탈래말래 - 회원 정보 수정</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- 외부 파일인 nav.js 로드 가정 -->
     <script src="nav.js"></script>
 
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
 
-        body {
-            font-family: "Pretendard", sans-serif;
-            background-color: #f8fafc;
-        }
+      :root {
+        --tm-primary: #4f46e5;
+        --tm-error: #ef4444;
+      }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
-        }
+      body {
+        font-family: "Pretendard", sans-serif;
+        background-color: #f8fafc;
+      }
 
-        .custom-scroll::-webkit-scrollbar {
-            width: 5px;
-        }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
+      }
 
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
+      .custom-scroll::-webkit-scrollbar {
+        width: 5px;
+      }
 
-        .input-focus {
-            transition: all 0.2s ease;
-        }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+      }
 
-        .input-focus:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-            outline: none;
-        }
+      .input-focus {
+        transition: all 0.2s ease;
+      }
 
-        .tag-checkbox:checked + label {
-            background-color: #eef2ff;
-            border-color: #4f46e5;
-            color: #4f46e5;
+      .input-focus:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        outline: none;
+      }
+
+      /* 읽기 전용 필드 스타일 */
+      .input-readonly {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+        border-color: #e2e8f0;
+      }
+
+      .tag-checkbox:checked + label {
+        background-color: #eef2ff;
+        border-color: #4f46e5;
+        color: #4f46e5;
+      }
+
+      /* --- 모달 스타일 공통 --- */
+      .modal-overlay {
+        background-color: rgba(30, 27, 75, 0.6);
+        backdrop-filter: blur(4px);
+      }
+      .modal-content {
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
         }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
     </style>
-</head>
+  </head>
 
-<body class="overflow-hidden">
+  <body class="overflow-hidden">
     <div class="flex h-screen p-4 gap-4">
-        
-        <!-- 내비게이션 바 컨테이너 (기존 nav.js 활용) -->
-        <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
+      <div
+        id="navbar-container"
+        class="w-20 h-full shrink-0 rounded-[2.5rem]"
+      ></div>
 
-        <!-- 메인 수정 영역 -->
-        <div class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
-            <!-- 헤더 -->
-            <div class="p-8 border-b border-slate-100 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <button onclick="history.back()" class="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400">
-                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
-                    </button>
-                    <div>
-                        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">회원 정보 수정</h1>
-                        <p class="text-sm text-slate-400 font-medium mt-1">프로필 정보를 변경하고 저장하세요.</p>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="history.back()" class="px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">취소</button>
-                    <button class="px-8 py-2.5 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
-                        변경사항 저장
-                    </button>
-                </div>
+      <div
+        class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col relative"
+      >
+        <div
+          class="p-8 border-b border-slate-100 flex justify-between items-center"
+        >
+          <div class="flex items-center gap-4">
+            <button
+              onclick="history.back()"
+              class="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400"
+            >
+              <i data-lucide="arrow-left" class="w-6 h-6"></i>
+            </button>
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                회원 정보 수정
+              </h1>
+              <p class="text-sm text-slate-400 font-medium mt-1">
+                프로필 정보를 변경하고 저장하세요.
+              </p>
             </div>
-
-            <div class="flex-1 overflow-y-auto custom-scroll p-8">
-                <div class="max-w-2xl mx-auto space-y-10">
-                    
-                    <!-- 섹션 1: 프로필 이미지 수정 -->
-                    <div class="flex flex-col items-center">
-                        <div class="relative group cursor-pointer">
-                            <div class="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl bg-slate-100 transition-transform group-hover:scale-[1.02]">
-                                <img id="profile-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile" class="w-full h-full object-cover" />
-                            </div>
-                            <label for="avatar-upload" class="absolute -bottom-2 -right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl border-4 border-white cursor-pointer hover:bg-indigo-700 transition-all">
-                                <i data-lucide="camera" class="w-5 h-5"></i>
-                                <input type="file" id="avatar-upload" class="hidden" accept="image/*">
-                            </label>
-                        </div>
-                        <p class="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">클릭하여 사진 변경</p>
-                    </div>
-
-                    <!-- 섹션 2: 기본 정보 -->
-                    <div class="space-y-6">
-                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-indigo-600 rounded-full"></span>
-                            기본 정보
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">닉네임</label>
-                                <input type="text" value="판교동승왕님" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus" placeholder="닉네임을 입력하세요">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">이메일 주소</label>
-                                <input type="email" value="pangyo_king@gmail.com" class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-400 cursor-not-allowed" readonly>
-                                <p class="mt-2 text-[10px] text-slate-400 ml-1">이메일은 변경할 수 없습니다. 고객센터에 문의해주세요.</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">한 줄 소개</label>
-                                <textarea class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus h-24 resize-none" placeholder="자신을 짧게 소개해 주세요.">매일 판교로 출근하는 직장인입니다! 조용히 가는 걸 선호해요.</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 섹션 3: 동승 스타일 (태그 선택) -->
-                    <div class="space-y-6">
-                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-                            동승 스타일 선택
-                        </h3>
-                        <div class="flex flex-wrap gap-3">
-                            <div>
-                                <input type="checkbox" id="style-1" class="hidden tag-checkbox" checked>
-                                <label for="style-1" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🤫 조용한 이동 선호</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="style-2" class="hidden tag-checkbox">
-                                <label for="style-2" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🎵 음악 감상</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="style-3" class="hidden tag-checkbox" checked>
-                                <label for="style-3" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">☕ 커피 취식 가능</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="style-4" class="hidden tag-checkbox">
-                                <label for="style-4" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">💬 대화 선호</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="style-5" class="hidden tag-checkbox" checked>
-                                <label for="style-5" class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block">🚭 금연 필수</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 계정 관리 하단 버튼 -->
-                    <div class="pt-10 border-t border-slate-100 flex justify-between items-center">
-                        <button class="text-xs font-bold text-rose-500 hover:underline">회원 탈퇴</button>
-                        <button class="text-xs font-bold text-slate-400 hover:text-slate-600">비밀번호 변경</button>
-                    </div>
-
-                </div>
-            </div>
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="history.back()"
+              class="px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all"
+            >
+              취소
+            </button>
+            <button
+              onclick="handleSave()"
+              class="px-8 py-2.5 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+            >
+              변경사항 저장
+            </button>
+          </div>
         </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-8">
+          <div class="max-w-2xl mx-auto space-y-10">
+            <div class="flex flex-col items-center">
+              <div class="relative group cursor-pointer">
+                <div
+                  class="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl bg-slate-100 transition-transform group-hover:scale-[1.02]"
+                >
+                  <img
+                    id="profile-preview"
+                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                    alt="profile"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <label
+                  for="avatar-upload"
+                  class="absolute -bottom-2 -right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl border-4 border-white cursor-pointer hover:bg-indigo-700 transition-all"
+                >
+                  <i data-lucide="camera" class="w-5 h-5"></i>
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    class="hidden"
+                    accept="image/*"
+                  />
+                </label>
+              </div>
+              <p
+                class="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider"
+              >
+                클릭하여 사진 변경
+              </p>
+            </div>
+
+            <div class="space-y-6">
+              <h3
+                class="text-lg font-bold text-slate-900 flex items-center gap-2"
+              >
+                <span class="w-1.5 h-6 bg-indigo-600 rounded-full"></span>
+                기본 정보
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-1 md:col-span-2">
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >닉네임 <span class="text-indigo-600">*</span></label
+                  >
+                  <input
+                    type="text"
+                    value="판교동승왕"
+                    class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus"
+                    placeholder="닉네임을 입력하세요"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >이름</label
+                  >
+                  <input
+                    type="text"
+                    value="홍길동"
+                    class="w-full px-5 py-4 input-readonly rounded-[1.25rem] text-sm font-semibold"
+                    readonly
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >생년월일</label
+                  >
+                  <input
+                    type="text"
+                    value="950101"
+                    class="w-full px-5 py-4 input-readonly rounded-[1.25rem] text-sm font-semibold"
+                    readonly
+                  />
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >휴대폰 번호 <span class="text-indigo-600">*</span></label
+                  >
+                  <div class="flex gap-2">
+                    <input
+                      type="tel"
+                      id="phone"
+                      value="010-1234-5678"
+                      maxlength="13"
+                      oninput="handlePhoneChange(this)"
+                      class="flex-1 px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus transition-all"
+                    />
+                    <button
+                      type="button"
+                      id="btn-request-auth"
+                      onclick="requestAuth()"
+                      disabled
+                      class="px-5 bg-slate-200 text-slate-400 text-xs font-bold rounded-[1.25rem] transition-colors whitespace-nowrap min-w-[100px]"
+                    >
+                      인증번호 전송
+                    </button>
+                  </div>
+                  <p
+                    class="text-[10px] text-rose-500 ml-1 mt-1 hidden"
+                    id="phone-msg"
+                  >
+                    번호가 변경되었습니다. 인증을 진행해주세요.
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >이메일 주소</label
+                  >
+                  <input
+                    type="email"
+                    value="pangyo_king@gmail.com"
+                    class="w-full px-5 py-4 input-readonly rounded-[1.25rem] text-sm font-semibold"
+                    readonly
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >성별</label
+                  >
+                  <input
+                    type="text"
+                    value="남성"
+                    class="w-full px-5 py-4 input-readonly rounded-[1.25rem] text-sm font-semibold"
+                    readonly
+                  />
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                  <label
+                    class="block text-xs font-bold text-slate-400 mb-2 ml-1"
+                    >한 줄 소개</label
+                  >
+                  <textarea
+                    class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 input-focus h-24 resize-none"
+                    placeholder="자신을 짧게 소개해 주세요."
+                  >
+매일 판교로 출근하는 직장인입니다! 조용히 가는 걸 선호해요.</textarea
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <h3
+                class="text-lg font-bold text-slate-900 flex items-center gap-2"
+              >
+                <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                동승 스타일 선택
+              </h3>
+              <div class="flex flex-wrap gap-3">
+                <div>
+                  <input
+                    type="checkbox"
+                    id="style-1"
+                    class="hidden tag-checkbox"
+                    checked
+                  />
+                  <label
+                    for="style-1"
+                    class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block"
+                    >🤫 조용한 이동 선호</label
+                  >
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="style-2"
+                    class="hidden tag-checkbox"
+                  />
+                  <label
+                    for="style-2"
+                    class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block"
+                    >🎵 음악 감상</label
+                  >
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="style-3"
+                    class="hidden tag-checkbox"
+                    checked
+                  />
+                  <label
+                    for="style-3"
+                    class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block"
+                    >☕ 커피 취식 가능</label
+                  >
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="style-4"
+                    class="hidden tag-checkbox"
+                  />
+                  <label
+                    for="style-4"
+                    class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block"
+                    >💬 대화 선호</label
+                  >
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="style-5"
+                    class="hidden tag-checkbox"
+                    checked
+                  />
+                  <label
+                    for="style-5"
+                    class="px-5 py-3 border border-slate-100 bg-white rounded-2xl text-xs font-bold text-slate-500 cursor-pointer hover:border-indigo-200 transition-all block"
+                    >🚭 금연 필수</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="h-10"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="auth-modal-overlay"
+      class="modal-overlay fixed inset-0 hidden flex items-center justify-center p-4 z-50"
+    >
+      <div
+        class="modal-content bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden"
+      >
+        <div class="p-6 text-center">
+          <div
+            class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i data-lucide="send" class="w-6 h-6 text-indigo-600"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">인증번호 발송 완료</h3>
+          <p class="text-sm text-slate-500 mt-1">
+            입력하신 번호로 인증번호가 전송되었습니다.
+          </p>
+
+          <div class="mt-6 mb-2 relative">
+            <input
+              type="text"
+              id="auth-code-input"
+              placeholder="인증번호 4자리 (예: 1234)"
+              maxlength="4"
+              class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent tracking-widest"
+            />
+          </div>
+
+          <div class="text-sm font-bold text-rose-500 mb-6" id="timer-display">
+            03:00
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              onclick="closeAuthModal()"
+              class="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-500 font-bold hover:bg-slate-50 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onclick="confirmAuthCode()"
+              class="flex-1 py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
+            >
+              인증하기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="custom-alert-overlay"
+      class="modal-overlay fixed inset-0 hidden flex items-center justify-center p-4 z-[60]"
+    >
+      <div
+        class="modal-content bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden p-6 text-center"
+      >
+        <div
+          class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <i data-lucide="info" class="w-6 h-6 text-indigo-600"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">알림</h3>
+        <p
+          id="custom-alert-msg"
+          class="text-sm text-slate-500 mb-6 leading-relaxed"
+        ></p>
+        <button
+          onclick="closeCustomAlert()"
+          class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 active:scale-95"
+        >
+          확인
+        </button>
+      </div>
     </div>
 
     <script>
-        // 기존 nav.js 로직 호출
-        if (typeof loadNavbar === 'function') {
-            loadNavbar('nav-mypage');
+      // 네비게이션
+      if (typeof loadNavbar === "function") loadNavbar("nav-mypage");
+      lucide.createIcons();
+
+      // 전역 변수
+      const originalPhone = "010-1234-5678"; // 초기 전화번호
+      let isPhoneVerified = true; // 초기엔 인증된 상태
+      let timerInterval;
+      let alertCallback = null; // 커스텀 알림 콜백 함수 저장용
+
+      // --- [NEW] 커스텀 알림 함수 ---
+      function showCustomAlert(msg, callback) {
+        document.getElementById("custom-alert-msg").innerText = msg;
+        document
+          .getElementById("custom-alert-overlay")
+          .classList.remove("hidden");
+        alertCallback = callback; // 확인 버튼 클릭 후 실행할 함수 저장
+      }
+
+      function closeCustomAlert() {
+        document.getElementById("custom-alert-overlay").classList.add("hidden");
+        if (alertCallback) {
+          alertCallback(); // 콜백 함수가 있으면 실행
+          alertCallback = null;
         }
+      }
+      // ---------------------------
 
-        lucide.createIcons();
-
-        // 이미지 미리보기 기능
-        document.getElementById('avatar-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('profile-preview').src = event.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
+      // 이미지 미리보기
+      document
+        .getElementById("avatar-upload")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              document.getElementById("profile-preview").src =
+                event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
         });
+
+      // 전화번호 입력 감지 및 자동 하이픈
+      function handlePhoneChange(target) {
+        // 자동 하이픈
+        target.value = target.value
+          .replace(/[^0-9]/g, "")
+          .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/g, "$1-$2-$3")
+          .replace(/(\-{1,2})$/g, "");
+
+        const btn = document.getElementById("btn-request-auth");
+        const msg = document.getElementById("phone-msg");
+
+        // 번호가 변경되었는지 확인
+        if (target.value !== originalPhone) {
+          isPhoneVerified = false;
+          btn.disabled = false;
+          btn.classList.remove("bg-slate-200", "text-slate-400");
+          btn.classList.add("bg-slate-800", "text-white", "hover:bg-slate-700");
+          msg.classList.remove("hidden");
+        } else {
+          isPhoneVerified = true;
+          btn.disabled = true;
+          btn.innerText = "인증번호 전송";
+          btn.classList.add("bg-slate-200", "text-slate-400");
+          btn.classList.remove(
+            "bg-slate-800",
+            "text-white",
+            "bg-emerald-500",
+            "hover:bg-slate-700"
+          );
+          msg.classList.add("hidden");
+        }
+      }
+
+      // 인증번호 요청 (모달 열기)
+      function requestAuth() {
+        const phone = document.getElementById("phone").value;
+        if (phone.length < 12) {
+          showCustomAlert("휴대폰 번호를 정확히 입력해주세요.");
+          return;
+        }
+        document
+          .getElementById("auth-modal-overlay")
+          .classList.remove("hidden");
+        startTimer(180);
+      }
+
+      // 타이머 로직
+      function startTimer(duration) {
+        let timer = duration,
+          minutes,
+          seconds;
+        const display = document.getElementById("timer-display");
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(function () {
+          minutes = parseInt(timer / 60, 10);
+          seconds = parseInt(timer % 60, 10);
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+          display.textContent = minutes + ":" + seconds;
+
+          if (--timer < 0) {
+            clearInterval(timerInterval);
+            showCustomAlert("시간이 초과되었습니다.");
+            closeAuthModal();
+          }
+        }, 1000);
+      }
+
+      function closeAuthModal() {
+        document.getElementById("auth-modal-overlay").classList.add("hidden");
+        document.getElementById("auth-code-input").value = "";
+        clearInterval(timerInterval);
+      }
+
+      // 인증 확인
+      function confirmAuthCode() {
+        const code = document.getElementById("auth-code-input").value;
+        if (code === "1234") {
+          isPhoneVerified = true;
+
+          // 모달 닫기 및 UI 업데이트
+          closeAuthModal();
+          const btn = document.getElementById("btn-request-auth");
+          const msg = document.getElementById("phone-msg");
+          btn.innerText = "인증 완료";
+          btn.classList.remove(
+            "bg-slate-800",
+            "text-white",
+            "hover:bg-slate-700"
+          );
+          btn.classList.add("bg-emerald-500", "text-white");
+          btn.disabled = true;
+          msg.classList.add("hidden");
+
+          showCustomAlert("인증되었습니다.");
+        } else {
+          showCustomAlert("인증번호가 일치하지 않습니다. (테스트 번호: 1234)");
+        }
+      }
+
+      // 저장 버튼 핸들러
+      function handleSave() {
+        if (!isPhoneVerified) {
+          showCustomAlert("휴대폰 번호가 변경되었습니다. 인증을 완료해주세요.");
+          return;
+        }
+        // 저장 완료 후 페이지 이동 (콜백 함수 사용)
+        showCustomAlert("회원 정보가 성공적으로 수정되었습니다!", function () {
+          location.href = "mypage.html";
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

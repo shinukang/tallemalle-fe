@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- 외부 네비게이션 스크립트 사용 -->
     <script src="nav.js"></script>
 
     <style>
@@ -16,7 +15,6 @@
       :root {
         --tm-primary: #4f46e5;
         --tm-dark: #1e1b4b;
-        --tm-secondary: #eef2ff;
         --tm-danger: #f43f5e;
       }
 
@@ -74,7 +72,7 @@
         pointer-events: auto;
       }
 
-      /* --- 프로필 팝업 모달 스타일 --- */
+      /* --- 공통 모달 스타일 --- */
       .modal-overlay {
         position: fixed;
         inset: 0;
@@ -113,6 +111,7 @@
         transform: scale(1) translateY(0);
       }
 
+      /* 프로필용 스타일 */
       .manner-score-bar {
         height: 10px;
         border-radius: 99px;
@@ -139,7 +138,7 @@
         cursor: pointer;
         transition: transform 0.2s;
       }
-      
+
       .profile-trigger:hover {
         transform: scale(1.05);
       }
@@ -148,81 +147,115 @@
         background: #f8fafc;
         border: 1px solid #f1f5f9;
       }
-      
+
       .review-item.hidden {
         display: none;
       }
     </style>
   </head>
 
-  <body class="h-screen flex overflow-hidden p-4 gap-4"> 
-    <!-- 네비게이션 컨테이너 -->
-    <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
+  <body class="h-screen flex overflow-hidden p-4 gap-4">
+    <div
+      id="navbar-container"
+      class="w-20 h-full shrink-0 rounded-[2.5rem]"
+    ></div>
 
     <main class="flex-1 flex gap-6 overflow-hidden">
-      <!-- 메인 채팅창 영역 -->
-      <div class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden relative">
-        <!-- 채팅 헤더 -->
-        <div class="p-6 border-b border-slate-50 flex items-center justify-between bg-white/50">
+      <div
+        class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden relative"
+      >
+        <div
+          class="p-6 border-b border-slate-50 flex items-center justify-between bg-white/50"
+        >
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+            <div
+              class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600"
+            >
               <i data-lucide="map-pin" class="w-6 h-6"></i>
             </div>
             <div>
               <h2 class="font-bold text-slate-900">강남역 2번 출구 → 판교역</h2>
-              <p class="text-xs text-slate-400">현재 3명 참여 중 · 5분 후 출발</p>
+              <p class="text-xs text-slate-400">
+                현재 3명 참여 중 · 5분 후 출발
+              </p>
             </div>
           </div>
-          <button class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
+          <button
+            class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all"
+          >
             <i data-lucide="log-out" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <!-- 메시지 리스트 -->
-        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll" id="chat-messages">
+        <div
+          class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll"
+          id="chat-messages"
+        >
           <div class="flex justify-center">
-            <span class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase">Today</span>
+            <span
+              class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase"
+              >Today</span
+            >
           </div>
 
-          <!-- 상대방 메시지 (Aiden) - 트리거 적용 -->
           <div class="flex items-end gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger" onclick="handleProfileClick('Aiden')">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
+            <div
+              class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger"
+              onclick="handleProfileClick('Aiden')"
+            >
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden"
+                alt="user"
+              />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
               <span class="text-[10px] text-slate-400 ml-1">에이든</span>
-              <div class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm">
+              <div
+                class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm"
+              >
                 안녕하세요! 지금 2번 출구 앞에 노란색 카카오 택시 옆에 서있어요.
               </div>
             </div>
             <span class="text-[10px] text-slate-300 mb-1">18:21</span>
           </div>
 
-          <!-- 내 메시지 -->
           <div class="flex items-end gap-3 justify-end">
             <span class="text-[10px] text-slate-300 mb-1">18:22</span>
             <div class="flex flex-col gap-1 max-w-[70%] items-end">
-              <div class="chat-bubble-me p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100">
-                네, 확인했습니다! 저 지금 에스컬레이터 타고 올라가고 있어요. 1분만 기다려주세요!
+              <div
+                class="chat-bubble-me p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100"
+              >
+                네, 확인했습니다! 저 지금 에스컬레이터 타고 올라가고 있어요.
+                1분만 기다려주세요!
               </div>
             </div>
           </div>
 
-          <!-- 참여 알림 -->
           <div class="flex justify-center">
-            <div class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50">
-              <p class="text-[11px] text-indigo-400 font-medium">✨ '지수'님이 그룹에 참여했습니다.</p>
+            <div
+              class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50"
+            >
+              <p class="text-[11px] text-indigo-400 font-medium">
+                ✨ '지수'님이 그룹에 참여했습니다.
+              </p>
             </div>
           </div>
 
-          <!-- 상대방 메시지 2 (Ji-su) - 트리거 적용 -->
           <div class="flex items-end gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger" onclick="handleProfileClick('Ji-su')">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
+            <div
+              class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm profile-trigger"
+              onclick="handleProfileClick('Ji-su')"
+            >
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su"
+                alt="user"
+              />
             </div>
             <div class="flex flex-col gap-1 max-w-[70%]">
               <span class="text-[10px] text-slate-400 ml-1">지수</span>
-              <div class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm">
+              <div
+                class="chat-bubble-other p-3.5 text-sm leading-relaxed shadow-sm"
+              >
                 안녕하세요~ 저도 지금 거의 다 왔어요!
               </div>
             </div>
@@ -230,41 +263,72 @@
           </div>
         </div>
 
-        <!-- 플러스 메뉴 팝업 -->
-        <div id="plus-menu" class="absolute bottom-24 left-6 w-72 glass-panel rounded-[2rem] p-5 z-30 grid grid-cols-4 gap-4">
-          <button class="menu-item flex flex-col items-center gap-2 group" title="사진 라이브러리">
-            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
+        <div
+          id="plus-menu"
+          class="absolute bottom-24 left-6 w-72 glass-panel rounded-[2rem] p-5 z-30 grid grid-cols-4 gap-4"
+        >
+          <button
+            class="menu-item flex flex-col items-center gap-2 group"
+            title="사진 라이브러리"
+          >
+            <div
+              class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm"
+            >
               <i data-lucide="image" class="w-6 h-6"></i>
             </div>
             <span class="text-[10px] font-bold text-slate-500">사진</span>
           </button>
-          <button class="menu-item flex flex-col items-center gap-2 group" title="카메라 촬영">
-            <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm">
+          <button
+            class="menu-item flex flex-col items-center gap-2 group"
+            title="카메라 촬영"
+          >
+            <div
+              class="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm"
+            >
               <i data-lucide="camera" class="w-6 h-6"></i>
             </div>
             <span class="text-[10px] font-bold text-slate-500">카메라</span>
           </button>
-          <button class="menu-item flex flex-col items-center gap-2 group" title="현재 위치 공유">
-            <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+          <button
+            class="menu-item flex flex-col items-center gap-2 group"
+            title="현재 위치 공유"
+          >
+            <div
+              class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm"
+            >
               <i data-lucide="map-pin" class="w-6 h-6"></i>
             </div>
             <span class="text-[10px] font-bold text-slate-500">위치</span>
           </button>
-          <button class="menu-item flex flex-col items-center gap-2 group" title="이모지">
-            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all shadow-sm">
+          <button
+            class="menu-item flex flex-col items-center gap-2 group"
+            title="이모지"
+          >
+            <div
+              class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all shadow-sm"
+            >
               <i data-lucide="smile" class="w-6 h-6"></i>
             </div>
             <span class="text-[10px] font-bold text-slate-500">이모지</span>
           </button>
         </div>
 
-        <!-- 하단 메시지 입력창 -->
         <div class="p-6 bg-white border-t border-slate-50">
-          <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-[1.5rem] border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all">
-            <button id="plus-btn" class="p-2 text-slate-400 hover:text-indigo-600 transition-all focus:outline-none">
+          <div
+            class="flex items-center gap-3 bg-slate-50 p-2 rounded-[1.5rem] border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all"
+          >
+            <button
+              id="plus-btn"
+              class="p-2 text-slate-400 hover:text-indigo-600 transition-all focus:outline-none"
+            >
               <i data-lucide="plus-circle" class="w-6 h-6"></i>
             </button>
-            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 py-2" />
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="메시지를 입력하세요..."
+              class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 py-2"
+            />
             <button class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md">
               <i data-lucide="send" class="w-4 h-4"></i>
             </button>
@@ -272,61 +336,119 @@
         </div>
       </div>
 
-      <!-- 우측 사이드바 -->
       <aside class="w-80 flex flex-col gap-6 h-full overflow-hidden">
-        <!-- 여정 정보 -->
-        <div class="glass-panel p-6 rounded-[2.5rem] shrink-0">
-          <h3 class="font-bold text-slate-900 mb-4 text-sm">여정 정보</h3>
+        <div
+          onclick="openRideDetail()"
+          class="glass-panel p-6 rounded-[2.5rem] shrink-0 cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all group relative"
+        >
+          <div
+            class="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+          </div>
+          <h3
+            class="font-bold text-slate-900 mb-4 text-sm group-hover:text-indigo-600 transition-colors"
+          >
+            여정 정보
+          </h3>
           <div class="space-y-4">
             <div class="flex items-start gap-3">
-              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+              <div
+                class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+              ></div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Start</p>
-                <p class="text-xs font-bold text-slate-700">강남역 2번 출구 앞</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">
+                  Start
+                </p>
+                <p class="text-xs font-bold text-slate-700">
+                  강남역 2번 출구 앞
+                </p>
               </div>
             </div>
-            <div class="ml-0.5 border-l-2 border-dashed border-slate-100 h-6"></div>
+            <div
+              class="ml-0.5 border-l-2 border-dashed border-slate-100 h-6"
+            ></div>
             <div class="flex items-start gap-3">
-              <div class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shadow-[0_0_8px_rgba(244,63,94,0.5)]"></div>
+              <div
+                class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+              ></div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Destination</p>
-                <p class="text-xs font-bold text-slate-700">판교역 지하철 입구</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">
+                  Destination
+                </p>
+                <p class="text-xs font-bold text-slate-700">
+                  판교역 지하철 입구
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 참여 멤버 정보 - 트리거 적용 -->
-        <div class="glass-panel p-6 rounded-[2.5rem] flex-1 overflow-y-auto custom-scroll">
-          <h3 class="font-bold text-slate-900 mb-4 text-sm">참여 멤버 <span class="text-indigo-600">(3/4)</span></h3>
+        <div
+          class="glass-panel p-6 rounded-[2.5rem] flex-1 overflow-y-auto custom-scroll"
+        >
+          <h3 class="font-bold text-slate-900 mb-4 text-sm">
+            참여 멤버 <span class="text-indigo-600">(3/4)</span>
+          </h3>
           <div class="space-y-4">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border-2 border-indigo-600">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="user" />
+              <div
+                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border-2 border-indigo-600"
+              >
+                <img
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                  alt="user"
+                />
               </div>
               <div>
-                <p class="text-sm font-bold text-slate-900 flex items-center gap-1">
-                  판교동승왕 <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">나</span>
+                <p
+                  class="text-sm font-bold text-slate-900 flex items-center gap-1"
+                >
+                  판교동승왕
+                  <span
+                    class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md"
+                    >나</span
+                  >
                 </p>
                 <p class="text-xs text-slate-400">매너점수 42점</p>
               </div>
             </div>
-            <div class="flex items-center gap-3 profile-trigger" onclick="handleProfileClick('Aiden')">
-              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" alt="user" />
+            <div
+              class="flex items-center gap-3 profile-trigger"
+              onclick="handleProfileClick('Aiden')"
+            >
+              <div
+                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm"
+              >
+                <img
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden"
+                  alt="user"
+                />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">에이든</p>
-                <p class="text-xs text-indigo-500 font-medium italic">프로필 보기</p>
+                <p class="text-xs text-indigo-500 font-medium italic">
+                  프로필 보기
+                </p>
               </div>
             </div>
-            <div class="flex items-center gap-3 profile-trigger" onclick="handleProfileClick('Ji-su')">
-              <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su" alt="user" />
+            <div
+              class="flex items-center gap-3 profile-trigger"
+              onclick="handleProfileClick('Ji-su')"
+            >
+              <div
+                class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-sm"
+              >
+                <img
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su"
+                  alt="user"
+                />
               </div>
               <div>
                 <p class="text-sm font-bold text-slate-900">지수</p>
-                <p class="text-xs text-indigo-500 font-medium italic">프로필 보기</p>
+                <p class="text-xs text-indigo-500 font-medium italic">
+                  프로필 보기
+                </p>
               </div>
             </div>
           </div>
@@ -334,168 +456,436 @@
       </aside>
     </main>
 
-    <!-- [통합됨] 프로필 팝업 모달 본체 (숨김 상태) -->
     <div id="profile-modal" class="modal-overlay" onclick="closeProfile()">
-      <div class="modal-content flex flex-col" onclick="event.stopPropagation()">
-        <!-- 모달 헤더 -->
-        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+      <div
+        class="modal-content flex flex-col"
+        onclick="event.stopPropagation()"
+      >
+        <div
+          class="p-6 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10"
+        >
           <h3 class="font-bold text-slate-900">프로필 정보</h3>
           <div class="flex items-center gap-2">
-            <button id="modal-block-btn" class="p-2.5 bg-slate-50 border border-slate-100 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+            <button
+              id="modal-block-btn"
+              class="p-2.5 bg-slate-50 border border-slate-100 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+            >
               <i data-lucide="ban" class="w-5 h-5"></i>
             </button>
-            <button onclick="closeProfile()" class="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400">
+            <button
+              onclick="closeProfile()"
+              class="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400"
+            >
               <i data-lucide="x" class="w-5 h-5"></i>
             </button>
           </div>
         </div>
 
-        <!-- 모달 본문 -->
-        <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8" id="modal-body">
+        <div
+          class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8"
+          id="modal-body"
+        >
           <div class="flex flex-col items-center text-center">
-            <div class="w-24 h-24 rounded-[2.2rem] bg-indigo-50 border-4 border-white shadow-xl overflow-hidden mb-5">
-              <img id="modal-profile-img" src="" alt="profile" class="w-full h-full object-cover" />
+            <div
+              class="w-24 h-24 rounded-[2.2rem] bg-indigo-50 border-4 border-white shadow-xl overflow-hidden mb-5"
+            >
+              <img
+                id="modal-profile-img"
+                src=""
+                alt="profile"
+                class="w-full h-full object-cover"
+              />
             </div>
             <div class="space-y-1">
               <div class="flex items-center justify-center gap-2">
-                <h2 id="modal-profile-name" class="text-2xl font-black text-slate-900 tracking-tight">사용자</h2>
-                <span id="modal-profile-lv" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-lg font-bold">LV. 1</span>
+                <h2
+                  id="modal-profile-name"
+                  class="text-2xl font-black text-slate-900 tracking-tight"
+                >
+                  사용자
+                </h2>
+                <span
+                  id="modal-profile-lv"
+                  class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-lg font-bold"
+                  >LV. 1</span
+                >
               </div>
-              <p id="modal-profile-meta" class="text-xs text-slate-400 font-medium">가입 정보 로딩 중...</p>
+              <p
+                id="modal-profile-meta"
+                class="text-xs text-slate-400 font-medium"
+              >
+                가입 정보 로딩 중...
+              </p>
             </div>
-            <div id="modal-profile-bio" class="mt-6 w-full max-w-xs p-4 bg-slate-50/80 rounded-2xl text-xs text-slate-600 leading-relaxed font-medium">소개글</div>
+            <div
+              id="modal-profile-bio"
+              class="mt-6 w-full max-w-xs p-4 bg-slate-50/80 rounded-2xl text-xs text-slate-600 leading-relaxed font-medium"
+            >
+              소개글
+            </div>
           </div>
 
-          <!-- 점수바 -->
           <div class="space-y-4">
             <div class="flex justify-between items-end px-1">
               <div class="flex items-center gap-1">
-                <span id="modal-score-text" class="text-3xl font-black text-indigo-600 italic">0</span><span class="text-sm font-bold text-slate-300">점</span>
+                <span
+                  id="modal-score-text"
+                  class="text-3xl font-black text-indigo-600 italic"
+                  >0</span
+                ><span class="text-sm font-bold text-slate-300">점</span>
               </div>
-              <span id="modal-score-rank" class="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">상위 0%</span>
+              <span
+                id="modal-score-rank"
+                class="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg"
+                >상위 0%</span
+              >
             </div>
-            <div class="manner-score-bar"><div id="modal-score-fill" class="manner-score-fill"></div></div>
+            <div class="manner-score-bar">
+              <div id="modal-score-fill" class="manner-score-fill"></div>
+            </div>
           </div>
 
-          <!-- 특징 통계 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i>주요 특징</h4>
+            <h4
+              class="text-sm font-bold text-slate-900 flex items-center gap-2"
+            >
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i
+              >주요 특징
+            </h4>
             <div class="grid grid-cols-2 gap-3">
-              <div class="stat-badge p-3 rounded-2xl flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-600">⏰ 시간 약속</span>
-                <span id="modal-stat-time" class="text-xs font-black text-indigo-600">0회</span>
+              <div
+                class="stat-badge p-3 rounded-2xl flex justify-between items-center"
+              >
+                <span class="text-xs font-bold text-slate-600"
+                  >⏰ 시간 약속</span
+                >
+                <span
+                  id="modal-stat-time"
+                  class="text-xs font-black text-indigo-600"
+                  >0회</span
+                >
               </div>
-              <div class="stat-badge p-3 rounded-2xl flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-600">🤫 정숙한 이동</span>
-                <span id="modal-stat-silent" class="text-xs font-black text-indigo-600">0회</span>
+              <div
+                class="stat-badge p-3 rounded-2xl flex justify-between items-center"
+              >
+                <span class="text-xs font-bold text-slate-600"
+                  >🤫 정숙한 이동</span
+                >
+                <span
+                  id="modal-stat-silent"
+                  class="text-xs font-black text-indigo-600"
+                  >0회</span
+                >
               </div>
             </div>
           </div>
 
-          <!-- 후기 리스트 -->
           <div class="space-y-4">
             <div class="flex justify-between items-center">
-              <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4 text-indigo-600"></i>동승자 후기</h4>
-              <button id="modal-view-all-reviews" class="text-[10px] font-bold text-indigo-600 underline cursor-pointer hidden">전체보기</button>
+              <h4
+                class="text-sm font-bold text-slate-900 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="message-square"
+                  class="w-4 h-4 text-indigo-600"
+                ></i
+                >동승자 후기
+              </h4>
+              <button
+                id="modal-view-all-reviews"
+                class="text-[10px] font-bold text-indigo-600 underline cursor-pointer hidden"
+              >
+                전체보기
+              </button>
             </div>
             <div class="space-y-3" id="modal-review-list"></div>
           </div>
         </div>
 
         <div class="p-6 bg-white border-t border-slate-50">
-          <button onclick="closeProfile()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all">확인</button>
+          <button
+            onclick="closeProfile()"
+            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="ride-detail-modal"
+      class="modal-overlay"
+      onclick="closeRideDetail()"
+    >
+      <div
+        class="modal-content flex flex-col"
+        onclick="event.stopPropagation()"
+      >
+        <div
+          class="p-6 border-b border-slate-100 flex items-center justify-between bg-white/90 sticky top-0 z-10"
+        >
+          <h3 class="text-lg font-bold text-slate-900">탑승 상세 정보</h3>
+          <button
+            onclick="closeRideDetail()"
+            class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div
+          class="overflow-y-auto custom-scroll p-6 space-y-6 bg-slate-50/50 flex-1"
+        >
+          <div
+            class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4"
+          >
+            <div
+              class="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200"
+            >
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Driver"
+                alt="driver"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span
+                    class="text-[10px] font-bold text-white bg-slate-800 px-2 py-0.5 rounded-full"
+                    >개인택시</span
+                  >
+                  <h4 class="text-lg font-bold text-slate-900 mt-1">
+                    김운전 기사님
+                  </h4>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm font-bold text-slate-600">소나타 (신형)</p>
+                  <p class="text-lg font-black text-indigo-600">34바 1234</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
+          >
+            <h4
+              class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider"
+            >
+              이동 경로
+            </h4>
+            <div class="relative pl-2 space-y-8">
+              <div
+                class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100"
+              ></div>
+
+              <div class="relative flex gap-4">
+                <div
+                  class="w-5 h-5 rounded-full bg-white border-4 border-emerald-500 z-10 shrink-0"
+                ></div>
+                <div>
+                  <p class="text-xs font-bold text-slate-400">
+                    18:30 출발 예정
+                  </p>
+                  <p class="text-sm font-bold text-slate-900">
+                    강남역 2번 출구
+                  </p>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4">
+                <div
+                  class="w-5 h-5 rounded-full bg-indigo-600 z-10 shrink-0 flex items-center justify-center shadow-lg shadow-indigo-300"
+                >
+                  <i data-lucide="car" class="w-3 h-3 text-white"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-indigo-600 animate-pulse">
+                    현재 이동 중
+                  </p>
+                  <p class="text-sm font-bold text-slate-900">
+                    뱅뱅사거리 부근
+                  </p>
+                </div>
+              </div>
+
+              <div class="relative flex gap-4">
+                <div
+                  class="w-5 h-5 rounded-full bg-white border-4 border-rose-500 z-10 shrink-0"
+                ></div>
+                <div>
+                  <p class="text-xs font-bold text-slate-400">
+                    19:05 도착 예정
+                  </p>
+                  <p class="text-sm font-bold text-slate-900">
+                    판교역 지하철 입구
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-bold text-indigo-900">예상 결제 금액</h4>
+              <span
+                class="text-xs bg-white border border-indigo-100 text-indigo-600 px-2 py-1 rounded-lg font-bold"
+                >선결제 완료</span
+              >
+            </div>
+            <div
+              class="flex justify-between items-end border-b border-indigo-100/50 pb-4 mb-4"
+            >
+              <span class="text-slate-500 text-sm">총 택시 요금 (예상)</span>
+              <span class="text-slate-900 font-bold">18,000원</span>
+            </div>
+            <div class="flex justify-between items-end">
+              <span class="text-slate-500 text-sm">나의 부담금 (1/4)</span>
+              <span class="text-2xl font-black text-indigo-600">4,500원</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 bg-white border-t border-slate-100">
+          <button
+            onclick="closeRideDetail()"
+            class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg"
+          >
+            확인
+          </button>
         </div>
       </div>
     </div>
 
     <script>
       // 네비게이션 및 아이콘 초기화
-      if (typeof loadNavbar === 'function') loadNavbar('nav-chat');
+      if (typeof loadNavbar === "function") loadNavbar("nav-chat");
       lucide.createIcons();
 
       // 플러스 메뉴 로직
-      const plusBtn = document.getElementById('plus-btn');
-      const plusMenu = document.getElementById('plus-menu');
-      plusBtn.addEventListener('click', (e) => {
+      const plusBtn = document.getElementById("plus-btn");
+      const plusMenu = document.getElementById("plus-menu");
+      plusBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const isActive = plusMenu.classList.toggle('active');
-        plusBtn.style.transform = isActive ? 'rotate(45deg)' : 'rotate(0deg)';
-        plusBtn.classList.toggle('text-indigo-600', isActive);
+        const isActive = plusMenu.classList.toggle("active");
+        plusBtn.style.transform = isActive ? "rotate(45deg)" : "rotate(0deg)";
+        plusBtn.classList.toggle("text-indigo-600", isActive);
       });
 
-      document.addEventListener('click', (e) => {
+      document.addEventListener("click", (e) => {
         if (!plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
-          plusMenu.classList.remove('active');
-          plusBtn.style.transform = 'rotate(0deg)';
-          plusBtn.classList.remove('text-indigo-600');
+          plusMenu.classList.remove("active");
+          plusBtn.style.transform = "rotate(0deg)";
+          plusBtn.classList.remove("text-indigo-600");
         }
       });
 
-      // --- 프로필 팝업 데이터 및 로직 통합 ---
-      const modal = document.getElementById('profile-modal');
-      const scoreFill = document.getElementById('modal-score-fill');
-      const reviewContainer = document.getElementById('modal-review-list');
-      const viewAllBtn = document.getElementById('modal-view-all-reviews');
+      // --- 프로필 팝업 데이터 및 로직 ---
+      const modal = document.getElementById("profile-modal");
+      const scoreFill = document.getElementById("modal-score-fill");
+      const reviewContainer = document.getElementById("modal-review-list");
+      const viewAllBtn = document.getElementById("modal-view-all-reviews");
       let reviewsExpanded = false;
 
       // 유저 데이터 (클릭 시 동적 반영용)
       const usersData = {
-        'Ji-su': {
-          name: '지수', lv: 'LV. 8', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su',
-          meta: '가입 124일째 · 동승 48회', bio: '"주로 평일 아침 출근 시간에 판교역 근처에서 활동해요! 😊"',
-          score: 88, rank: '상위 5%', stats: { time: 24, silent: 18 },
+        "Ji-su": {
+          name: "지수",
+          lv: "LV. 8",
+          img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su",
+          meta: "가입 124일째 · 동승 48회",
+          bio: '"주로 평일 아침 출근 시간에 판교역 근처에서 활동해요! 😊"',
+          score: 88,
+          rank: "상위 5%",
+          stats: { time: 24, silent: 18 },
           reviews: [
-            { author: '에이든', date: '3일 전', content: '정말 친절하시고 시간도 딱 맞춰서 와주셨어요!' },
-            { author: '판교동승왕', date: '1주일 전', content: '매너가 정말 좋으세요. 정산도 바로 해주셨습니다.' },
-            { author: '사라', date: '2주일 전', content: '조용히 가고 싶었는데 배려해주셔서 너무 감사했어요.' },
-            { author: '민수', date: '한달 전', content: '차량 내부도 쾌적하고 매너가 훌륭하십니다.' }
-          ]
+            {
+              author: "에이든",
+              date: "3일 전",
+              content: "정말 친절하시고 시간도 딱 맞춰서 와주셨어요!",
+            },
+            {
+              author: "판교동승왕",
+              date: "1주일 전",
+              content: "매너가 정말 좋으세요. 정산도 바로 해주셨습니다.",
+            },
+            {
+              author: "사라",
+              date: "2주일 전",
+              content: "조용히 가고 싶었는데 배려해주셔서 너무 감사했어요.",
+            },
+            {
+              author: "민수",
+              date: "한달 전",
+              content: "차량 내부도 쾌적하고 매너가 훌륭하십니다.",
+            },
+          ],
         },
-        'Aiden': {
-          name: '에이든', lv: 'LV. 5', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden',
-          meta: '가입 42일째 · 동승 12회', bio: '"매너 있는 동승을 추구합니다. 조용히 가는 걸 선호해요!"',
-          score: 72, rank: '상위 15%', stats: { time: 8, silent: 10 },
+        Aiden: {
+          name: "에이든",
+          lv: "LV. 5",
+          img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden",
+          meta: "가입 42일째 · 동승 12회",
+          bio: '"매너 있는 동승을 추구합니다. 조용히 가는 걸 선호해요!"',
+          score: 72,
+          rank: "상위 15%",
+          stats: { time: 8, silent: 10 },
           reviews: [
-            { author: '지수', date: '1일 전', content: '대화가 정말 즐거웠습니다! 좋은 분이에요.' },
-            { author: '철수', date: '5일 전', content: '매너가 좋으신 승객분입니다.' }
-          ]
-        }
+            {
+              author: "지수",
+              date: "1일 전",
+              content: "대화가 정말 즐거웠습니다! 좋은 분이에요.",
+            },
+            {
+              author: "철수",
+              date: "5일 전",
+              content: "매너가 좋으신 승객분입니다.",
+            },
+          ],
+        },
       };
 
-      /** 팝업 트리거 */
+      /** 프로필 팝업 트리거 */
       function handleProfileClick(userId) {
         const data = usersData[userId];
         if (!data) return;
 
-        // 모달 데이터 채우기
-        document.getElementById('modal-profile-img').src = data.img;
-        document.getElementById('modal-profile-name').innerText = data.name;
-        document.getElementById('modal-profile-lv').innerText = data.lv;
-        document.getElementById('modal-profile-meta').innerText = data.meta;
-        document.getElementById('modal-profile-bio').innerText = data.bio;
-        document.getElementById('modal-score-text').innerText = data.score;
-        document.getElementById('modal-score-rank').innerText = data.rank;
-        document.getElementById('modal-stat-time').innerText = `${data.stats.time}회`;
-        document.getElementById('modal-stat-silent').innerText = `${data.stats.silent}회`;
+        document.getElementById("modal-profile-img").src = data.img;
+        document.getElementById("modal-profile-name").innerText = data.name;
+        document.getElementById("modal-profile-lv").innerText = data.lv;
+        document.getElementById("modal-profile-meta").innerText = data.meta;
+        document.getElementById("modal-profile-bio").innerText = data.bio;
+        document.getElementById("modal-score-text").innerText = data.score;
+        document.getElementById("modal-score-rank").innerText = data.rank;
+        document.getElementById(
+          "modal-stat-time"
+        ).innerText = `${data.stats.time}회`;
+        document.getElementById(
+          "modal-stat-silent"
+        ).innerText = `${data.stats.silent}회`;
 
-        // 후기 렌더링 (최대 3개 로직)
         renderReviews(data.reviews);
 
-        // 모달 표시 및 애니메이션
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => { scoreFill.style.width = `${data.score}%`; }, 400);
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+          scoreFill.style.width = `${data.score}%`;
+        }, 400);
       }
 
       function renderReviews(reviews) {
-        reviewContainer.innerHTML = '';
+        reviewContainer.innerHTML = "";
         reviewsExpanded = false;
-        viewAllBtn.innerText = '전체보기';
-        viewAllBtn.classList.toggle('hidden', reviews.length <= 3);
+        viewAllBtn.innerText = "전체보기";
+        viewAllBtn.classList.toggle("hidden", reviews.length <= 3);
 
         reviews.forEach((r, i) => {
-          const div = document.createElement('div');
-          div.className = `review-item p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 ${i >= 3 ? 'hidden' : ''}`;
+          const div = document.createElement("div");
+          div.className = `review-item p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 ${
+            i >= 3 ? "hidden" : ""
+          }`;
           div.innerHTML = `
             <div class="flex justify-between items-center">
               <span class="text-[10px] font-bold text-slate-700">${r.author}</span>
@@ -507,31 +897,40 @@
         });
       }
 
-      // 후기 전체보기 토글
-      viewAllBtn.addEventListener('click', () => {
-        const items = reviewContainer.querySelectorAll('.review-item');
+      viewAllBtn.addEventListener("click", () => {
+        const items = reviewContainer.querySelectorAll(".review-item");
         reviewsExpanded = !reviewsExpanded;
-        items.forEach((item, i) => { if (i >= 3) item.classList.toggle('hidden', !reviewsExpanded); });
-        viewAllBtn.innerText = reviewsExpanded ? '접기' : '전체보기';
+        items.forEach((item, i) => {
+          if (i >= 3) item.classList.toggle("hidden", !reviewsExpanded);
+        });
+        viewAllBtn.innerText = reviewsExpanded ? "접기" : "전체보기";
       });
 
       function closeProfile() {
-        scoreFill.style.width = '0%';
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
+        scoreFill.style.width = "0%";
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
       }
 
-      // 차단 버튼 토글
-      const modalBlockBtn = document.getElementById('modal-block-btn');
+      const modalBlockBtn = document.getElementById("modal-block-btn");
       let isBlocked = false;
-      modalBlockBtn.addEventListener('click', (e) => {
+      modalBlockBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         isBlocked = !isBlocked;
-        modalBlockBtn.classList.toggle('btn-blocked', isBlocked);
-        const icon = modalBlockBtn.querySelector('i');
-        icon.setAttribute('data-lucide', isBlocked ? 'user-check' : 'ban');
+        modalBlockBtn.classList.toggle("btn-blocked", isBlocked);
+        const icon = modalBlockBtn.querySelector("i");
+        icon.setAttribute("data-lucide", isBlocked ? "user-check" : "ban");
         lucide.createIcons();
       });
+
+      // --- [NEW] 상세 정보 모달 제어 함수 ---
+      function openRideDetail() {
+        document.getElementById("ride-detail-modal").classList.add("active");
+      }
+
+      function closeRideDetail() {
+        document.getElementById("ride-detail-modal").classList.remove("active");
+      }
     </script>
   </body>
 </html>

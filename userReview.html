@@ -17,6 +17,7 @@
         --tm-secondary: #eef2ff;
         --tm-danger: #f43f5e;
         --tm-danger-light: #fff1f2;
+        --tm-star: #fbbf24;
       }
 
       body {
@@ -45,6 +46,25 @@
         background: linear-gradient(90deg, #3b82f6, #4f46e5, #ef4444);
         transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         border-radius: 99px;
+      }
+
+      /* 별점 스타일: 선택 시 내부가 채워짐 */
+      .star-btn {
+        transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #e2e8f0;
+      }
+      
+      .star-btn.active {
+        color: var(--tm-star);
+      }
+      
+      .star-btn.active svg {
+        fill: currentColor;
+      }
+
+      .star-btn:hover {
+        transform: scale(1.2);
+        color: var(--tm-star);
       }
 
       /* 태그 공통 스타일 */
@@ -124,11 +144,6 @@
             <div>
               <h1 class="text-2xl font-bold text-slate-900">프로필 및 매너</h1>
             </div>
-            <!-- 사용자 차단 버튼 -->
-            <button id="block-user-btn" class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
-              <i data-lucide="ban" class="w-4 h-4"></i>
-              사용자 차단
-            </button>
           </header>
 
           <!-- 매너 점수 정보 카드 -->
@@ -177,8 +192,20 @@
               동승은 어떠셨나요?
             </h3>
 
-            <!-- 제목 아이콘 정렬에 맞춘 들여쓰기 pl-7 -->
-            <div class="space-y-10 pl-7">
+            <!-- [수정됨] 제목 아이콘 정렬에 맞춘 좌우 패딩 동일화 (pl-7 -> px-7) -->
+            <div class="space-y-10 px-7">
+              <!-- 별점 선택 -->
+              <div>
+                <p class="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest">만족도를 별점으로 표현해주세요</p>
+                <div id="star-rating" class="flex gap-2">
+                  <button class="star-btn" data-value="1"><i data-lucide="star" class="w-8 h-8"></i></button>
+                  <button class="star-btn" data-value="2"><i data-lucide="star" class="w-8 h-8"></i></button>
+                  <button class="star-btn" data-value="3"><i data-lucide="star" class="w-8 h-8"></i></button>
+                  <button class="star-btn" data-value="4"><i data-lucide="star" class="w-8 h-8"></i></button>
+                  <button class="star-btn" data-value="5"><i data-lucide="star" class="w-8 h-8"></i></button>
+                </div>
+              </div>
+
               <!-- 긍정 피드백 섹션 -->
               <div>
                 <p class="text-[11px] font-bold text-indigo-400 mb-4 uppercase tracking-widest">이런 점이 좋았어요! (최대 3개)</p>
@@ -205,7 +232,15 @@
 
               <!-- 자유 경험 작성 -->
               <div>
-                <textarea class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm resize-none" placeholder="동승 경험을 자유롭게 적어주세요(선택)"></textarea>
+                <textarea id="review-text" class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm resize-none" placeholder="동승 경험을 자유롭게 적어주세요(선택)"></textarea>
+              </div>
+
+              <!-- 사용자 차단 버튼 - 텍스트 입력창과 등록 버튼 사이 -->
+              <div class="flex justify-end px-2">
+                <button id="block-user-btn" class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
+                  <i data-lucide="ban" class="w-4 h-4"></i>
+                  이 사용자 차단하기
+                </button>
               </div>
 
               <!-- 제출 버튼 -->
@@ -231,18 +266,39 @@
         }, 300);
       };
 
+      // 별점 로직
+      let selectedStars = 0;
+      const stars = document.querySelectorAll('.star-btn');
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-value'));
+          selectedStars = val;
+          updateStars(val);
+        });
+      });
+
+      function updateStars(val) {
+        stars.forEach((s, idx) => {
+          if (idx < val) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+      }
+
       // 공통 모달 생성 함수
       const showModal = ({ icon, iconColor, iconBg, title, message, buttonText, buttonClass, onConfirm }) => {
         const modal = document.createElement('div');
         modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
         modal.innerHTML = `
           <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-            <div class="w-16 h-16 ${iconBg} ${iconColor} rounded-full flex items-center justify-center mx-auto mb-6">
-              <i data-lucide="${icon}" class="w-8 h-8"></i>
+            <div class=\"w-16 h-16 ${iconBg} ${iconColor} rounded-full flex items-center justify-center mx-auto mb-6\">
+              <i data-lucide=\"${icon}\" class=\"w-8 h-8\"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-900 mb-2">${title}</h3>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">${message}</p>
-            <button id="modal-confirm-btn" class="w-full py-4 ${buttonClass} text-white rounded-2xl font-bold text-sm transition-all active:scale-95">
+            <h3 class=\"text-xl font-bold text-slate-900 mb-2\">${title}</h3>
+            <p class=\"text-sm text-slate-500 mb-8 leading-relaxed\">${message}</p>
+            <button id=\"modal-confirm-btn\" class=\"w-full py-4 ${buttonClass} text-white rounded-2xl font-bold text-sm transition-all active:scale-95\">
               ${buttonText}
             </button>
           </div>
@@ -262,15 +318,10 @@
       const setupToggles = (selector) => {
         document.querySelectorAll(selector).forEach((tag) => {
           tag.addEventListener("click", () => {
-            // 현재 클릭한 태그가 속한 카테고리의 활성 태그들만 계산
             const activeInCategory = document.querySelectorAll(`${selector}.active`);
-            
-            // 이미 선택된 상태라면 해제
             if (tag.classList.contains('active')) {
               tag.classList.remove('active');
-            } 
-            // 새로 선택하려는 경우, 해당 카테고리 선택 개수가 3개 이상이면 제한
-            else {
+            } else {
               if (activeInCategory.length >= 3) {
                 const categoryName = selector === '.review-tag' ? '좋았던 점' : '싫었던 점';
                 showModal({
@@ -290,22 +341,34 @@
         });
       };
 
-      // 각 카테고리별로 독립적인 제한 적용
-      setupToggles(".review-tag");     // 긍정 태그 최대 3개
-      setupToggles(".review-tag-bad"); // 부정 태그 최대 3개
+      setupToggles(".review-tag");
+      setupToggles(".review-tag-bad");
 
       // 후기 등록 버튼 클릭 이벤트
       const submitBtn = document.getElementById('submit-review-btn');
       submitBtn.addEventListener('click', () => {
         const selectedTags = document.querySelectorAll('.review-tag.active, .review-tag-bad.active');
         
+        if (selectedStars === 0) {
+          showModal({
+            icon: 'star',
+            iconColor: 'text-amber-500',
+            iconBg: 'bg-amber-50',
+            title: '별점을 선택해주세요',
+            message: '동승 만족도를 별점으로 먼저 표현해주세요.',
+            buttonText: '확인',
+            buttonClass: 'bg-slate-900 hover:bg-slate-800'
+          });
+          return;
+        }
+
         if (selectedTags.length === 0) {
           showModal({
             icon: 'alert-circle',
             iconColor: 'text-amber-500',
             iconBg: 'bg-amber-100',
             title: '태그를 선택해주세요',
-            message: '동승 경험에 대한 긍정 혹은 부정 태그 중 하나 이상을 선택해야 후기를 등록할 수 있습니다.',
+            message: '상대방의 특징을 나타내는 태그를 하나 이상 선택해주세요.',
             buttonText: '확인',
             buttonClass: 'bg-slate-900 hover:bg-slate-800'
           });
@@ -333,16 +396,16 @@
         confirmModal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
         confirmModal.innerHTML = `
           <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <i data-lucide="user-x" class="w-8 h-8"></i>
+            <div class=\"w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6\">
+              <i data-lucide=\"user-x\" class=\"w-8 h-8\"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-900 mb-2">사용자를 차단할까요?</h3>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">차단하면 더 이상 이 사용자와 매칭되지 않으며 대화가 제한됩니다.</p>
-            <div class="flex gap-3">
-              <button id="cancel-block" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">
+            <h3 class=\"text-xl font-bold text-slate-900 mb-2\">사용자를 차단할까요?</h3>
+            <p class=\"text-sm text-slate-500 mb-8 leading-relaxed\">차단하면 더 이상 이 사용자와 매칭되지 않으며 대화가 제한됩니다.</p>
+            <div class=\"flex gap-3\">
+              <button id=\"cancel-block\" class=\"flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all\">
                 취소
               </button>
-              <button id="confirm-block" class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-100">
+              <button id=\"confirm-block\" class=\"flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-100\">
                 차단하기
               </button>
             </div>
@@ -357,13 +420,13 @@
 
         document.getElementById('confirm-block').addEventListener('click', () => {
           confirmModal.innerHTML = `
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
-              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="check-circle" class="w-8 h-8"></i>
+            <div class=\"bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up\">
+              <div class=\"w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6\">
+                <i data-lucide=\"check-circle\" class=\"w-8 h-8\"></i>
               </div>
-              <h3 class="text-xl font-bold text-slate-900 mb-2">차단 완료</h3>
-              <p class="text-sm text-slate-500 mb-8">해당 사용자가 차단되었습니다.</p>
-              <button onclick="window.location.reload()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm">
+              <h3 class=\"text-xl font-bold text-slate-900 mb-2\">차단 완료</h3>
+              <p class=\"text-sm text-slate-500 mb-8\">해당 사용자가 차단되었습니다.</p>
+              <button onclick=\"window.location.reload()\" class=\"w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm\">
                 확인
               </button>
             </div>
