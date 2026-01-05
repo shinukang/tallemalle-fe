@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 및 FAQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .tab-active {
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- 사이드바 (기존 디자인 유지) -->
+    <aside class="p-6 h-full">
+        <div class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto shrink-0 shadow-xl">
+            <div class="mb-12">
+                <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200">
+                    <i data-lucide="car-front" class="text-white w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4">
+                <button onclick="location.href='./main.html'" class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all" title="홈">
+                    <i data-lucide="home" class="w-6 h-6"></i>
+                </button>
+                <button onclick="location.href='./chat.html'" class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all" title="채팅">
+                    <i data-lucide="message-circle" class="w-6 h-6"></i>
+                </button>
+                <button onclick="location.href='./notifications.html'" class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all relative" title="알림">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                </button>
+                <button onclick="location.href='./notice.html'" class="nav-item p-3 rounded-2xl text-indigo-600 bg-indigo-50 transition-all" title="공지사항">
+                    <i data-lucide="megaphone" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-4 items-center">
+                <button onclick="location.href='setting.html'" class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all" title="설정">
+                    <i data-lucide="settings" class="w-6 h-6"></i>
+                </button>
+                <div onclick="location.href='mypage.html'" class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:border-indigo-400 transition-all">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile">
+                </div>
+                <button onclick="location.href='login.html'" class="nav-item p-3 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all mt-2" title="로그아웃">
+                    <i data-lucide="log-out" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="max-w-4xl mx-auto">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">공지사항</h1>
+                <p class="text-slate-500 mt-2">서비스의 새로운 소식과 자주 묻는 질문을 확인하세요.</p>
+            </header>
+
+            <!-- 탭 메뉴 (1:1 비율로 균등 분할) -->
+            <div class="flex border-b border-slate-200 mb-8 w-full">
+                <button id="tab-notice" onclick="switchTab('notice')" class="flex-1 px-8 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition-all tab-active">
+                    공지사항
+                </button>
+                <button id="tab-faq" onclick="switchTab('faq')" class="flex-1 px-8 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition-all">
+                    자주 묻는 질문 (FAQ)
+                </button>
+            </div>
+
+            <!-- 공지사항 섹션 -->
+            <section id="content-notice" class="space-y-4">
+                <div class="glass-panel p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-slate-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-600 text-xs font-bold rounded-full">업데이트</span>
+                        <span class="text-sm text-slate-400">2024.05.20</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">버전 2.1 패치노트 안내</h3>
+                    <p class="text-slate-600 mt-2 line-clamp-1">새로운 UI 테마와 채팅 성능 개선이 포함된 업데이트가 진행되었습니다.</p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-slate-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="px-3 py-1 bg-amber-100 text-amber-600 text-xs font-bold rounded-full">공지</span>
+                        <span class="text-sm text-slate-400">2024.05.15</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">서버 점검 안내 (05/18 02:00 ~ 04:00)</h3>
+                    <p class="text-slate-600 mt-2 line-clamp-1">보다 안정적인 서비스 제공을 위해 정기 서버 점검을 진행할 예정입니다.</p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-slate-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="px-3 py-1 bg-rose-100 text-rose-600 text-xs font-bold rounded-full">이벤트</span>
+                        <span class="text-sm text-slate-400">2024.05.10</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">친구 초대 이벤트 - 포인트 2배 적립!</h3>
+                    <p class="text-slate-600 mt-2 line-clamp-1">지금 친구를 초대하고 특별한 혜택을 받아보세요.</p>
+                </div>
+            </section>
+
+            <!-- FAQ 섹션 -->
+            <section id="content-faq" class="hidden space-y-4">
+                <div class="faq-item border border-slate-100 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center p-6 text-left hover:bg-slate-50 transition-all">
+                        <span class="font-semibold text-slate-800">비밀번호를 잊어버렸어요. 어떻게 하나요?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden p-6 pt-0 text-slate-600 bg-slate-50 border-t border-slate-100">
+                        로그인 화면에서 '비밀번호 찾기'를 클릭한 후 가입하신 이메일 주소를 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.
+                    </div>
+                </div>
+
+                <div class="faq-item border border-slate-100 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center p-6 text-left hover:bg-slate-50 transition-all">
+                        <span class="font-semibold text-slate-800">탈퇴는 어떻게 진행하나요?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden p-6 pt-0 text-slate-600 bg-slate-50 border-t border-slate-100">
+                        설정 페이지 하단의 '계정 관리' 메뉴에서 회원 탈퇴를 진행하실 수 있습니다. 탈퇴 시 모든 데이터는 복구가 불가능하니 주의해주세요.
+                    </div>
+                </div>
+
+                <div class="faq-item border border-slate-100 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center p-6 text-left hover:bg-slate-50 transition-all">
+                        <span class="font-semibold text-slate-800">채팅 알림을 끄고 싶어요.</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden p-6 pt-0 text-slate-600 bg-slate-50 border-t border-slate-100">
+                        개별 채팅방의 설정 메뉴 또는 전체 설정의 '알림' 섹션에서 푸시 알림 설정을 자유롭게 변경하실 수 있습니다.
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // 아이콘 초기화
+        lucide.createIcons();
+
+        // 탭 전환 로직
+        function switchTab(tab) {
+            const noticeTab = document.getElementById('tab-notice');
+            const faqTab = document.getElementById('tab-faq');
+            const noticeContent = document.getElementById('content-notice');
+            const faqContent = document.getElementById('content-faq');
+
+            if (tab === 'notice') {
+                noticeTab.classList.add('tab-active', 'text-indigo-600');
+                faqTab.classList.remove('tab-active', 'text-indigo-600');
+                noticeContent.classList.remove('hidden');
+                faqContent.classList.add('hidden');
+            } else {
+                faqTab.classList.add('tab-active', 'text-indigo-600');
+                noticeTab.classList.remove('tab-active', 'text-indigo-600');
+                faqContent.classList.remove('hidden');
+                noticeContent.classList.add('hidden');
+            }
+        }
+
+        // FAQ 아코디언 로직
+        function toggleFaq(button) {
+            const answer = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            const isHidden = answer.classList.contains('hidden');
+            
+            // 다른 답변 모두 닫기
+            document.querySelectorAll('.faq-answer').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.faq-item i').forEach(el => el.style.transform = 'rotate(0deg)');
+
+            if (isHidden) {
+                answer.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+    </script>
+</body>
+</html>
