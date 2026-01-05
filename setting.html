@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- 외부 네비게이션 로드 스크립트 -->
     <script src="nav.js"></script>
 
     <style>
@@ -33,11 +34,6 @@
         border-radius: 10px;
       }
 
-      .nav-item.active {
-        color: #4f46e5;
-        background-color: #eef2ff;
-      }
-
       /* 토글 스위치 커스텀 스타일 */
       .toggle-checkbox:checked {
         right: 0;
@@ -46,11 +42,28 @@
       .toggle-checkbox:checked + .toggle-label {
         background-color: #4f46e5;
       }
+
+      /* QnA 아코디언 애니메이션 */
+      .qna-item.active .qna-answer {
+        max-height: 200px;
+        margin-top: 1rem;
+        opacity: 1;
+      }
+      .qna-item.active i[data-lucide="chevron-down"] {
+        transform: rotate(180deg);
+      }
+      .qna-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.3s ease-in-out;
+        opacity: 0;
+      }
     </style>
   </head>
 
   <body class="overflow-hidden">
     <div class="flex h-screen p-4 gap-4">
+      <!-- 네비게이션 바 컨테이너 -->
       <div
         id="navbar-container"
         class="w-20 h-full shrink-0 rounded-[2.5rem]"
@@ -59,6 +72,7 @@
       <div
         class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col"
       >
+        <!-- 헤더 -->
         <div
           class="p-8 border-b border-slate-100 flex justify-between items-center"
         >
@@ -67,13 +81,15 @@
               환경 설정
             </h1>
             <p class="text-sm text-slate-400 font-medium mt-1">
-              앱 알림, 보안 및 매칭 선호도를 설정합니다.
+              앱 알림, 보안 및 고객 지원 설정을 관리합니다.
             </p>
           </div>
         </div>
 
         <div class="flex-1 overflow-y-auto custom-scroll p-8">
           <div class="max-w-4xl mx-auto space-y-8">
+            
+            <!-- 1. 알림 설정 -->
             <section
               class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
             >
@@ -88,62 +104,10 @@
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-sm font-bold text-slate-700">
-                      매칭 성공 알림
-                    </p>
-                    <p class="text-xs text-slate-400 mt-1">
-                      동승자가 매칭되었을 때 푸시 알림을 받습니다.
-                    </p>
-                  </div>
-                  <div
-                    class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"
-                  >
-                    <input
-                      type="checkbox"
-                      name="toggle"
-                      id="noti-match"
-                      class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 transition-all duration-300 left-0 checked:left-6"
-                      checked
-                    />
-                    <label
-                      for="noti-match"
-                      class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300 checked:bg-indigo-600"
-                    ></label>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-bold text-slate-700">
-                      채팅 메시지 알림
-                    </p>
-                    <p class="text-xs text-slate-400 mt-1">
-                      새로운 메시지가 도착하면 알려줍니다.
-                    </p>
-                  </div>
-                  <div
-                    class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"
-                  >
-                    <input
-                      type="checkbox"
-                      name="toggle"
-                      id="noti-chat"
-                      class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 transition-all duration-300 left-0 checked:left-6"
-                      checked
-                    />
-                    <label
-                      for="noti-chat"
-                      class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300 checked:bg-indigo-600"
-                    ></label>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between opacity-75">
-                  <div>
-                    <p class="text-sm font-bold text-slate-700">
                       마케팅 정보 수신
                     </p>
                     <p class="text-xs text-slate-400 mt-1">
-                      이벤트 및 프로모션 소식을 받습니다.
+                      이벤트, 쿠폰 및 프로모션 소식을 푸시 알림으로 받습니다.
                     </p>
                   </div>
                   <div
@@ -154,98 +118,18 @@
                       name="toggle"
                       id="noti-mkt"
                       class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 transition-all duration-300 left-0 checked:left-6"
-                    />
-                    <label
-                      for="noti-mkt"
-                      class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300 checked:bg-indigo-600"
-                    ></label>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section
-              class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
-            >
-              <h3
-                class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"
-              >
-                <i
-                  data-lucide="heart-handshake"
-                  class="w-5 h-5 text-indigo-600"
-                ></i>
-                동승 매칭 선호
-              </h3>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div
-                  class="p-5 rounded-2xl border border-indigo-100 bg-indigo-50/30 flex items-start justify-between"
-                >
-                  <div>
-                    <div class="flex items-center gap-2 mb-2">
-                      <i
-                        data-lucide="users"
-                        class="w-4 h-4 text-indigo-600"
-                      ></i>
-                      <p class="text-sm font-bold text-slate-800">
-                        동성끼리만 탑승
-                      </p>
-                    </div>
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                      나와 성별이 같은 동승자와만<br />매칭되도록 설정합니다.
-                    </p>
-                  </div>
-                  <div
-                    class="relative inline-block w-10 align-middle select-none"
-                  >
-                    <input
-                      type="checkbox"
-                      id="pref-gender"
-                      class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 transition-all duration-300 left-0 checked:left-5"
                       checked
                     />
                     <label
-                      for="pref-gender"
-                      class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer checked:bg-indigo-600"
-                    ></label>
-                  </div>
-                </div>
-
-                <div
-                  class="p-5 rounded-2xl border border-slate-100 bg-white flex items-start justify-between"
-                >
-                  <div>
-                    <div class="flex items-center gap-2 mb-2">
-                      <i
-                        data-lucide="volume-x"
-                        class="w-4 h-4 text-slate-600"
-                      ></i>
-                      <p class="text-sm font-bold text-slate-800">
-                        조용한 이동 선호
-                      </p>
-                    </div>
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                      대화가 없는 조용한 이동을<br />선호함을 프로필에
-                      표시합니다.
-                    </p>
-                  </div>
-                  <div
-                    class="relative inline-block w-10 align-middle select-none"
-                  >
-                    <input
-                      type="checkbox"
-                      id="pref-quiet"
-                      class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 transition-all duration-300 left-0 checked:left-5"
-                    />
-                    <label
-                      for="pref-quiet"
-                      class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer checked:bg-indigo-600"
+                      for="noti-mkt"
+                      class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300"
                     ></label>
                   </div>
                 </div>
               </div>
             </section>
 
+            <!-- 2. 계정 및 보안 -->
             <section
               class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
             >
@@ -269,7 +153,7 @@
                   >
                   <i
                     data-lucide="chevron-right"
-                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600"
+                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-transform"
                   ></i>
                 </button>
                 <button
@@ -281,11 +165,11 @@
                   >
                   <i
                     data-lucide="chevron-right"
-                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600"
+                    class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-transform"
                   ></i>
                 </button>
-                <button
-                  class="w-full py-4 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-xl px-2 group"
+                <div
+                  class="w-full py-4 flex items-center justify-between px-2"
                 >
                   <span class="text-sm font-medium text-slate-700"
                     >안심번호 사용 설정</span
@@ -294,13 +178,61 @@
                     class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md"
                     >사용 중</span
                   >
-                </button>
+                </div>
               </div>
             </section>
 
-            <div class="flex flex-col md:flex-row gap-6">
+            <!-- 3. QnA 섹션 -->
+            <section
+              class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
+            >
+              <h3
+                class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="help-circle"
+                  class="w-5 h-5 text-indigo-600"
+                ></i>
+                자주 묻는 질문 (Q&A)
+              </h3>
+
+              <div class="space-y-3">
+                <div class="qna-item border border-slate-100 rounded-2xl p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="toggleQna(this)">
+                  <div class="flex justify-between items-center">
+                    <p class="text-sm font-semibold text-slate-700 font-bold">동승 매칭은 어떻게 취소하나요?</p>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                  </div>
+                  <div class="qna-answer text-xs text-slate-500 leading-relaxed">
+                    매칭 확정 전에는 '매칭 상세' 페이지에서 자유롭게 취소가 가능합니다. 다만, 확정 후 취소 시에는 매너 온도에 영향을 줄 수 있으니 유의해주세요.
+                  </div>
+                </div>
+
+                <div class="qna-item border border-slate-100 rounded-2xl p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="toggleQna(this)">
+                  <div class="flex justify-between items-center">
+                    <p class="text-sm font-semibold text-slate-700 font-bold">포인트 환불 규정이 궁금해요.</p>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                  </div>
+                  <div class="qna-answer text-xs text-slate-500 leading-relaxed">
+                    충전 후 사용하지 않은 포인트는 7일 이내에 전액 환불 가능합니다. '마이페이지 > 결제 내역'에서 신청하실 수 있습니다.
+                  </div>
+                </div>
+
+                <div class="qna-item border border-slate-100 rounded-2xl p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="toggleQna(this)">
+                  <div class="flex justify-between items-center">
+                    <p class="text-sm font-semibold text-slate-700 font-bold">매너 온도가 낮아지면 불이익이 있나요?</p>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                  </div>
+                  <div class="qna-answer text-xs text-slate-500 leading-relaxed">
+                    매너 온도가 일정 기준 이하로 떨어지면 서비스 이용에 제한이 생길 수 있으며, 매칭 우선순위에서 밀려날 수 있습니다.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 하단 정보 섹션 (문의하기 카드 제거됨) -->
+            <div class="pb-12">
               <div
-                class="flex-1 bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
+                class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm"
               >
                 <h3 class="text-sm font-bold text-slate-900 mb-4">앱 정보</h3>
                 <div class="space-y-3 text-sm text-slate-500">
@@ -322,28 +254,34 @@
                   </div>
                 </div>
               </div>
-
-              <div class="flex-1 flex flex-col justify-end">
-                <button
-                  onclick="confirm('정말 탈퇴하시겠습니까?')"
-                  class="w-full py-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-all text-sm shadow-sm"
-                >
-                  회원 탈퇴하기
-                </button>
-              </div>
             </div>
           </div>
-
-          <div class="h-10"></div>
         </div>
       </div>
     </div>
 
     <script>
-      // [수정됨] 네비게이션 로드 및 활성화 (설정 페이지이므로 nav-setting 활성화)
-      loadNavbar("nav-setting");
-
+      // 기존 네비바 로드 및 활성화 호출
+      if (typeof loadNavbar === 'function') {
+        loadNavbar("nav-setting");
+      }
+      
       lucide.createIcons();
+
+      // QnA 아코디언 토글 함수
+      function toggleQna(element) {
+        const isActive = element.classList.contains('active');
+        
+        // 모든 QnA 아이템 닫기
+        document.querySelectorAll('.qna-item').forEach(item => {
+          item.classList.remove('active');
+        });
+
+        // 클릭한 아이템이 닫혀있었다면 열기
+        if (!isActive) {
+          element.classList.add('active');
+        }
+      }
     </script>
   </body>
 </html>

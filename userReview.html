@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>탈래말래 - 매너온도 및 리뷰</title>
+    <title>탈래말래 - 매너 점수 및 리뷰</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -15,6 +15,8 @@
       :root {
         --tm-primary: #4f46e5;
         --tm-secondary: #eef2ff;
+        --tm-danger: #f43f5e;
+        --tm-danger-light: #fff1f2;
       }
 
       body {
@@ -30,7 +32,7 @@
         box-shadow: 0 8px 32px rgba(30, 27, 75, 0.05);
       }
 
-      .manner-temp-bar {
+      .manner-score-bar {
         height: 12px;
         border-radius: 99px;
         background: #e2e8f0;
@@ -38,30 +40,51 @@
         position: relative;
       }
 
-      .manner-temp-fill {
+      .manner-score-fill {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #f59e0b, #ef4444);
+        background: linear-gradient(90deg, #3b82f6, #4f46e5, #ef4444);
         transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         border-radius: 99px;
       }
 
-      .review-tag {
-        transition: all 0.2s ease;
+      /* 태그 공통 스타일 */
+      .review-tag, .review-tag-bad {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         user-select: none;
         border: 1px solid #e2e8f0;
+        background-color: white;
+        display: inline-block;
       }
 
+      /* 긍정 태그 활성화 상태 */
       .review-tag:hover {
         border-color: var(--tm-primary);
-        color: var(--tm-primary);
         background-color: var(--tm-secondary);
+        color: var(--tm-primary);
       }
 
       .review-tag.active {
-        background-color: var(--tm-primary);
-        color: white;
-        border-color: var(--tm-primary);
+        background-color: var(--tm-primary) !important;
+        color: white !important;
+        border-color: var(--tm-primary) !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        transform: translateY(-2px);
+      }
+
+      /* 부정 태그 활성화 상태 */
+      .review-tag-bad:hover {
+        border-color: var(--tm-danger);
+        background-color: var(--tm-danger-light);
+        color: var(--tm-danger);
+      }
+
+      .review-tag-bad.active {
+        background-color: var(--tm-danger) !important;
+        color: white !important;
+        border-color: var(--tm-danger) !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+        transform: translateY(-2px);
       }
 
       .custom-scroll::-webkit-scrollbar {
@@ -73,10 +96,18 @@
         border-radius: 10px;
       }
 
-      /* [수정됨] 네비게이션 활성화 스타일 추가 */
       .nav-item.active {
         color: #4f46e5;
         background-color: #eef2ff;
+      }
+
+      .scale-up {
+        animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes scaleUp {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
       }
     </style>
   </head>
@@ -84,140 +115,101 @@
   <body class="text-slate-800">
     <div class="flex h-screen p-4 gap-4">
       
+      <!-- 내비게이션 바 컨테이너 -->
       <div id="navbar-container" class="w-20 h-full shrink-0 rounded-[2.5rem]"></div>
 
       <main class="flex-1 overflow-y-auto custom-scroll px-2">
         <div class="max-w-3xl mx-auto py-8 space-y-6">
-          <header class="px-4">
-            <h1 class="text-2xl font-bold text-slate-900">프로필 및 매너</h1>
+          <header class="px-4 flex justify-between items-end">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">프로필 및 매너</h1>
+            </div>
+            <!-- 사용자 차단 버튼 -->
+            <button id="block-user-btn" class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100">
+              <i data-lucide="ban" class="w-4 h-4"></i>
+              사용자 차단
+            </button>
           </header>
 
-          <section
-            class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100"
-          >
-            <div
-              class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8"
-            >
+          <!-- 매너 점수 정보 카드 -->
+          <section class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
               <div class="flex items-center gap-6">
-                <div
-                  class="w-24 h-24 rounded-[2rem] bg-indigo-50 border-4 border-white shadow-md flex items-center justify-center overflow-hidden"
-                >
-                  <img
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                    alt="profile"
-                  />
+                <div class="w-24 h-24 rounded-[2rem] bg-indigo-50 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile" />
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
-                    <h2 class="text-2xl font-bold text-slate-900">
-                      판교동승왕
-                    </h2>
-                    <span
-                      class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-lg font-bold"
-                      >LV. 12</span
-                    >
+                    <h2 class="text-2xl font-bold text-slate-900">판교동승왕</h2>
+                    <span class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-lg font-bold">LV. 12</span>
                   </div>
-                  <p class="text-slate-500 text-sm mt-1">
-                    최근 30일 동안 12번 동승했어요
-                  </p>
+                  <p class="text-slate-500 text-sm mt-1">최근 30일 동안 12번 동승했어요</p>
                 </div>
               </div>
               <div class="text-left md:text-right">
-                <div
-                  class="flex items-center justify-start md:justify-end gap-1 mb-1"
-                >
-                  <span class="text-4xl font-black text-orange-500 italic"
-                    >42.5</span
-                  >
-                  <span class="text-xl font-bold text-slate-300">°C</span>
+                <div class="flex items-center justify-start md:justify-end gap-1 mb-1">
+                  <span class="text-4xl font-black text-indigo-600 italic">72</span>
+                  <span class="text-xl font-bold text-slate-300">점</span>
                 </div>
-                <span
-                  class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
-                  >기본 36.5°C 대비 +6.0°C</span
-                >
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">기본 50점 대비 +22점</span>
               </div>
             </div>
 
             <div class="space-y-3">
-              <div class="manner-temp-bar">
-                <div
-                  id="temp-bar-fill"
-                  class="manner-temp-fill"
-                  style="width: 0%"
-                ></div>
+              <div class="manner-score-bar">
+                <div id="score-bar-fill" class="manner-score-fill" style="width: 0%"></div>
               </div>
-              <div
-                class="flex justify-between items-center text-[10px] font-bold text-slate-400 px-1"
-              >
-                <span>침묵</span>
+              <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 px-1">
+                <span>매너 하위</span>
                 <span>보통</span>
-                <span class="text-orange-500 flex items-center gap-1">
-                  <i data-lucide="flame" class="w-3 h-3"></i> 열정동승러
+                <span class="text-indigo-600 flex items-center gap-1">
+                  <i data-lucide="sparkles" class="w-3 h-3"></i> 베스트 매너러
                 </span>
-                <span>성인군자</span>
+                <span>매너 상위</span>
               </div>
             </div>
           </section>
 
-          <section
-            class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100"
-          >
-            <h3
-              class="text-lg font-bold mb-8 flex items-center gap-2 text-indigo-900"
-            >
-              <i
-                data-lucide="message-square-quote"
-                class="w-5 h-5 text-indigo-600"
-              ></i>
+          <!-- 리뷰 작성 섹션 -->
+          <section class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+            <h3 class="text-lg font-bold mb-8 flex items-center gap-2 text-indigo-900">
+              <i data-lucide="message-square-quote" class="w-5 h-5 text-indigo-600"></i>
               동승은 어떠셨나요?
             </h3>
 
-            <div class="space-y-8">
+            <!-- 제목 아이콘 정렬에 맞춘 들여쓰기 px-7 (양쪽 간격 균형 조정) -->
+            <div class="space-y-10 px-7">
+              <!-- 긍정 피드백 섹션 -->
               <div>
-                <p
-                  class="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest"
-                >
-                  이런 점이 좋았어요!
-                </p>
+                <p class="text-[11px] font-bold text-indigo-400 mb-4 uppercase tracking-widest">이런 점이 좋았어요! (최대 3개)</p>
                 <div class="flex flex-wrap gap-2">
-                  <div
-                    class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold"
-                  >
-                    ⏰ 시간 약속 준수
-                  </div>
-                  <div
-                    class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold"
-                  >
-                    💬 즐거운 대화
-                  </div>
-                  <div
-                    class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold"
-                  >
-                    🤫 정숙한 이동
-                  </div>
-                  <div
-                    class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold"
-                  >
-                    🧼 쾌적한 내부
-                  </div>
-                  <div
-                    class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold"
-                  >
-                    🚗 안전 운전
-                  </div>
+                  <div class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold">⏰ 시간 약속 준수</div>
+                  <div class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold">💬 대화가 즐거웠어요</div>
+                  <div class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold">🤫 정숙하게 이동했어요</div>
+                  <div class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold">⚡ 응답이 빨라요</div>
+                  <div class="review-tag px-5 py-2.5 rounded-2xl text-sm font-semibold">🤝 배려심이 넘쳐요</div>
                 </div>
               </div>
 
+              <!-- 부정 피드백 섹션 -->
               <div>
-                <textarea
-                  class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm resize-none"
-                  placeholder="동승 경험을 자유롭게 적어주세요."
-                ></textarea>
+                <p class="text-[11px] font-bold text-rose-400 mb-4 uppercase tracking-widest">이런 점이 싫었어요 (최대 3개)</p>
+                <div class="flex flex-wrap gap-2">
+                  <div class="review-tag-bad px-5 py-2.5 rounded-2xl text-sm font-semibold">⌛ 시간 약속 미준수</div>
+                  <div class="review-tag-bad px-5 py-2.5 rounded-2xl text-sm font-semibold">📵 연락이 잘 안돼요</div>
+                  <div class="review-tag-bad px-5 py-2.5 rounded-2xl text-sm font-semibold">💬 대화가 불편했어요</div>
+                  <div class="review-tag-bad px-5 py-2.5 rounded-2xl text-sm font-semibold">🚬 불쾌한 냄새/흡연</div>
+                  <div class="review-tag-bad px-5 py-2.5 rounded-2xl text-sm font-semibold">💸 정산이 늦어요</div>
+                </div>
               </div>
 
-              <button
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-3xl shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]"
-              >
+              <!-- 자유 경험 작성 -->
+              <div>
+                <textarea class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm resize-none" placeholder="동승 경험을 자유롭게 적어주세요(선택)"></textarea>
+              </div>
+
+              <!-- 제출 버튼 -->
+              <button id="submit-review-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-3xl shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
                 후기 등록하기
               </button>
             </div>
@@ -227,22 +219,156 @@
     </div>
 
     <script>
-      // [수정됨] 네비게이션 로드 및 활성화 (리뷰 페이지이므로 nav-review 활성화)
-      loadNavbar('nav-review');
-
+      // 내비게이션 활성화
+      if (typeof loadNavbar === 'function') loadNavbar('nav-review');
       lucide.createIcons();
 
-      // 온도 바 애니메이션
+      // 매너 점수 바 애니메이션
       window.onload = () => {
         setTimeout(() => {
-          document.getElementById("temp-bar-fill").style.width = "42.5%";
+          const fill = document.getElementById("score-bar-fill");
+          if (fill) fill.style.width = "72%";
         }, 300);
       };
 
-      // 태그 선택
-      document.querySelectorAll(".review-tag").forEach((tag) => {
-        tag.addEventListener("click", () => {
-          tag.classList.toggle("active");
+      // 공통 모달 생성 함수
+      const showModal = ({ icon, iconColor, iconBg, title, message, buttonText, buttonClass, onConfirm }) => {
+        const modal = document.createElement('div');
+        modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
+        modal.innerHTML = `
+          <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
+            <div class="w-16 h-16 ${iconBg} ${iconColor} rounded-full flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="${icon}" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">${title}</h3>
+            <p class="text-sm text-slate-500 mb-8 leading-relaxed">${message}</p>
+            <button id="modal-confirm-btn" class="w-full py-4 ${buttonClass} text-white rounded-2xl font-bold text-sm transition-all active:scale-95">
+              ${buttonText}
+            </button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        lucide.createIcons();
+
+        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+          document.body.removeChild(modal);
+          if (onConfirm) onConfirm();
+        });
+        
+        return modal;
+      };
+
+      // 태그 토글 및 카테고리별 최대 선택 개수(3개) 제한 로직
+      const setupToggles = (selector) => {
+        document.querySelectorAll(selector).forEach((tag) => {
+          tag.addEventListener("click", () => {
+            // 현재 클릭한 태그가 속한 카테고리의 활성 태그들만 계산
+            const activeInCategory = document.querySelectorAll(`${selector}.active`);
+            
+            // 이미 선택된 상태라면 해제
+            if (tag.classList.contains('active')) {
+              tag.classList.remove('active');
+            } 
+            // 새로 선택하려는 경우, 해당 카테고리 선택 개수가 3개 이상이면 제한
+            else {
+              if (activeInCategory.length >= 3) {
+                const categoryName = selector === '.review-tag' ? '좋았던 점' : '싫었던 점';
+                showModal({
+                  icon: 'alert-circle',
+                  iconColor: 'text-amber-500',
+                  iconBg: 'bg-amber-100',
+                  title: '선택 개수 초과',
+                  message: `${categoryName}은 최대 3개까지만 선택할 수 있습니다.`,
+                  buttonText: '확인',
+                  buttonClass: 'bg-slate-900 hover:bg-slate-800'
+                });
+                return;
+              }
+              tag.classList.add('active');
+            }
+          });
+        });
+      };
+
+      // 각 카테고리별로 독립적인 제한 적용
+      setupToggles(".review-tag");     // 긍정 태그 최대 3개
+      setupToggles(".review-tag-bad"); // 부정 태그 최대 3개
+
+      // 후기 등록 버튼 클릭 이벤트
+      const submitBtn = document.getElementById('submit-review-btn');
+      submitBtn.addEventListener('click', () => {
+        const selectedTags = document.querySelectorAll('.review-tag.active, .review-tag-bad.active');
+        
+        if (selectedTags.length === 0) {
+          showModal({
+            icon: 'alert-circle',
+            iconColor: 'text-amber-500',
+            iconBg: 'bg-amber-100',
+            title: '태그를 선택해주세요',
+            message: '동승 경험에 대한 긍정 혹은 부정 태그 중 하나 이상을 선택해야 후기를 등록할 수 있습니다.',
+            buttonText: '확인',
+            buttonClass: 'bg-slate-900 hover:bg-slate-800'
+          });
+          return;
+        }
+
+        showModal({
+          icon: 'check-circle',
+          iconColor: 'text-emerald-600',
+          iconBg: 'bg-emerald-100',
+          title: '후기 등록 완료',
+          message: '소중한 의견 감사합니다! 전송된 후기는 상대방의 매너 점수에 반영됩니다.',
+          buttonText: '확인',
+          buttonClass: 'bg-indigo-600 hover:bg-indigo-700',
+          onConfirm: () => {
+            window.location.href = 'mypage.html';
+          }
+        });
+      });
+
+      // 사용자 차단 버튼 이벤트
+      const blockBtn = document.getElementById('block-user-btn');
+      blockBtn.addEventListener('click', () => {
+        const confirmModal = document.createElement('div');
+        confirmModal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6";
+        confirmModal.innerHTML = `
+          <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
+            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="user-x" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">사용자를 차단할까요?</h3>
+            <p class="text-sm text-slate-500 mb-8 leading-relaxed">차단하면 더 이상 이 사용자와 매칭되지 않으며 대화가 제한됩니다.</p>
+            <div class="flex gap-3">
+              <button id="cancel-block" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">
+                취소
+              </button>
+              <button id="confirm-block" class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 transition-all shadow-lg shadow-rose-100">
+                차단하기
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(confirmModal);
+        lucide.createIcons();
+
+        document.getElementById('cancel-block').addEventListener('click', () => {
+          document.body.removeChild(confirmModal);
+        });
+
+        document.getElementById('confirm-block').addEventListener('click', () => {
+          confirmModal.innerHTML = `
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl scale-up">
+              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="w-8 h-8"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">차단 완료</h3>
+              <p class="text-sm text-slate-500 mb-8">해당 사용자가 차단되었습니다.</p>
+              <button onclick="window.location.reload()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm">
+                확인
+              </button>
+            </div>
+          `;
+          lucide.createIcons();
         });
       });
     </script>
