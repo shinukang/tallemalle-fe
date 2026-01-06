@@ -9,19 +9,54 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js" integrity="sha384-kDljxUXHaJ9xAb2AzRd59KxjrFjzHa5TAoFQ6GbYTCAG0bjM55XohjjDT7tDDC01" crossorigin="anonymous"></script>
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <script>
-        // 2. 카카오 초기화
+        // --- 카카오 설정 ---
         Kakao.init('f37807b77cb80bec5b35db61d2ad7dba'); 
         
-        console.log("카카오 SDK 초기화:", Kakao.isInitialized());
-
-        // 3. 카카오 로그인 함수 (최신 v2 방식)
         function loginWithKakao() {
-            // 카카오 로그인 창을 띄웁니다.
             Kakao.Auth.authorize({
-                redirectUri: 'http://127.0.0.1:5501/main.html' // 로그인 성공 시 이동할 페이지
+                redirectUri: 'http://127.0.0.1:5501/main.html'
             });
+        }
+
+        // --- [NEW] 구글 설정 ---
+        // ★ 중요: 구글 클라우드 콘솔에서 발급받은 클라이언트 ID로 교체하세요.
+        const GOOGLE_CLIENT_ID = '713866965394-17si5h87afm4otu2clgpc0i03cgegqos.apps.googleusercontent.com'; 
+        let tokenClient;
+
+        function initGoogle() {
+            if(window.google) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/userinfo.profile',
+                    callback: (response) => {
+                        if (response.access_token) {
+                            console.log("구글 로그인 성공");
+                            // 메인 페이지로 이동
+                            location.href = 'main.html';
+                        }
+                    },
+                });
+            }
+        }
+
+        function loginWithGoogle() {
+            if (tokenClient) {
+                // 이미 로그인 된 상태라면 팝업 없이 바로 토큰을 갱신하거나,
+                // prompt: '' 옵션을 통해 강제로 다시 묻게 할 수 있습니다.
+                tokenClient.requestAccessToken();
+            } else {
+                console.error("구글 클라이언트가 로드되지 않았습니다.");
+            }
+        }
+
+        // window.onload에 카카오/구글 초기화 로직이 겹치지 않게 처리
+        window.onload = function() {
+            initGoogle();
+            lucide.createIcons();
         }
     </script>
     
@@ -127,14 +162,14 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button
+                <button onclick="loginWithGoogle()" type="button"
                     class="social-btn flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
                     <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" class="w-4 h-4"
                         alt="Google">
                     <span class="text-sm font-semibold text-slate-600">Google</span>
                 </button>
                 
-                <button onclick="loginWithKakao()"
+                <button onclick="loginWithKakao()" type="button"
                     class="social-btn flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
                     <i data-lucide="message-circle" class="w-4 h-4 text-yellow-500 fill-current"></i>
                     <span class="text-sm font-semibold text-slate-600">Kakao</span>
@@ -149,9 +184,5 @@
             </p>
         </div>
     </div>
-
-    <script>
-        lucide.createIcons();
-    </script>
 </body>
 </html>
