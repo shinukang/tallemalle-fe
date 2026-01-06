@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탈래말래 드라이버 - 내비게이션 센터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f37807b77cb80bec5b35db61d2ad7dba&libraries=services&autoload=false"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
+
+        body {
+            font-family: "Pretendard", sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* 지도를 어둡게 만드는 필터 */
+        .kakao-dark-mode {
+            filter: invert(90%) hue-rotate(180deg) brightness(105%) contrast(95%);
+        }
+
+        .map-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 대기 중 상태 스타일 */
+        .map-dimmed {
+            filter: grayscale(1) brightness(0.3) blur(4px);
+            transform: scale(1.05);
+        }
+
+        /* 자동차 화살표 마커 */
+        .car-marker {
+            width: 40px;
+            height: 40px;
+            background: #4f46e5;
+            clip-path: polygon(50% 0%, 15% 100%, 50% 80%, 85% 100%);
+            border: 2px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-enter {
+            animation: modal-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modal-slide-up {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-screen">
+
+    <div id="main-view" class="h-full flex flex-col relative overflow-hidden">
+        
+        <header id="navi-header" class="fixed top-0 inset-x-0 bg-[#1e293b]/90 backdrop-blur-xl p-6 flex justify-between items-center shadow-2xl z-30 border-b border-white/5 transition-all duration-700 opacity-0 -translate-y-full">
+            <div class="flex items-center gap-6">
+                <div class="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i data-lucide="navigation-2" class="w-8 h-8 text-white rotate-45"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">테헤란로 삼성역 방면</h2>
+                    <p class="text-emerald-400 font-bold animate-pulse">800m 앞 우회전 하세요</p>
+                </div>
+            </div>
+            <div class="flex gap-8">
+                <div class="text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">남은 거리</p>
+                    <p id="remain-dist" class="text-2xl font-black text-indigo-400">4.2km</p>
+                </div>
+                <div class="text-center border-l border-white/10 pl-8">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">도착 예정</p>
+                    <p class="text-2xl font-black">17:55</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 relative">
+            <div id="map" class="map-container map-dimmed kakao-dark-mode"></div>
+
+            <div id="waiting-overlay" class="absolute top-10 left-1/2 -translate-x-1/2 z-20 bg-slate-900/80 backdrop-blur-md px-8 py-4 rounded-full border border-white/20 flex items-center gap-4 transition-all duration-500">
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                </div>
+                <span class="text-base font-bold tracking-wider text-indigo-100">주변 호출을 탐색하는 중...</span>
+            </div>
+
+            <div id="passenger-card" class="absolute top-32 right-8 w-72 z-20 bg-slate-900/95 backdrop-blur-xl p-5 rounded-[2rem] border border-white/10 shadow-2xl opacity-0 scale-95 pointer-events-none transition-all duration-500">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-12 h-12 rounded-full bg-slate-800 border-2 border-indigo-500">
+                    <div>
+                        <p class="text-[10px] text-indigo-400 font-bold">탑승객</p>
+                        <p class="font-bold text-lg text-white">이정우 님 외 1명</p>
+                    </div>
+                </div>
+                <button class="w-full py-3 bg-white/5 text-xs font-bold rounded-xl border border-white/10 hover:bg-white/10 transition-colors">메시지 보내기</button>
+            </div>
+        </div>
+
+        <footer class="absolute inset-x-8 bottom-8 z-30 flex justify-between items-end">
+            <button class="w-16 h-16 bg-slate-900/90 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 text-white shadow-xl hover:bg-slate-800 transition-colors">
+                <i data-lucide="layers" class="w-8 h-8"></i>
+            </button>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="triggerMatching()" id="mock-btn" class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-400 text-white shadow-xl animate-bounce hover:bg-indigo-500 transition-all">
+                    <i data-lucide="bell" class="w-8 h-8"></i>
+                </button>
+                <div id="drive-controls" class="hidden flex items-center gap-4">
+                    <button onclick="location.reload()" class="px-12 py-6 bg-rose-500 text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-rose-500/30 active:scale-95 transition-all">운행 종료</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="matching-modal" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm hidden">
+        <div class="w-full max-w-lg bg-white rounded-[3rem] overflow-hidden modal-enter shadow-2xl">
+            <div class="bg-[#4f46e5] p-10 text-white relative">
+                <div class="absolute right-10 top-10 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                    <p class="text-sm font-bold opacity-70 mb-1">새로운 매칭 요청</p>
+                    <h3 class="text-3xl font-black mb-6">강남역 2번 출구</h3>
+                    <div class="flex justify-between items-end">
+                        <p class="text-indigo-100 flex items-center gap-2 font-medium">
+                            <i data-lucide="map-pin" class="w-5 h-5"></i> 판교역 4번 출구
+                        </p>
+                        <p class="text-4xl font-black">28,400원</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-8">
+                <div class="flex gap-4">
+                    <button onclick="closeModal()" class="flex-1 py-6 bg-slate-100 text-slate-500 rounded-2xl font-bold text-lg">거절</button>
+                    <button onclick="acceptMatching()" class="flex-[2.5] py-6 bg-indigo-600 text-white rounded-2xl font-black text-2xl shadow-xl shadow-indigo-200 active:scale-95 transition-all">수락하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 루사이드 아이콘 초기화
+        lucide.createIcons();
+
+        let map, driverMarker;
+        let startPos;
+
+        // [핵심] kakao.maps.load를 사용하여 모든 지도 관련 기능 실행
+        kakao.maps.load(() => {
+            console.log("카카오 지도 SDK 로드 시작...");
+            
+            // 1. 위치 객체 생성 (load 안에서 실행해야 에러가 안 남)
+            startPos = new kakao.maps.LatLng(37.4979, 127.0276);
+
+            // 2. 지도 초기화
+            const container = document.getElementById('map');
+            const options = { 
+                center: startPos, 
+                level: 3 
+            };
+            map = new kakao.maps.Map(container, options);
+            
+            // 3. 자동차 커스텀 마커 생성
+            const content = document.createElement('div');
+            content.className = 'car-marker';
+            
+            driverMarker = new kakao.maps.CustomOverlay({
+                position: startPos,
+                content: content,
+                yAnchor: 0.5
+            });
+            driverMarker.setMap(map);
+            
+            console.log("카카오 지도 로드 및 객체 생성 완료");
+        });
+
+        // UI 제어 함수들
+        function triggerMatching() { 
+            document.getElementById('matching-modal').classList.remove('hidden'); 
+        }
+
+        function closeModal() { 
+            document.getElementById('matching-modal').classList.add('hidden'); 
+        }
+
+        function acceptMatching() {
+            closeModal();
+            
+            // UI 상태 전환
+            document.getElementById('waiting-overlay').style.opacity = '0';
+            document.getElementById('mock-btn').classList.add('hidden');
+            document.getElementById('drive-controls').classList.remove('hidden');
+            document.getElementById('navi-header').classList.remove('opacity-0', '-translate-y-full');
+            document.getElementById('passenger-card').classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+            
+            // 지도 비주얼 전환 (선명하게 & 3D 시점 느낌)
+            const mapEl = document.getElementById('map');
+            mapEl.classList.remove('map-dimmed');
+            
+            if(map) {
+                map.setLevel(2, {animate: true});
+                startMockDrive();
+            }
+        }
+
+        // 모의 주행 애니메이션
+        function startMockDrive() {
+            let lat = 37.4979;
+            let lon = 127.0276;
+            let angle = 150; // 차량 회전 각도
+
+            setInterval(() => {
+                lat += 0.00004; // 위도 이동
+                lon += 0.00006; // 경도 이동
+                
+                const currentPos = new kakao.maps.LatLng(lat, lon);
+                
+                // 마커 위치 업데이트
+                if(driverMarker) driverMarker.setPosition(currentPos);
+                
+                // 마커 회전 처리
+                const carElement = document.querySelector('.car-marker');
+                if(carElement) carElement.style.transform = `rotate(${angle}deg)`;
+
+                // 지도 따라가기
+                if(map) map.panTo(currentPos);
+            }, 800);
+        }
+    </script>
+</body>
+</html>
