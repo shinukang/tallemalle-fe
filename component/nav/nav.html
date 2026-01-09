@@ -1,6 +1,7 @@
 <div
   class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto shrink-0 relative z-40"
 >
+
   <div class="mb-12">
     <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200">
       <i data-lucide="car-front" class="text-white w-6 h-6"></i>
@@ -8,8 +9,9 @@
   </div>
 
   <div class="flex-1 flex flex-col gap-4">
+
     <button
-      onclick="location.href='./main.html'"
+      onclick="location.href='/pages/mainService/main.html'"
       class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
       id="nav-home"
       title="홈"
@@ -18,15 +20,13 @@
     </button>
 
     <button
-      onclick="location.href='./chat.html'"
+      onclick="location.href='/pages/mainService/chat.html'"
       class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all relative"
       id="nav-chat"
       title="채팅"
     >
       <i data-lucide="message-circle" class="w-6 h-6"></i>
-      <span
-        class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"
-      ></span>
+      <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
     </button>
 
     <button
@@ -36,27 +36,23 @@
       title="알림"
     >
       <i data-lucide="bell" class="w-6 h-6"></i>
-      <span
-        class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"
-      ></span>
+      <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
     </button>
 
     <button
-      onclick="location.href='./notice.html'"
+      onclick="location.href='/pages/appInfo/notice.html'"
       class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all relative"
       id="nav-notice"
       title="공지사항"
     >
       <i data-lucide="megaphone" class="w-6 h-6"></i>
-      <span
-        class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"
-      ></span>
     </button>
   </div>
 
   <div class="flex flex-col gap-4 items-center">
+
     <button
-      onclick="location.href='setting.html'"
+      onclick="location.href='/pages/appInfo/setting.html'"
       class="nav-item p-3 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
       id="nav-setting"
       title="설정"
@@ -65,7 +61,7 @@
     </button>
 
     <div
-      onclick="location.href='mypage.html'"
+      onclick="location.href='/pages/userProfile/mypage.html'"
       class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:border-indigo-400 transition-all"
       id="nav-mypage"
       title="마이페이지"
@@ -78,7 +74,7 @@
     </div>
 
     <button
-      onclick="location.href='login.html'"
+      onclick="handleLogout()"
       class="nav-item p-3 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all mt-2"
       title="로그아웃"
     >
@@ -89,37 +85,29 @@
 
 <div
   id="global-notification-popup"
-  class="hidden absolute left-[115px] top-[220px] w-[320px] bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-6 z-50 pointer-events-auto flex flex-col gap-4 transition-all origin-top-left animate-in fade-in zoom-in-95 duration-200"
+  class="hidden absolute left-[115px] top-[220px] w-[320px] bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-6 z-[999] pointer-events-auto flex flex-col gap-4 transition-all origin-top-left animate-in fade-in zoom-in-95 duration-200"
 >
   <div class="flex justify-between items-center border-b border-slate-50 pb-4">
     <h3 class="font-bold text-slate-900 text-lg">실시간 알림</h3>
   </div>
 
   <div class="flex flex-col gap-4 max-h-[300px] overflow-y-auto custom-scroll">
-    <div
-      class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors"
-    >
-      <div
-        class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"
-      >
+
+    <div class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors">
+      <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
         <i data-lucide="user-plus" class="w-5 h-5"></i>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-[10px] font-bold text-indigo-500">동승자 입장</span>
         <p class="text-sm text-slate-600 leading-snug">
-          <span class="font-bold text-slate-800">박지민</span>님이 파티에
-          입장했습니다.
+          <span class="font-bold text-slate-800">박지민</span>님이 파티에 입장했습니다.
         </p>
         <span class="text-[10px] text-slate-400">방금 전</span>
       </div>
     </div>
 
-    <div
-      class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors"
-    >
-      <div
-        class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"
-      >
+    <div class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors">
+      <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
         <i data-lucide="check-circle-2" class="w-5 h-5"></i>
       </div>
       <div class="flex flex-col gap-1">
@@ -130,10 +118,11 @@
         <span class="text-[10px] text-slate-400">2분 전</span>
       </div>
     </div>
+
   </div>
 
   <button
-    onclick="location.href='notifications.html'"
+    onclick="location.href='/pages/appInfo/notifications.html'"
     class="w-full py-3 mt-2 text-xs font-bold text-slate-400 bg-slate-50 hover:bg-slate-100 hover:text-slate-600 rounded-xl transition-all"
   >
     전체보기

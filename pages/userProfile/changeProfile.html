@@ -6,7 +6,7 @@
     <title>탈래말래 - 회원 정보 수정</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="nav.js"></script>
+    <script src="../../component/nav/nav.js"></script>
 
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
@@ -589,7 +589,7 @@
         }
         // 저장 완료 후 페이지 이동 (콜백 함수 사용)
         showCustomAlert("회원 정보가 성공적으로 수정되었습니다!", function () {
-          location.href = "mypage.html";
+          location.href = "./mypage.html";
         });
       }
     </script>

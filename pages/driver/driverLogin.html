@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>탈래말래 파트너스 - 로그인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap");
+
+        body {
+            font-family: "Pretendard", sans-serif;
+            background-color: #0f172a;
+            /* Slate 900 */
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 입력창 포커스 시 아이콘 색상 변경 애니메이션 */
+        .input-group:focus-within i {
+            color: #818cf8;
+            transform: scale(1.1);
+        }
+
+        .input-group:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* 버튼 클릭 효과 */
+        .btn-press:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body class="h-[100dvh] w-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+
+    <div
+        class="absolute top-[-10%] left-[-20%] w-80 h-80 bg-indigo-600/30 rounded-full blur-[100px] pointer-events-none">
+    </div>
+    <div
+        class="absolute bottom-[-10%] right-[-20%] w-80 h-80 bg-rose-500/20 rounded-full blur-[100px] pointer-events-none">
+    </div>
+
+    <div class="w-full max-w-sm z-10">
+
+        <div class="text-center mb-10">
+            <div
+                class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/30">
+                <i data-lucide="car-front" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-black mb-2 tracking-tight">기사님 환영합니다!</h1>
+            <p class="text-slate-400">오늘도 안전운행 하세요 🚗</p>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-400 ml-1 uppercase tracking-wider">Driver ID</label>
+                <div
+                    class="input-group flex items-center bg-slate-800/80 border border-slate-700 rounded-2xl px-4 py-3.5 transition-all duration-300">
+                    <i data-lucide="user" class="w-5 h-5 text-slate-500 transition-colors mr-3"></i>
+                    <input type="text" id="driverId" placeholder="아이디를 입력하세요"
+                        class="bg-transparent border-none outline-none text-white placeholder-slate-500 w-full font-medium"
+                        value="driver_jake" required>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-400 ml-1 uppercase tracking-wider">Password</label>
+                <div
+                    class="input-group flex items-center bg-slate-800/80 border border-slate-700 rounded-2xl px-4 py-3.5 transition-all duration-300">
+                    <i data-lucide="lock" class="w-5 h-5 text-slate-500 transition-colors mr-3"></i>
+                    <input type="password" id="password" placeholder="비밀번호"
+                        class="bg-transparent border-none outline-none text-white placeholder-slate-500 w-full font-medium">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between px-1">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox"
+                        class="w-4 h-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500/50">
+                    <span class="text-sm text-slate-400">자동 로그인</span>
+                </label>
+                <a href="#" class="text-sm text-indigo-400 font-bold hover:text-indigo-300">비밀번호 찾기</a>
+            </div>
+
+            <button type="submit" id="loginBtn"
+                class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/40 btn-press transition-all flex justify-center items-center gap-2 mt-4">
+                <span>운행 시작하기</span>
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+
+        </form>
+
+        <p class="text-center text-slate-500 text-sm mt-8">
+            계정이 없으신가요? <a href="#"
+                class="text-white font-bold underline decoration-indigo-500 decoration-2 underline-offset-4">파트너
+                지원하기</a>
+        </p>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        // 소켓 초기화
+        const socket = io();
+
+        // 서버에 "나 기사님입니다"라고 알림
+        socket.emit('join_driver');
+
+        // [핵심] 서버로부터 'receive_call' 이벤트를 받으면 실행
+        socket.on('receive_call', (data) => {
+            console.log("콜 받음:", data);
+
+            // 1. 모달 내용 업데이트 (승객이 보낸 정보로 덮어쓰기)
+            updateModalContent(data);
+
+            // 2. 알림 소리 재생 (선택사항)
+            // new Audio('ringtone.mp3').play();
+
+            // 3. 모달 띄우기 (기존 함수 활용)
+            triggerCall();
+        });
+
+        // 받은 데이터로 모달 내용을 동적으로 변경하는 함수
+        function updateModalContent(data) {
+            const modal = document.getElementById('call-modal');
+
+            // 안전하게 요소 찾기 및 텍스트 변경
+            // (주의: HTML 요소에 해당 ID나 클래스가 정확해야 합니다. 여기선 예시로 querySelector 사용)
+
+            // 출발지 (큰 글씨)
+            const pickupTitle = modal.querySelector('h3:nth-of-type(1)');
+            if (pickupTitle) pickupTitle.innerText = data.pickup;
+
+            // 도착지 (회색 글씨)
+            const destTitle = modal.querySelector('h3:nth-of-type(2)');
+            if (destTitle) destTitle.innerText = data.destination;
+
+            // 예상 수입
+            const priceTag = modal.querySelector('.bg-indigo-50');
+            if (priceTag) priceTag.innerText = `예상 수입 ${parseInt(data.price).toLocaleString()}원`;
+        }
+
+        function handleLogin(e) {
+            e.preventDefault(); // 폼 제출 시 새로고침 방지
+
+            const driverIdInput = document.getElementById('driverId').value;
+            const btn = document.getElementById('loginBtn');
+
+            // 1. 유효성 검사 (간단히)
+            if (!driverIdInput) {
+                alert("아이디를 입력해주세요!");
+                return;
+            }
+
+            // 2. 로딩 효과 (UX)
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> 로그인 중...`;
+            lucide.createIcons();
+
+            // 3. 실제 로그인 처리 (여기서는 localStorage 저장 후 페이지 이동)
+            setTimeout(() => {
+                // [중요] 기사 ID를 저장해서 main.html에서 쓸 수 있게 함
+                localStorage.setItem('tm_driver_id', driverIdInput);
+
+                // 페이지 이동
+                window.location.href = './driverPage.html'; // 파일명이 main.html이어야 합니다.
+            }, 1000); // 1초 딜레이 주는 척 (멋을 위해)
+        }
+    </script>
+</body>
+
+</html>

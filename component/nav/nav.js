@@ -15,7 +15,7 @@
 async function loadNavbar(activeId) {
   try {
     // 1. nav.html 파일 가져오기 (비동기 요청)
-    const response = await fetch("nav.html");
+    const response = await fetch("/component/nav/nav.html");
 
     // 가져온 HTML 텍스트 변환
     const html = await response.text();
