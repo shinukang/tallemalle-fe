@@ -1,710 +1,615 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>탈래말래 - 회원가입</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
 
-      :root {
-        --tm-primary: #4f46e5;
-        --tm-error: #ef4444;
-        --tm-success: #10b981;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>탈래말래 - 회원가입</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap");
+
+    :root {
+      --tm-primary: #4f46e5;
+      --tm-error: #ef4444;
+      --tm-success: #10b981;
+    }
+
+    body {
+      font-family: "Pretendard", sans-serif;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* 회원가입 카드 스타일 */
+    .signup-card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(30, 27, 75, 0.1);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      position: relative;
+      z-index: 10;
+    }
+
+    /* 입력창 포커스 효과 */
+    .input-group:focus-within label {
+      color: var(--tm-primary);
+    }
+
+    /* 에러 발생 시 스타일 (흔들림 효과 포함) */
+    .input-error {
+      border-color: var(--tm-error) !important;
+      animation: shake 0.3s ease-in-out;
+      background-color: #fef2f2;
+    }
+
+    .error-msg {
+      color: var(--tm-error);
+      font-size: 11px;
+      margin-top: 4px;
+      margin-left: 4px;
+      display: none;
+      font-weight: 600;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
       }
 
-      body {
-        font-family: "Pretendard", sans-serif;
-        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+      25% {
+        transform: translateX(-2px);
       }
 
-      .signup-card {
-        background: white;
-        border-radius: 24px;
-        box-shadow: 0 10px 40px rgba(30, 27, 75, 0.1);
-        width: 100%;
-        max-width: 480px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        position: relative;
-        z-index: 10;
+      75% {
+        transform: translateX(2px);
       }
+    }
 
-      .input-group:focus-within label {
-        color: var(--tm-primary);
-      }
+    /* 커스텀 체크박스 스타일 */
+    .custom-checkbox:checked {
+      background-color: var(--tm-primary);
+      border-color: var(--tm-primary);
+    }
 
-      .input-error {
-        border-color: var(--tm-error) !important;
-        animation: shake 0.3s ease-in-out;
-        background-color: #fef2f2;
-      }
+    /* 로고 호버 애니메이션 */
+    .logo-bounce:hover i {
+      transform: translateY(-3px) rotate(5deg);
+    }
 
-      .error-msg {
-        color: var(--tm-error);
-        font-size: 11px;
-        margin-top: 4px;
-        margin-left: 4px;
-        display: none;
-        font-weight: 600;
-      }
+    /* === 모달(알림창/인증창) 공통 스타일 === */
+    .modal-overlay {
+      background-color: rgba(30, 27, 75, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
 
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translateX(0);
-        }
-        25% {
-          transform: translateX(-2px);
-        }
-        75% {
-          transform: translateX(2px);
-        }
-      }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
 
-      .custom-checkbox:checked {
-        background-color: var(--tm-primary);
-        border-color: var(--tm-primary);
-      }
+    .modal-content {
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-      .logo-bounce:hover i {
-        transform: translateY(-3px) rotate(5deg);
-      }
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
 
-      /* --- 모달 공통 스타일 --- */
-      .modal-overlay {
-        background-color: rgba(30, 27, 75, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 50;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-      }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
 
-      .modal-overlay.active {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .modal-content {
-        transform: translateY(20px);
-        opacity: 0;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .modal-overlay.active .modal-content {
-        transform: translateY(0);
-        opacity: 1;
-      }
-
-      .hidden {
-        display: none;
-      }
-    </style>
-  </head>
-  <body class="text-slate-800">
-    <div class="signup-card">
-      <div class="p-8 pb-0 flex flex-col items-center text-center">
-        <div class="logo-bounce flex items-center gap-2 mb-6 cursor-default">
-          <div
-            class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-100 transition-transform"
-          >
-            <i data-lucide="car-front" class="text-white w-7 h-7"></i>
-          </div>
-          <h1 class="text-2xl font-bold tracking-tight text-indigo-900">
-            탈래말래
-          </h1>
+<body class="text-slate-800">
+  <div class="signup-card">
+    <div class="p-8 pb-0 flex flex-col items-center text-center">
+      <div class="logo-bounce flex items-center gap-2 mb-6 cursor-default">
+        <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-100 transition-transform">
+          <i data-lucide="car-front" class="text-white w-7 h-7"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-800" id="step-title">
-          본인 확인
-        </h2>
-        <p class="text-slate-500 mt-2 text-sm" id="step-desc">
-          안전한 서비스 이용을 위해 실명을 인증해주세요.
-        </p>
+        <h1 class="text-2xl font-bold tracking-tight text-indigo-900">
+          탈래말래
+        </h1>
       </div>
-
-      <form class="p-8 space-y-5" onsubmit="event.preventDefault();">
-        <div id="step-1">
-          <div class="input-group mb-5">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >이름</label
-            >
-            <div class="relative">
-              <input
-                type="text"
-                id="username"
-                placeholder="실명을 입력해주세요"
-                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <i
-                data-lucide="user"
-                class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"
-              ></i>
-            </div>
-          </div>
-
-          <div class="input-group mb-5">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >휴대폰 번호</label
-            >
-            <div class="flex gap-2">
-              <input
-                type="tel"
-                id="phone"
-                placeholder="010-0000-0000"
-                maxlength="13"
-                oninput="autoHyphen(this)"
-                class="flex-1 px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <button
-                type="button"
-                id="btn-request-phone"
-                onclick="requestAuth('phone')"
-                class="px-4 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors whitespace-nowrap min-w-[80px]"
-              >
-                인증번호 전송
-              </button>
-            </div>
-            <p class="error-msg" id="phone-error">전화번호를 입력해주세요.</p>
-          </div>
-
-          <div class="input-group mb-6">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >주민등록번호</label
-            >
-            <div class="flex items-center gap-2">
-              <input
-                type="text"
-                id="jumin-front"
-                placeholder="생년월일 6자리"
-                maxlength="6"
-                oninput="checkLengthAndFocus(this, 6, 'jumin-back')"
-                class="flex-1 px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <span class="text-slate-400 font-bold">-</span>
-              <div class="flex items-center gap-2 flex-1">
-                <input
-                  type="text"
-                  id="jumin-back"
-                  placeholder="1"
-                  maxlength="1"
-                  class="w-12 px-2 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
-                <div class="flex gap-1">
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onclick="goToStep2()"
-            class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            <span>다음 단계로</span>
-            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-          </button>
-        </div>
-
-        <div id="step-2" class="hidden">
-          <div class="input-group mb-5">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >이메일 계정</label
-            >
-            <div class="flex gap-2">
-              <div class="relative flex-1">
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="example@tallemalle.com"
-                  class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
-              </div>
-              <button
-                type="button"
-                id="btn-request-email"
-                onclick="requestAuth('email')"
-                class="px-4 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors whitespace-nowrap min-w-[80px]"
-              >
-                인증번호 전송
-              </button>
-            </div>
-            <p class="error-msg" id="email-error">
-              올바른 이메일 형식이 아닙니다.
-            </p>
-          </div>
-
-          <div class="input-group mb-5">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >비밀번호</label
-            >
-            <div class="relative">
-              <input
-                type="password"
-                id="password"
-                placeholder="영문, 숫자, 특수문자 포함 8자 이상"
-                oninput="checkPasswordMatch()"
-                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <i
-                data-lucide="lock"
-                class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"
-              ></i>
-            </div>
-            <p class="error-msg" id="pw-error">
-              비밀번호는 8자 이상이어야 합니다.
-            </p>
-          </div>
-
-          <div class="input-group mb-5">
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1"
-              >비밀번호 확인</label
-            >
-            <div class="relative">
-              <input
-                type="password"
-                id="password-confirm"
-                placeholder="비밀번호를 한 번 더 입력해주세요"
-                oninput="checkPasswordMatch()"
-                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <i
-                data-lucide="check-circle-2"
-                class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"
-              ></i>
-            </div>
-            <p class="error-msg" id="pw-match-error">
-              비밀번호가 일치하지 않습니다.
-            </p>
-          </div>
-
-          <div class="pt-2 space-y-3 border-t border-slate-50 mt-2 mb-6">
-            <label class="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                id="term-check"
-                class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-              />
-              <span
-                class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors"
-                >이용약관 및 개인정보 처리방침 동의 (필수)</span
-              >
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-              />
-              <span
-                class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors"
-                >대학생/직장인 인증 참여 (선택)</span
-              >
-            </label>
-          </div>
-
-          <div class="flex gap-3">
-            <button
-              type="button"
-              onclick="goToStep1()"
-              class="px-5 py-4 rounded-xl border border-slate-200 text-slate-500 font-bold hover:bg-slate-50"
-            >
-              이전
-            </button>
-            <button
-              type="button"
-              onclick="handleSignup()"
-              class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <span>가입 완료</span>
-              <i data-lucide="check" class="w-5 h-5"></i>
-            </button>
-          </div>
-        </div>
-      </form>
-
-      <div class="p-6 bg-slate-50 text-center border-t border-slate-100">
-        <p class="text-sm text-slate-500">
-          이미 계정이 있으신가요?
-          <a
-            href="./login.html"
-            class="text-indigo-600 font-bold hover:underline"
-            >로그인</a
-          >
-        </p>
-      </div>
+      <h2 class="text-xl font-bold text-slate-800" id="step-title">
+        본인 확인
+      </h2>
+      <p class="text-slate-500 mt-2 text-sm" id="step-desc">
+        안전한 서비스 이용을 위해 실명을 인증해주세요.
+      </p>
     </div>
 
-    <div
-      id="alert-modal"
-      class="modal-overlay fixed inset-0 flex items-center justify-center p-4 z-[60]"
-    >
-      <div
-        class="modal-content bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden p-6 text-center"
-      >
-        <div
-          class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"
-        >
-          <i data-lucide="info" class="w-6 h-6 text-indigo-600"></i>
+    <form class="p-8 space-y-5" onsubmit="event.preventDefault();">
+
+      <div id="step-1">
+        <div class="input-group mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">이름</label>
+          <div class="relative">
+            <input type="text" id="username" placeholder="실명을 입력해주세요"
+              class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <i data-lucide="user" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
+          </div>
         </div>
-        <h3 class="text-lg font-bold text-slate-900 mb-2">알림</h3>
-        <p id="alert-msg" class="text-sm text-slate-500 mb-6 leading-relaxed">
-          내용이 들어갑니다.
-        </p>
-        <button
-          onclick="closeAlert()"
-          class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
-        >
-          확인
+
+        <div class="input-group mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">휴대폰 번호</label>
+          <div class="flex gap-2">
+            <input type="tel" id="phone" placeholder="010-0000-0000" maxlength="13" oninput="autoHyphen(this)"
+              class="flex-1 px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <button type="button" id="btn-request-phone" onclick="requestAuth('phone')"
+              class="px-4 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors whitespace-nowrap min-w-[80px]">
+              인증번호 전송
+            </button>
+          </div>
+          <p class="error-msg" id="phone-error">전화번호를 입력해주세요.</p>
+        </div>
+
+        <div class="input-group mb-6">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">주민등록번호</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="jumin-front" placeholder="생년월일 6자리" maxlength="6"
+              oninput="checkLengthAndFocus(this, 6, 'jumin-back')"
+              class="flex-1 px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <span class="text-slate-400 font-bold">-</span>
+            <div class="flex items-center gap-2 flex-1">
+              <input type="text" id="jumin-back" placeholder="1" maxlength="1"
+                class="w-12 px-2 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+              <div class="flex gap-1">
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="goToStep2()"
+          class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+          <span>다음 단계로</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
         </button>
       </div>
-    </div>
 
-    <div
-      id="auth-modal"
-      class="modal-overlay fixed inset-0 flex items-center justify-center p-4"
-    >
-      <div
-        class="modal-content bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden"
-      >
-        <div class="p-6 text-center">
-          <div
-            class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4"
-          >
-            <i data-lucide="send" class="w-6 h-6 text-indigo-600"></i>
+      <div id="step-2" class="hidden">
+        <div class="input-group mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">이메일 계정</label>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input type="email" id="email" placeholder="example@tallemalle.com"
+                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            </div>
+            <button type="button" id="btn-request-email" onclick="requestAuth('email')"
+              class="px-4 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors whitespace-nowrap min-w-[80px]">
+              인증번호 전송
+            </button>
           </div>
-          <h3 class="text-lg font-bold text-slate-900" id="modal-title">
-            인증번호 발송 완료
-          </h3>
-          <p class="text-sm text-slate-500 mt-1" id="modal-desc">
-            입력하신 정보로 인증번호가 전송되었습니다.
+          <p class="error-msg" id="email-error">
+            올바른 이메일 형식이 아닙니다.
           </p>
+        </div>
 
-          <div class="mt-6 mb-2 relative">
-            <input
-              type="text"
-              id="auth-code-input"
-              placeholder="인증번호 4자리 (예: 1234)"
-              maxlength="4"
-              class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent tracking-widest"
-            />
+        <div class="input-group mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">비밀번호</label>
+          <div class="relative">
+            <input type="password" id="password" placeholder="영문, 숫자, 특수문자 포함 8자 이상" oninput="checkPasswordMatch()"
+              class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <i data-lucide="lock" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
           </div>
+          <p class="error-msg" id="pw-error">
+            비밀번호는 8자 이상이어야 합니다.
+          </p>
+        </div>
 
-          <div class="text-sm font-bold text-rose-500 mb-6" id="timer-display">
-            03:00
+        <div class="input-group mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">비밀번호 확인</label>
+          <div class="relative">
+            <input type="password" id="password-confirm" placeholder="비밀번호를 한 번 더 입력해주세요" oninput="checkPasswordMatch()"
+              class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <i data-lucide="check-circle-2" class="absolute right-4 top-3.5 w-5 h-5 text-slate-300"></i>
           </div>
+          <p class="error-msg" id="pw-match-error">
+            비밀번호가 일치하지 않습니다.
+          </p>
+        </div>
 
-          <div class="flex gap-3">
-            <button
-              onclick="closeAuthModal()"
-              class="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-500 font-bold hover:bg-slate-50 transition-colors"
-            >
-              취소
-            </button>
-            <button
-              onclick="confirmAuthCode()"
-              class="flex-1 py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
-            >
-              인증하기
-            </button>
-          </div>
+        <div class="pt-2 space-y-3 border-t border-slate-50 mt-2 mb-6">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" id="term-check"
+              class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">이용약관 및 개인정보 처리방침 동의
+              (필수)</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox"
+              class="custom-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+            <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">대학생/직장인 인증 참여 (선택)</span>
+          </label>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" onclick="goToStep1()"
+            class="px-5 py-4 rounded-xl border border-slate-200 text-slate-500 font-bold hover:bg-slate-50">
+            이전
+          </button>
+          <button type="button" onclick="handleSignup()"
+            class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>가입 완료</span>
+            <i data-lucide="check" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="p-6 bg-slate-50 text-center border-t border-slate-100">
+      <p class="text-sm text-slate-500">
+        이미 계정이 있으신가요?
+        <a href="./login.html" class="text-indigo-600 font-bold hover:underline">로그인</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="alert-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 z-[60]">
+    <div class="modal-content bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden p-6 text-center">
+      <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="info" class="w-6 h-6 text-indigo-600"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-2">알림</h3>
+      <p id="alert-msg" class="text-sm text-slate-500 mb-6 leading-relaxed">
+        내용이 들어갑니다.
+      </p>
+      <button onclick="closeAlert()"
+        class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100">
+        확인
+      </button>
+    </div>
+  </div>
+
+  <div id="auth-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4">
+    <div class="modal-content bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden">
+      <div class="p-6 text-center">
+        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="send" class="w-6 h-6 text-indigo-600"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900" id="modal-title">
+          인증번호 발송 완료
+        </h3>
+        <p class="text-sm text-slate-500 mt-1" id="modal-desc">
+          입력하신 정보로 인증번호가 전송되었습니다.
+        </p>
+
+        <div class="mt-6 mb-2 relative">
+          <input type="text" id="auth-code-input" placeholder="인증번호 4자리 (예: 1234)" maxlength="4"
+            class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent tracking-widest" />
+        </div>
+
+        <div class="text-sm font-bold text-rose-500 mb-6" id="timer-display">
+          03:00
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeAuthModal()"
+            class="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-500 font-bold hover:bg-slate-50 transition-colors">
+            취소
+          </button>
+          <button onclick="confirmAuthCode()"
+            class="flex-1 py-3.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100">
+            인증하기
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      lucide.createIcons();
+  <script>
+    lucide.createIcons();
 
-      let isPhoneVerified = false;
-      let isEmailVerified = false;
-      let timerInterval;
-      let currentAuthType = "";
-      let alertCallback = null;
+    // 전역 상태 변수
+    let isPhoneVerified = false;
+    let isEmailVerified = false;
+    let timerInterval;
+    let currentAuthType = "";
+    let alertCallback = null;
 
-      // [NEW] 자동 포커스 이동 함수
-      function checkLengthAndFocus(element, maxLength, nextId) {
-        if (element.value.length >= maxLength) {
-          document.getElementById(nextId).focus();
-        }
+    // [유틸] 입력 길이 체크 후 다음 칸으로 포커스 이동
+    function checkLengthAndFocus(element, maxLength, nextId) {
+      if (element.value.length >= maxLength) {
+        document.getElementById(nextId).focus();
+      }
+    }
+
+    // [유틸] 커스텀 알림창 표시
+    function showAlert(msg, callback) {
+      document.getElementById("alert-msg").innerText = msg;
+      const modal = document.getElementById("alert-modal");
+      modal.classList.add("active");
+      alertCallback = callback;
+    }
+
+    function closeAlert() {
+      const modal = document.getElementById("alert-modal");
+      modal.classList.remove("active");
+      if (alertCallback) {
+        alertCallback();
+        alertCallback = null;
+      }
+    }
+
+    // [유틸] 전화번호 자동 하이픈 (-) 추가
+    function autoHyphen(target) {
+      target.value = target.value
+        .replace(/[^0-9]/g, "")
+        .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/g, "$1-$2-$3")
+        .replace(/(\-{1,2})$/g, "");
+    }
+
+    // [유틸] 비밀번호 일치 여부 실시간 확인
+    function checkPasswordMatch() {
+      const pw = document.getElementById("password").value;
+      const pwConfirm = document.getElementById("password-confirm").value;
+      const errorMsg = document.getElementById("pw-match-error");
+      const confirmInput = document.getElementById("password-confirm");
+
+      if (pwConfirm === "") {
+        confirmInput.classList.remove("input-error");
+        errorMsg.style.display = "none";
+        return;
       }
 
-      // 알림창 함수
-      function showAlert(msg, callback) {
-        document.getElementById("alert-msg").innerText = msg;
-        const modal = document.getElementById("alert-modal");
-        modal.classList.add("active");
-        alertCallback = callback;
+      if (pw !== pwConfirm) {
+        confirmInput.classList.add("input-error");
+        errorMsg.style.display = "block";
+      } else {
+        confirmInput.classList.remove("input-error");
+        errorMsg.style.display = "none";
       }
+    }
 
-      function closeAlert() {
-        const modal = document.getElementById("alert-modal");
-        modal.classList.remove("active");
-        if (alertCallback) {
-          alertCallback();
-          alertCallback = null;
-        }
-      }
+    // === [인증 로직] 인증번호 요청 ===
+    function requestAuth(type) {
+      let value = "";
 
-      function autoHyphen(target) {
-        target.value = target.value
-          .replace(/[^0-9]/g, "")
-          .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/g, "$1-$2-$3")
-          .replace(/(\-{1,2})$/g, "");
-      }
-
-      function checkPasswordMatch() {
-        const pw = document.getElementById("password").value;
-        const pwConfirm = document.getElementById("password-confirm").value;
-        const errorMsg = document.getElementById("pw-match-error");
-        const confirmInput = document.getElementById("password-confirm");
-
-        if (pwConfirm === "") {
-          confirmInput.classList.remove("input-error");
-          errorMsg.style.display = "none";
+      // 전화번호 유효성 검사
+      if (type === "phone") {
+        value = document.getElementById("phone").value;
+        if (value.length < 12) {
+          showAlert("휴대폰 번호를 정확히 입력해주세요.");
           return;
         }
-
-        if (pw !== pwConfirm) {
-          confirmInput.classList.add("input-error");
-          errorMsg.style.display = "block";
-        } else {
-          confirmInput.classList.remove("input-error");
-          errorMsg.style.display = "none";
-        }
       }
-
-      // 인증 로직
-      function requestAuth(type) {
-        let value = "";
-
-        if (type === "phone") {
-          value = document.getElementById("phone").value;
-          if (value.length < 12) {
-            showAlert("휴대폰 번호를 정확히 입력해주세요.");
-            return;
-          }
-        } else if (type === "email") {
-          value = document.getElementById("email").value;
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            showAlert("올바른 이메일 형식을 입력해주세요.");
-            return;
-          }
-        }
-
-        currentAuthType = type;
-        const modalTitle = document.getElementById("modal-title");
-        const modalDesc = document.getElementById("modal-desc");
-
-        if (type === "phone") {
-          modalTitle.innerText = "휴대폰 인증번호 발송";
-          modalDesc.innerText = "입력하신 휴대폰 번호로 인증번호를 보냈습니다.";
-        } else {
-          modalTitle.innerText = "이메일 인증번호 발송";
-          modalDesc.innerText = "입력하신 이메일로 인증번호를 보냈습니다.";
-        }
-
-        document.getElementById("auth-modal").classList.add("active");
-        startTimer(180);
-      }
-
-      function startTimer(duration) {
-        let timer = duration,
-          minutes,
-          seconds;
-        const display = document.getElementById("timer-display");
-        clearInterval(timerInterval);
-
-        timerInterval = setInterval(function () {
-          minutes = parseInt(timer / 60, 10);
-          seconds = parseInt(timer % 60, 10);
-
-          minutes = minutes < 10 ? "0" + minutes : minutes;
-          seconds = seconds < 10 ? "0" + seconds : seconds;
-
-          display.textContent = minutes + ":" + seconds;
-
-          if (--timer < 0) {
-            clearInterval(timerInterval);
-            display.textContent = "시간 초과";
-            showAlert("인증 시간이 만료되었습니다. 다시 요청해주세요.");
-            closeAuthModal();
-          }
-        }, 1000);
-      }
-
-      function closeAuthModal() {
-        document.getElementById("auth-modal").classList.remove("active");
-        document.getElementById("auth-code-input").value = "";
-        clearInterval(timerInterval);
-      }
-
-      function confirmAuthCode() {
-        const code = document.getElementById("auth-code-input").value;
-
-        if (code === "1234") {
-          closeAuthModal();
-
-          showAlert("인증되었습니다.", function () {
-            if (currentAuthType === "phone") {
-              isPhoneVerified = true;
-              const btn = document.getElementById("btn-request-phone");
-              btn.innerText = "인증 완료";
-              btn.className =
-                "px-4 bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-default min-w-[80px]";
-              btn.disabled = true;
-              document.getElementById("phone").readOnly = true;
-              document.getElementById("phone-error").style.display = "none";
-            } else if (currentAuthType === "email") {
-              isEmailVerified = true;
-              const btn = document.getElementById("btn-request-email");
-              btn.innerText = "인증 완료";
-              btn.className =
-                "px-4 bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-default min-w-[80px]";
-              btn.disabled = true;
-              document.getElementById("email").readOnly = true;
-              document.getElementById("email-error").style.display = "none";
-            }
-          });
-        } else {
-          showAlert("인증번호가 일치하지 않습니다. (테스트 번호: 1234)");
-        }
-      }
-
-      // 단계 이동
-      function goToStep2() {
-        const name = document.getElementById("username");
-        const phone = document.getElementById("phone");
-        const juminFront = document.getElementById("jumin-front");
-        const juminBack = document.getElementById("jumin-back");
-
-        let isValid = true;
-
-        if (!name.value) {
-          name.classList.add("input-error");
-          isValid = false;
-        } else {
-          name.classList.remove("input-error");
-        }
-
-        if (!phone.value) {
-          phone.classList.add("input-error");
-          isValid = false;
-        } else {
-          phone.classList.remove("input-error");
-        }
-
-        if (juminFront.value.length < 6 || juminBack.value.length < 1) {
-          juminFront.classList.add("input-error");
-          juminBack.classList.add("input-error");
-          isValid = false;
-        } else {
-          juminFront.classList.remove("input-error");
-          juminBack.classList.remove("input-error");
-        }
-
-        if (!isValid) {
-          showAlert("입력 정보를 확인해주세요.");
-          return;
-        }
-
-        if (!isPhoneVerified) {
-          showAlert("휴대폰 인증을 완료해주세요.");
-          return;
-        }
-
-        document.getElementById("step-1").classList.add("hidden");
-        document.getElementById("step-2").classList.remove("hidden");
-        document.getElementById("step-title").innerText = "계정 정보 설정";
-        document.getElementById("step-desc").innerText =
-          "로그인에 사용할 정보를 입력해주세요.";
-      }
-
-      function goToStep1() {
-        document.getElementById("step-2").classList.add("hidden");
-        document.getElementById("step-1").classList.remove("hidden");
-        document.getElementById("step-title").innerText = "본인 확인";
-        document.getElementById("step-desc").innerText =
-          "안전한 서비스 이용을 위해 실명을 인증해주세요.";
-      }
-
-      // 회원가입
-      function handleSignup() {
-        const email = document.getElementById("email");
-        const password = document.getElementById("password");
-        const passwordConfirm = document.getElementById("password-confirm");
-        const termCheck = document.getElementById("term-check");
-
-        let isValid = true;
-
+      // 이메일 유효성 검사
+      else if (type === "email") {
+        value = document.getElementById("email").value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.value)) {
-          showError(email, "email-error");
-          isValid = false;
-        } else {
-          clearError(email, "email-error");
-        }
-
-        if (!isEmailVerified) {
-          showAlert("이메일 인증을 완료해주세요.");
-          email.classList.add("input-error");
+        if (!emailRegex.test(value)) {
+          showAlert("올바른 이메일 형식을 입력해주세요.");
           return;
         }
-
-        if (password.value.length < 8) {
-          showError(password, "pw-error");
-          isValid = false;
-        } else {
-          clearError(password, "pw-error");
-        }
-
-        if (password.value !== passwordConfirm.value) {
-          document.getElementById("pw-match-error").style.display = "block";
-          passwordConfirm.classList.add("input-error");
-          isValid = false;
-        }
-
-        if (!termCheck.checked) {
-          showAlert("필수 약관에 동의해주세요.");
-          return;
-        }
-
-        if (isValid) {
-          showAlert(
-            "회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.",
-            function () {
-              location.href = "login.html";
-            }
-          );
-        }
       }
 
-      function showError(input, errorId) {
-        input.classList.add("input-error");
-        document.getElementById(errorId).style.display = "block";
+      currentAuthType = type;
+      const modalTitle = document.getElementById("modal-title");
+      const modalDesc = document.getElementById("modal-desc");
+
+      if (type === "phone") {
+        modalTitle.innerText = "휴대폰 인증번호 발송";
+        modalDesc.innerText = "입력하신 휴대폰 번호로 인증번호를 보냈습니다.";
+      } else {
+        modalTitle.innerText = "이메일 인증번호 발송";
+        modalDesc.innerText = "입력하신 이메일로 인증번호를 보냈습니다.";
       }
-      function clearError(input, errorId) {
-        input.classList.remove("input-error");
-        document.getElementById(errorId).style.display = "none";
+
+      document.getElementById("auth-modal").classList.add("active");
+      startTimer(180); // 3분 타이머 시작
+    }
+
+    // 타이머 작동 로직
+    function startTimer(duration) {
+      let timer = duration,
+        minutes,
+        seconds;
+      const display = document.getElementById("timer-display");
+      clearInterval(timerInterval);
+
+      timerInterval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          display.textContent = "시간 초과";
+          showAlert("인증 시간이 만료되었습니다. 다시 요청해주세요.");
+          closeAuthModal();
+        }
+      }, 1000);
+    }
+
+    function closeAuthModal() {
+      document.getElementById("auth-modal").classList.remove("active");
+      document.getElementById("auth-code-input").value = "";
+      clearInterval(timerInterval);
+    }
+
+    // === [인증 로직] 인증번호 확인 ===
+    function confirmAuthCode() {
+      const code = document.getElementById("auth-code-input").value;
+
+      // 테스트용 인증번호: 1234
+      if (code === "1234") {
+        closeAuthModal();
+
+        showAlert("인증되었습니다.", function () {
+          // 인증 성공 처리 (버튼 비활성화 및 상태 변경)
+          if (currentAuthType === "phone") {
+            isPhoneVerified = true;
+            const btn = document.getElementById("btn-request-phone");
+            btn.innerText = "인증 완료";
+            btn.className =
+              "px-4 bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-default min-w-[80px]";
+            btn.disabled = true;
+            document.getElementById("phone").readOnly = true;
+            document.getElementById("phone-error").style.display = "none";
+          } else if (currentAuthType === "email") {
+            isEmailVerified = true;
+            const btn = document.getElementById("btn-request-email");
+            btn.innerText = "인증 완료";
+            btn.className =
+              "px-4 bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-default min-w-[80px]";
+            btn.disabled = true;
+            document.getElementById("email").readOnly = true;
+            document.getElementById("email-error").style.display = "none";
+          }
+        });
+      } else {
+        showAlert("인증번호가 일치하지 않습니다. (테스트 번호: 1234)");
       }
-    </script>
-  </body>
+    }
+
+    // === [단계 이동] Step 1 -> Step 2 ===
+    function goToStep2() {
+      const name = document.getElementById("username");
+      const phone = document.getElementById("phone");
+      const juminFront = document.getElementById("jumin-front");
+      const juminBack = document.getElementById("jumin-back");
+
+      let isValid = true;
+
+      // 필수 입력 체크
+      if (!name.value) { name.classList.add("input-error"); isValid = false; }
+      else { name.classList.remove("input-error"); }
+
+      if (!phone.value) { phone.classList.add("input-error"); isValid = false; }
+      else { phone.classList.remove("input-error"); }
+
+      if (juminFront.value.length < 6 || juminBack.value.length < 1) {
+        juminFront.classList.add("input-error");
+        juminBack.classList.add("input-error");
+        isValid = false;
+      } else {
+        juminFront.classList.remove("input-error");
+        juminBack.classList.remove("input-error");
+      }
+
+      if (!isValid) {
+        showAlert("입력 정보를 확인해주세요.");
+        return;
+      }
+
+      if (!isPhoneVerified) {
+        showAlert("휴대폰 인증을 완료해주세요.");
+        return;
+      }
+
+      // 화면 전환
+      document.getElementById("step-1").classList.add("hidden");
+      document.getElementById("step-2").classList.remove("hidden");
+      document.getElementById("step-title").innerText = "계정 정보 설정";
+      document.getElementById("step-desc").innerText =
+        "로그인에 사용할 정보를 입력해주세요.";
+    }
+
+    function goToStep1() {
+      document.getElementById("step-2").classList.add("hidden");
+      document.getElementById("step-1").classList.remove("hidden");
+      document.getElementById("step-title").innerText = "본인 확인";
+      document.getElementById("step-desc").innerText =
+        "안전한 서비스 이용을 위해 실명을 인증해주세요.";
+    }
+
+    // === [회원가입 최종 처리] ===
+    function handleSignup() {
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const passwordConfirm = document.getElementById("password-confirm");
+      const termCheck = document.getElementById("term-check");
+
+      let isValid = true;
+
+      // 이메일 형식 체크
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.value)) {
+        showError(email, "email-error");
+        isValid = false;
+      } else {
+        clearError(email, "email-error");
+      }
+
+      // 이메일 인증 체크
+      if (!isEmailVerified) {
+        showAlert("이메일 인증을 완료해주세요.");
+        email.classList.add("input-error");
+        return;
+      }
+
+      // 비밀번호 길이 체크
+      if (password.value.length < 8) {
+        showError(password, "pw-error");
+        isValid = false;
+      } else {
+        clearError(password, "pw-error");
+      }
+
+      // 비밀번호 일치 체크
+      if (password.value !== passwordConfirm.value) {
+        document.getElementById("pw-match-error").style.display = "block";
+        passwordConfirm.classList.add("input-error");
+        isValid = false;
+      }
+
+      // 약관 동의 체크
+      if (!termCheck.checked) {
+        showAlert("필수 약관에 동의해주세요.");
+        return;
+      }
+
+      // 최종 성공 시
+      if (isValid) {
+        showAlert(
+          "회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.",
+          function () {
+            location.href = "login.html";
+          }
+        );
+      }
+    }
+
+    function showError(input, errorId) {
+      input.classList.add("input-error");
+      document.getElementById(errorId).style.display = "block";
+    }
+    function clearError(input, errorId) {
+      input.classList.remove("input-error");
+      document.getElementById(errorId).style.display = "none";
+    }
+  </script>
+</body>
+
 </html>
