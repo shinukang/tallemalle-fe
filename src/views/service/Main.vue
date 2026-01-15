@@ -78,7 +78,7 @@ onUnmounted(() => {
 // --- WebSocket 로직 ---
 const connectWebSocket = () => {
     // 실제 서버 주소로 변경 필요
-    const wsUrl = `wss://localhost/ws?userId=${encodeURIComponent(authStore.user.id)}`
+    const wsUrl = `ws://127.0.0.1:8080/ws/chat`
     ws = new WebSocket(wsUrl)
 
     ws.onopen = () => {

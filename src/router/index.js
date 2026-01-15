@@ -19,8 +19,7 @@ import Privacy from '@/views/info/Privacy.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'main', component: Main, meta: { requiresAuth: true } },
-    // { path: '/main', name: 'main', component: Main, meta: { requiresAuth: true } },
+    { path: '/', alias: '/main', name: 'main', component: Main, meta: { requiresAuth: true }},
     { path: '/chat', name: 'chat', component: Chat, meta: { requiresAuth: true } },
     { path: '/mypage', name: 'mypage', component: MyPage, meta: { requiresAuth: true } },
     { path: '/setting', name: 'setting', component: Setting, meta: { requiresAuth: true } },
