@@ -1,0 +1,53 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import Main from '@/views/service/Main.vue'
+import Login from '@/views/auth/Login.vue'
+import Signup from '@/views/auth/Signup.vue'
+import Chat from '@/views/service/Chat.vue'
+import MyPage from '@/views/user/MyPage.vue'
+import FindPassword from '@/views/auth/FindPassword.vue'
+import ResetPassword from '@/views/auth/ResetPassword.vue'
+import Setting from '@/views/info/Setting.vue'
+import EditProfile from '@/views/user/EditProfile.vue'
+import EditPayment from '@/views/payment/EditPayment.vue'
+import ChangePassword from '@/views/user/ChangePassword.vue'
+import BlockList from '@/views/info/BlockList.vue'
+import Notice from '@/views/info/Notice.vue'
+import Notification from '@/views/info/Notification.vue'
+import Terms from '@/views/info/Terms.vue'
+import Privacy from '@/views/info/Privacy.vue'
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    { path: '/', name: 'main', component: Main, meta: { requiresAuth: true } },
+    // { path: '/main', name: 'main', component: Main, meta: { requiresAuth: true } },
+    { path: '/chat', name: 'chat', component: Chat, meta: { requiresAuth: true } },
+    { path: '/mypage', name: 'mypage', component: MyPage, meta: { requiresAuth: true } },
+    { path: '/setting', name: 'setting', component: Setting, meta: { requiresAuth: true } },
+    { path: '/editprofile', name: 'editprofile', component: EditProfile, meta: { requiresAuth: true } },
+    { path: '/editpayment', name: 'editpayment', component: EditPayment, meta: { requiresAuth: true } },
+    { path: '/changepassword', name: 'changepassword', component: ChangePassword, meta: { requiresAuth: true } },
+    { path: '/blocklist', name: 'blocklist', component: BlockList, meta: { requiresAuth: true } },
+    { path: '/notice', name: 'notice', component: Notice, meta: { requiresAuth: true } },
+    { path: '/notification', name: 'notification', component: Notification, meta: { requiresAuth: true } },
+    { path: '/terms', name: 'terms', component: Terms, meta: { requiresAuth: true } },
+    { path: '/privacy', name: 'privacy', component: Privacy, meta: { requiresAuth: true } },
+    // hideNavbar: true 로그인 페이지에선 사이드바 숨김  
+    { path: '/login', name: 'login', component: Login, meta: { hideNavbar: true } },
+    { path: '/signup', name: 'signup', component: Signup, meta: { hideNavbar: true } },
+    { path: '/findpassword', name: 'findpassword', component: FindPassword, meta: { hideNavbar: true } },
+    { path: '/resetpassword', name: 'resetpassword', component: ResetPassword, meta: { hideNavbar: true } },
+  ]
+})
+
+// 네비게이션 가드 (로그인 안했으면 로그인 페이지로 팅겨내기)
+router.beforeEach((to, from, next) => {
+  const user = localStorage.getItem('tm_user')
+  if (to.meta.requiresAuth && !user) {
+    next('/login')
+  } else {
+    next()
+  }
+})
+
+export default router
