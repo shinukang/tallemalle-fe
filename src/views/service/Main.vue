@@ -13,6 +13,7 @@ const authStore = useAuthStore()
 // --- 지도 및 위치 상태 ---
 const mapContainer = ref(null)
 const mapInstance = ref(null)
+const myMarker = ref(null) // 내 위치 마커 객체를 저장할 변수
 const myLat = ref(37.498095)
 const myLng = ref(127.02761)
 
@@ -41,6 +42,9 @@ const createForm = ref({
 // WebSocket 객체
 let ws = null
 
+// Websocket 반응형 변수 설정
+const isSocketConnected = ref(false)
+
 // --- 초기화 (지도 & 소켓) ---
 onMounted(() => {
     if (!authStore.user) {
@@ -57,10 +61,8 @@ onMounted(() => {
             }
             mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
 
-            // 내 위치 마커 생성
-            const markerPosition = new window.kakao.maps.LatLng(myLat.value, myLng.value);
-            const marker = new window.kakao.maps.Marker({ position: markerPosition });
-            marker.setMap(mapInstance.value);
+            // 내 위치 추적 시작
+            initGeolocation()
         })
     }
 
@@ -75,6 +77,50 @@ onUnmounted(() => {
     if (ws) ws.close()
 })
 
+// --- [핵심] 내 위치 실시간 추적 ---
+const initGeolocation = () => {
+    if (navigator.geolocation) {
+        // watchPosition: 위치가 변할 때마다 실행됨
+        navigator.geolocation.watchPosition((pos) => {
+            myLat.value = pos.coords.latitude
+            myLng.value = pos.coords.longitude
+
+            // 위치가 갱신될 때마다 마커 이동시키기
+            updateMyMarker()
+        }, (err) => {
+            console.error('위치 정보를 가져올 수 없습니다.', err)
+        }, {
+            enableHighAccuracy: true // 배터리를 더 쓰더라도 정확도 높임
+        })
+    }
+}
+
+// --- [핵심] 마커를 생성하거나 이동시키는 함수 ---
+const updateMyMarker = () => {
+    if (!mapInstance.value || !window.kakao) return
+
+    const loc = new window.kakao.maps.LatLng(myLat.value, myLng.value)
+
+    // 마커가 아직 없으면 -> 새로 만듦 (CustomOverlay로 예쁘게)
+    if (!myMarker.value) {
+        const content = '<div class="w-6 h-6 bg-indigo-600 rounded-full border-[3px] border-white shadow-lg pulse-animation"></div>'
+
+        myMarker.value = new window.kakao.maps.CustomOverlay({
+            map: mapInstance.value,
+            position: loc,
+            content: content,
+            yAnchor: 0.5,
+            zIndex: 100
+        })
+
+        // 처음에만 지도를 내 위치로 이동
+        mapInstance.value.panTo(loc)
+    } else {
+        // 마커가 이미 있으면 -> 위치만 쓱 옮김 (부드럽게)
+        myMarker.value.setPosition(loc)
+    }
+}
+
 // --- WebSocket 로직 ---
 const connectWebSocket = () => {
     // 실제 서버 주소로 변경 필요
@@ -83,6 +129,8 @@ const connectWebSocket = () => {
 
     ws.onopen = () => {
         console.log('WebSocket Connected')
+        isSocketConnected.value = true
+
     }
 
     ws.onmessage = (event) => {
@@ -208,6 +256,16 @@ const updateMemberCount = (delta) => {
 // 8. 지도 컨트롤
 const zoomIn = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() - 1)
 const zoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() + 1)
+// 내 위치로 지도 중심 이동 함수
+const movetoCurrentLocaton = () => {
+    // 지도가 로드되었고, 내 위치 좌표가 있을 때만 실행
+    if (mapInstance.value && myLat.value && myLng.value) {
+        const loc = new window.kakao.maps.LatLng(myLat.value, myLng.value)
+        mapInstance.value.panTo(loc);
+    } else {
+        alert("지도가 로딩 중이거나 위치 정보를 가져올 수 없습니다.")
+    }
+}
 </script>
 
 <template>
@@ -222,7 +280,7 @@ const zoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() +
                 <div class="p-6 md:p-8 border-b border-slate-100 shrink-0">
                     <h1 class="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex justify-between items-center">
                         탈래말래
-                        <span v-if="ws?.readyState === 1"
+                        <span v-if="isSocketConnected"
                             class="text-[10px] bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full">Online</span>
                         <span v-else
                             class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full">Offline</span>
@@ -340,7 +398,7 @@ const zoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() +
                     class="w-12 h-12 bg-white/90 rounded-2xl flex items-center justify-center hover:text-indigo-600 shadow-sm">
                     <Minus class="w-5 h-5" />
                 </button>
-                <button
+                <button @click="movetoCurrentLocaton"
                     class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mt-2 shadow-lg shadow-indigo-100">
                     <LocateFixed class="w-5 h-5" />
                 </button>

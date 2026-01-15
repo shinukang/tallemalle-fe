@@ -9,7 +9,7 @@ import ResetPassword from '@/views/auth/ResetPassword.vue'
 import Setting from '@/views/info/Setting.vue'
 import EditProfile from '@/views/user/EditProfile.vue'
 import EditPayment from '@/views/payment/EditPayment.vue'
-import ChangePassword from '@/views/user/ChangePassword.vue'
+import ChangePassword from '@/views/auth/ChangePassword.vue'
 import BlockList from '@/views/info/BlockList.vue'
 import Notice from '@/views/info/Notice.vue'
 import Notification from '@/views/info/Notification.vue'
@@ -19,7 +19,7 @@ import Privacy from '@/views/info/Privacy.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', alias: '/main', name: 'main', component: Main, meta: { requiresAuth: true }},
+    { path: '/', alias: '/main', name: 'main', component: Main, meta: { requiresAuth: true } },
     { path: '/chat', name: 'chat', component: Chat, meta: { requiresAuth: true } },
     { path: '/mypage', name: 'mypage', component: MyPage, meta: { requiresAuth: true } },
     { path: '/setting', name: 'setting', component: Setting, meta: { requiresAuth: true } },
