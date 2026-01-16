@@ -13,7 +13,6 @@ const emit = defineEmits(['open-profile'])
 
 const chatContainer = ref(null)
 
-// 메시지가 추가되면 스크롤을 맨 아래로 이동
 const scrollToBottom = async () => {
     await nextTick()
     if (chatContainer.value) {
@@ -21,7 +20,6 @@ const scrollToBottom = async () => {
     }
 }
 
-// messages prop이 변경될 때마다 감지
 watch(() => props.messages, () => {
     scrollToBottom()
 }, { deep: true })
@@ -32,7 +30,7 @@ const requestOpenProfile = (userId) => {
 </script>
 
 <template>
-    <div ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll">
+    <div ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll pb-24 md:pb-6">
         <MessageItem 
             v-for="msg in messages" 
             :key="msg.id" 

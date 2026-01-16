@@ -7,7 +7,6 @@ const isRideDetailModalOpen = ref(false)
 </script>
 
 <template>
-    <!-- 여정 정보 카드 -->
     <div @click="isRideDetailModalOpen = true"
         class="bg-white/90 backdrop-blur p-6 rounded-[2.5rem] shrink-0 cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all group relative border border-white/50 shadow-sm">
         <div class="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -37,7 +36,7 @@ const isRideDetailModalOpen = ref(false)
         </div>
     </div>
 
-    <!-- 탑승 상세 모달 컴포넌트 -->
+    <!-- 상세 모달 -->
     <RideDetailModal 
         :is-open="isRideDetailModalOpen" 
         @close="isRideDetailModalOpen = false" 

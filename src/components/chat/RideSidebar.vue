@@ -19,8 +19,7 @@ const requestOpenProfile = (userId) => {
 
 <template>
     <aside class="w-80 flex flex-col gap-6 h-full overflow-hidden hidden xl:flex">
-        
-        <!-- 여정 정보 (클릭 시 모달 열림) -->
+        <!-- 여정 정보 -->
         <RideInfoCard />
 
         <!-- 멤버 리스트 -->
@@ -28,6 +27,5 @@ const requestOpenProfile = (userId) => {
             :user-profiles="userProfiles" 
             @open-profile="requestOpenProfile" 
         />
-        
     </aside>
 </template>
