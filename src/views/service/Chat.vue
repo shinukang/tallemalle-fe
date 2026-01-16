@@ -4,6 +4,8 @@ import ChatPanel from '@/components/chat/ChatPanel.vue'
 import RideSidebar from '@/components/chat/RideSidebar.vue'
 import ProfileModal from '@/components/chat/ProfileModal.vue'
 import api from '@/api/user' // 실제 API 경로 확인 필요
+import { useAuthStore } from '@/stores/auth'
+import { storeToRefs } from 'pinia'
 
 // --- 1. 상태 관리 & WebSocket 설정 ---
 const isConnected = ref(false)
@@ -48,28 +50,22 @@ const currentProfile = reactive({
     reviews: [], isBlocked: false
 })
 
-// --- 2. WebSocket & 초기화 로직 ---
-onMounted(async () => {
-    connectWebSocket()
+// auth store에서 사용자 정보 가져오기
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 
-    // 내 프로필 정보 가져오기
-    try {
-        // api가 없거나 실패할 경우를 대비한 방어 코드
-        if (api && api.profile) {
-            const res = await api.profile()
-            if (res && res.data) {
-                if (typeof res.data === 'object') {
-                    myUserId.value = res.data.id || res.data.userId || myUserId.value
-                    myUserName.value = res.data.name || res.data.userName || '익명'
-                    myUserImg.value = res.data.img || res.data.userImg || ''
-                } else {
-                    myUserName.value = String(res.data)
-                }
-            }
-        }
-    } catch (error) {
-        console.error("프로필 로드 실패:", error)
-    }
+// --- 2. WebSocket & 초기화 로직 ---
+onMounted(() => {
+  connectWebSocket()
+
+  if (user.value) {
+    myUserId.value = user.value.id || user.value.userId
+    myUserName.value = user.value.name || user.value.nickname || user.value.userName || '익명'
+    myUserImg.value = user.value.img || user.value.profileImage || user.value.userImg || ''
+  } else {
+    console.warn('[auth] 로그인 사용자 정보가 없습니다. localStorage USERINFO 확인 필요')
+    console.log('[auth] localStorage USERINFO raw:', localStorage.getItem('USERINFO'))
+  }
 })
 
 onUnmounted(() => {
