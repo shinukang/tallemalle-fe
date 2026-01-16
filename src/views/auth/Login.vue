@@ -3,7 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/user'
-import { CarFront, Mail, Lock, MessageCircle } from 'lucide-vue-next'
+import { CarFront, Mail, Lock, MessageCircle, AlertCircle } from 'lucide-vue-next'
 
 // 라우터 인스턴스 생성
 const router = useRouter()
@@ -48,7 +48,7 @@ const loginInputError = reactive({
 
 // email 규칙
 const emailRules = () => {
-  if (loginForm.email.length < 0) {
+  if (loginForm.email.length < 10) {
     loginInputError.email.errorMessage = '이메일을 입력해주세요.'
     loginInputError.email.isValid = false
 
@@ -154,34 +154,58 @@ const loginWithGoogle = () => {
       <form @submit.prevent="handleLogin" class="px-8 py-4 space-y-4">
 
         <!-- 이메일 입력 -->
-        <div
-          class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
-        >
-          <Mail class="absolute left-4 w-5 h-5 text-slate-400" />
-          <input
-            :class="loginInputError.email.isValid ? '' : 'inputError'" @blur="emailRules()"
-            v-model="loginForm.email"
-            type="email"
-            placeholder="이메일 주소"
-            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
-          />
+        <div class="flex flex-col">
+          <div
+            class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            :class="[
+              loginInputError.email.errorMessage ? 'border-red-400' : 'border-slate-200'
+            ]"
+          >
+            <Mail class="absolute left-4 w-5 h-5 text-slate-400" />
+            <input
+              v-model="loginForm.email"
+              @blur="emailRules()"
+              type="email"
+              placeholder="이메일 주소"
+              class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
+            />
+          </div>
+          
+          <p 
+            v-if="loginInputError.email.errorMessage" 
+            class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
+          >
+            <AlertCircle class="w-3.5 h-3.5 mr-1" />
+            {{ loginInputError.email.errorMessage }}
+          </p>
         </div>
 
         <!-- 비밀번호 입력 -->
-        <div class="space-y-1">
+        <div class="flex flex-col">
           <div
-            class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            :class="[
+              loginInputError.password.errorMessage ? 'border-red-400' : 'border-slate-200'
+            ]"
           >
             <Lock class="absolute left-4 w-5 h-5 text-slate-400" />
             <input
               v-model="loginForm.password"
+              @blur="passwordRules()"
               type="password"
               placeholder="비밀번호"
               class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
             />
           </div>
+          
+          <p 
+            v-if="loginInputError.password.errorMessage" 
+            class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
+          >
+            <AlertCircle class="w-3.5 h-3.5 mr-1" />
+            {{ loginInputError.password.errorMessage }}
+          </p>
 
-          <!-- 비밀번호 찾기 -->
           <div class="flex justify-end">
             <router-link
               to="/findpassword"
