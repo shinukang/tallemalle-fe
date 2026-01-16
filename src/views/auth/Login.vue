@@ -48,8 +48,8 @@ const loginInputError = reactive({
 
 // email 규칙
 const emailRules = () => {
-  if (loginForm.email.length < 6) {
-    loginInputError.email.errorMessage = '올바른 이메일을 입력해주세요.'
+  if (loginForm.email.length < 0) {
+    loginInputError.email.errorMessage = '이메일을 입력해주세요.'
     loginInputError.email.isValid = false
 
     return false
@@ -110,12 +110,13 @@ const handleLogin = async () => {
   }
 
   if (res.status == 200) {
-        authStore.login(res.data)
-        alert('로그인되었습니다.')
-        router.push('/main')
-    } else {
-        alert('아이디와 비밀번호를 확인해보세요.')
-    }
+    authStore.login(res.data)
+    alert('로그인되었습니다.')
+    router.push('/main')
+    console.log(authStore.user)
+  } else {
+    alert('아이디와 비밀번호를 확인해보세요.')
+  }
 }
 
 const loginWithKakao = () => {

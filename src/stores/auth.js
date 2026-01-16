@@ -1,21 +1,21 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
+
+// 다른 페이지에서 const authStore = useAuthStore() 변수 선언해주고
+// authStore.user, authStore.user.id, authStore.user.email 이런식으로 사용하면 됨
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref(JSON.parse(localStorage.getItem('tm_user')) || null)
-    const router = useRouter()
+    const user = ref(JSON.parse(localStorage.getItem('USERINFO')) || null)
 
-    function login(email, nickname) {
-        const userData = { id: email, nickname, loginAt: Date.now() }
+    function login(userInfo) {
+        const userData = userInfo
         user.value = userData
-        localStorage.setItem('tm_user', JSON.stringify(userData))
-        // router.push('/') // 컴포넌트에서 처리하거나 여기서 처리
+        localStorage.setItem('USERINFO', JSON.stringify(userData))
     }
 
     function logout() {
         user.value = null
-        localStorage.removeItem('tm_user')
+        localStorage.removeItem('USERINFO')
         window.location.href = '/login' // 확실한 리셋을 위해
     }
 
