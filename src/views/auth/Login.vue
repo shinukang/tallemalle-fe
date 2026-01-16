@@ -94,25 +94,28 @@ const handleLogin = async () => {
 
   if (!loginForm.email || !loginForm.password) {
     alert('이메일과 비밀번호를 입력해주세요.')
-    return
+    // return
   }
 
   if (!loginInputError.email.isValid) {
     loginInputError.email.errorMessage = '이메일을 확인해주세요.'
-    return false
+    // return false
   }
 
   if (!loginInputError.password.isValid) {
     loginInputError.password.errorMessage = '비밀번호를 확인해주세요.'
     loginInputError.password.isValid = false
 
-    return false
+    // return false
   }
 
-  // 데모용 로그인 처리
-  authStore.login(email.value, email.value.split('@')[0])
-  alert('로그인되었습니다.')
-  router.push('/')
+  if (res.status == 200) {
+        authStore.login(res.data)
+        alert('로그인되었습니다.')
+        router.push('/main')
+    } else {
+        alert('아이디와 비밀번호를 확인해보세요.')
+    }
 }
 
 const loginWithKakao = () => {
@@ -154,7 +157,7 @@ const loginWithGoogle = () => {
         >
           <Mail class="absolute left-4 w-5 h-5 text-slate-400" />
           <input
-            v-model="email"
+            v-model="loginForm.email"
             type="email"
             placeholder="이메일 주소"
             class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
@@ -167,7 +170,7 @@ const loginWithGoogle = () => {
           >
             <Lock class="absolute left-4 w-5 h-5 text-slate-400" />
             <input
-              v-model="password"
+              v-model="loginForm.password"
               type="password"
               placeholder="비밀번호"
               class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
