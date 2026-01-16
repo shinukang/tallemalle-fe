@@ -1,15 +1,21 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { storeToRefs } from 'pinia'
+import { useNotificationStore } from '@/stores/notification'
 import {
     CarFront, Home, MessageCircle, Bell, Megaphone,
-    Settings, LogOut, UserPlus, CheckCircle2
+    Settings, LogOut, UserPlus, CheckCircle2, CreditCard, Gift
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+
+// 알림 스토어 연결
+const notificationStore = useNotificationStore()
+const { notifications } = storeToRefs(notificationStore)
 
 // 알림 팝업 상태 관리
 const showNotifications = ref(false)
@@ -51,6 +57,31 @@ const goToNotifications = () => {
     showNotifications.value = false
     router.push('/notification')
 }
+
+// 최신 알림 5개 가져오기
+const recentNotifications = computed(() => {
+    return notifications.value.slice(0, 5)
+})
+//읽지 않은 알림 갯수
+const unreadCount = computed(() => {
+    return notifications.value.filter(n => !n.isRead).length
+})
+
+const handleNotificationClick = (id) => {
+    notificationStore.markAsRead(id)
+}
+const getNotificationStyle = (type) => {
+    switch (type) {
+        case 'matching':
+            return { icon: UserPlus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: 'text-indigo-500' }
+        case 'event':
+            return { icon: Gift, bg: 'bg-pink-50', text: 'text-pink-600', label: 'text-pink-500' }
+        case 'payment':
+            return { icon: CreditCard, bg: 'bg-amber-50', text: 'text-amber-600', label: 'text-amber-500' }
+        default:
+            return { icon: Bell, bg: 'bg-slate-100', text: 'text-slate-500', label: 'text-slate-500' }
+    }
+}
 </script>
 
 <template>
@@ -81,7 +112,7 @@ const goToNotifications = () => {
                     class="nav-item p-3 rounded-2xl transition-all relative"
                     :class="showNotifications ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'">
                     <Bell class="w-6 h-6" />
-                    <span
+                    <span v-if="unreadCount > 0"
                         class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
                 </button>
 
@@ -113,38 +144,40 @@ const goToNotifications = () => {
 
         <div v-if="showNotifications" ref="notificationRef"
             class="absolute left-[100px] top-[220px] w-[320px] bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-6 z-50 flex flex-col gap-4 origin-top-left transition-all">
+
             <div class="flex justify-between items-center border-b border-slate-50 pb-4">
                 <h3 class="font-bold text-slate-900 text-lg">실시간 알림</h3>
+                <span v-if="unreadCount > 0" class="text-xs font-bold text-white bg-rose-500 px-2 py-0.5 rounded-full">
+                    {{ unreadCount }} new
+                </span>
             </div>
 
             <div class="flex flex-col gap-4 max-h-[300px] overflow-y-auto custom-scroll">
-                <div
-                    class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors">
-                    <div
-                        class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                        <UserPlus class="w-5 h-5" />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[10px] font-bold text-indigo-500">동승자 입장</span>
-                        <p class="text-sm text-slate-600 leading-snug">
-                            <span class="font-bold text-slate-800">박지민</span>님이 파티에 입장했습니다.
-                        </p>
-                        <span class="text-[10px] text-slate-400">방금 전</span>
-                    </div>
+                <div v-if="recentNotifications.length === 0" class="text-center py-8 text-slate-400 text-xs">
+                    새로운 알림이 없습니다.
                 </div>
 
-                <div
-                    class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors">
-                    <div
-                        class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <CheckCircle2 class="w-5 h-5" />
+                <div v-for="item in recentNotifications" :key="item.id" @click="handleNotificationClick(item.id)"
+                    class="flex gap-4 items-start group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-colors relative"
+                    :class="{ 'opacity-50': item.isRead }">
+
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                        :class="[getNotificationStyle(item.type).bg, getNotificationStyle(item.type).text]">
+                        <component :is="getNotificationStyle(item.type).icon" class="w-5 h-5" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[10px] font-bold text-emerald-500">배차 완료</span>
-                        <p class="text-sm text-slate-600 leading-snug">
-                            택시가 잡혔습니다!<br />차량 번호를 확인해주세요.
+
+                    <div class="flex flex-col gap-1 flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold" :class="getNotificationStyle(item.type).label">
+                                {{ item.categoryLabel }}
+                            </span>
+                            <span v-if="!item.isRead" class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                        </div>
+
+                        <p class="text-sm text-slate-600 leading-snug line-clamp-2">
+                            {{ item.content }}
                         </p>
-                        <span class="text-[10px] text-slate-400">2분 전</span>
+                        <span class="text-[10px] text-slate-400">{{ item.time }}</span>
                     </div>
                 </div>
             </div>
