@@ -48,7 +48,7 @@ const router = createRouter({
 
 // 네비게이션 가드 (로그인 안했으면 로그인 페이지로 팅겨내기)
 router.beforeEach((to, from, next) => {
-  const user = localStorage.getItem('tm_user')
+  const user = localStorage.getItem('USERINFO')
   if (to.meta.requiresAuth && !user) {
     next('/login')
   } else {
