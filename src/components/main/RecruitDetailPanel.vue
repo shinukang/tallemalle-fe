@@ -1,19 +1,73 @@
 <script setup>
 import { X } from 'lucide-vue-next'
+import { computed } from 'vue'
 
 // 부모에게 받을 데이터
-defineProps({
-    recruit: Object,    // 선택된 모집글 정보 (없으면 null)
-    isOpen: Boolean     // 패널 열림 여부
+const props = defineProps({
+    recruit: Object,        // 선택된 모집글 정보 (없으면 null)
+    isOpen: Boolean,        // 패널 열림 여부
+    myStatus: String,       // [추가] 나의 상태 (IDLE, OWNER, JOINED)
+    myRecruitId: Number     // [추가] 내가 속한 방 ID
 })
 
 // 부모에게 보낼 신호
 const emit = defineEmits(['close', 'join'])
+
+// --- [추가] 버튼 상태 계산 로직 (디자인 클래스 포함) ---
+const joinButtonState = computed(() => {
+    // 1. 데이터 없음
+    if (!props.recruit) {
+        return {
+            text: '정보 없음',
+            disabled: true,
+            class: 'bg-slate-300 text-slate-500 cursor-not-allowed'
+        }
+    }
+
+    // 2. [예외] 모집 인원이 꽉 찼는데, 내가 그 방 멤버가 아닐 때 -> '마감됨' 처리
+    // (단, 내가 그 방 멤버라면 '복귀' 버튼이 떠야 하므로 이 조건은 뒤로 미루거나 조정 가능.
+    // 여기서는 일단 인원 마감을 우선시하되, 내 방이면 복귀가 뜨도록 순서 배치)
+
+    // 3. 내가 이 방의 주인이나 참여자일 때 -> [복귀 가능]
+    if (props.myRecruitId === props.recruit.id) {
+        return {
+            text: '채팅방으로 복귀',
+            disabled: false,
+            class: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'
+        }
+    }
+
+    // 4. 인원이 다 찼으면 -> [마감]
+    if (props.recruit.cur >= props.recruit.max) {
+        return {
+            text: '모집이 마감되었습니다',
+            disabled: true,
+            class: 'bg-slate-300 text-slate-500 cursor-not-allowed'
+        }
+    }
+
+    // 5. 내가 아무것도 안하고 있을 때 -> [입장 가능]
+    if (props.myStatus === 'IDLE') {
+        return {
+            text: '동승 채팅방 입장',
+            disabled: false,
+            class: 'bg-slate-900 hover:bg-indigo-600 text-white'
+        }
+    }
+
+    // 6. 내가 다른 방에 있을 때 -> [입장 불가]
+    return {
+        text: '다른 모집 참여 중',
+        disabled: true,
+        class: 'bg-slate-300 text-slate-500 cursor-not-allowed'
+    }
+})
 </script>
 
 <template>
     <div class="glass-panel h-full rounded-[2.5rem] flex flex-col pointer-events-auto overflow-hidden transition-all duration-300 ml-4 bg-white/90 backdrop-blur-md border border-white/50 shadow-xl"
         :class="isOpen ? 'w-full md:w-[400px] opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-4 pointer-events-none'">
+
         <div class="p-8 border-b border-slate-100 flex items-center justify-between">
             <h3 class="font-bold text-slate-900 text-lg">상세 정보</h3>
             <button @click="emit('close')" class="p-2 hover:bg-slate-100 rounded-xl transition-colors">
@@ -52,19 +106,16 @@ const emit = defineEmits(['close', 'join'])
         </div>
 
         <div class="p-8 bg-slate-50/50 border-t border-slate-100">
-            <button v-if="recruit && recruit.cur < recruit.max" @click="emit('join')"
-                class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-5 rounded-2xl transition-all shadow-xl">
-                동승 채팅방 입장
-            </button>
-            <button v-else disabled
-                class="w-full bg-slate-300 text-slate-500 font-bold py-5 rounded-2xl cursor-not-allowed">
-                모집이 마감되었습니다
+            <button @click="!joinButtonState.disabled && emit('join')" :disabled="joinButtonState.disabled"
+                :class="joinButtonState.class" class="w-full font-bold py-5 rounded-2xl transition-all shadow-xl">
+                {{ joinButtonState.text }}
             </button>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* 원본 스크롤바 스타일 유지 */
 .custom-scroll::-webkit-scrollbar {
     width: 5px;
 }
