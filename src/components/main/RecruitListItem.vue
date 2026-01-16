@@ -1,0 +1,33 @@
+<script setup>
+defineProps({
+    item: { type: Object, required: true },
+    isSelected: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['click'])
+</script>
+
+<template>
+    <div @click="emit('click')" class="p-5 rounded-3xl border shadow-sm cursor-pointer transition-all duration-200"
+        :class="isSelected
+            ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500'
+            : 'bg-white border-slate-100 hover:bg-slate-50'">
+        <div class="flex justify-between mb-2">
+            <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded">
+                {{ item.time }} 출발
+            </span>
+            <span class="text-[10px] text-slate-400">
+                {{ item.cur }}/{{ item.max }}명
+            </span>
+        </div>
+
+        <p class="font-bold text-slate-800">{{ item.start }} → {{ item.dest }}</p>
+
+        <div class="flex gap-1 mt-2">
+            <span v-for="tag in (item.tags || [])" :key="tag"
+                class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                {{ tag }}
+            </span>
+        </div>
+    </div>
+</template>
