@@ -15,6 +15,9 @@ import Notice from '@/views/info/Notice.vue'
 import Notification from '@/views/info/Notification.vue'
 import Terms from '@/views/info/Terms.vue'
 import Privacy from '@/views/info/Privacy.vue'
+import DriverLogin from '@/views/driver/DriverLogin.vue'
+import DriverSignup from '@/views/driver/DriverSignup.vue'
+import DriverPage from '@/views/driver/DriverPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +39,10 @@ const router = createRouter({
     { path: '/signup', name: 'signup', component: Signup, meta: { hideNavbar: true } },
     { path: '/findpassword', name: 'findpassword', component: FindPassword, meta: { hideNavbar: true } },
     { path: '/resetpassword', name: 'resetpassword', component: ResetPassword, meta: { hideNavbar: true } },
+    // hideDriverNavbar
+    { path: '/driverlogin', name: 'driverlogin', component: DriverLogin, meta: { hideDriverNavbar: true } },
+    { path: '/driversignup', name: 'driversignup', component: DriverSignup, meta: { hideDriverNavbar: true } },
+    { path: '/driverpage', name: 'driverpage', component: DriverPage, meta: { hideDriverNavbar: false } },
   ]
 })
 
