@@ -47,10 +47,18 @@ const handleLocationUpdate = (coords) => {
 
 // --- 소켓 로직 ---
 const connectWebSocket = () => {
-    const wsUrl = `ws://127.0.0.1:8080/ws?userId=${encodeURIComponent(authStore.user.id)}`
+    const wsUrl = `ws://127.0.0.1:8080/ws/chat?userId=${encodeURIComponent(authStore.user.id)}`
     ws = new WebSocket(wsUrl)
-    ws.onopen = () => isSocketConnected.value = true
-    ws.onclose = () => isSocketConnected.value = false
+    ws.onopen = () => {
+        // 소켓 연결 확인용
+        console.log("Socket Connected");
+        isSocketConnected.value = true
+    }
+    ws.onclose = () => {
+        // 소켓 연결 끊어짐 확인용
+        console.log("Socket disConnected")
+        isSocketConnected.value = false
+    }
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
@@ -65,18 +73,24 @@ const connectWebSocket = () => {
 
 const fetchRecruits = () => {
     recruitList.value = [
-        { id: 1, start: '강남역 2번 출구', dest: '판교역', time: '10분 후', cur: 1, max: 4, tags: ['#비흡연', '#조용히'], desc: '칼퇴하고 가실 분 구합니다.' },
-        { id: 2, start: '합정역', dest: '일산 호수공원', time: '지금 바로', cur: 3, max: 4, tags: ['#짐있음'], desc: '트렁크 자리 좀 필요해요.' }
+        { id: 1, start: '강남역 2번 출구', startLat: 37.498095, startLng: 127.027610, dest: '판교역', time: '10분 후', cur: 1, max: 4, tags: ['#비흡연', '#조용히'], desc: '칼퇴하고 가실 분 구합니다.' },
+        { id: 2, start: '합정역', startLat: 37.548925, startLng: 126.913501, dest: '일산 호수공원', time: '지금 바로', cur: 3, max: 4, tags: ['#짐있음'], desc: '트렁크 자리 좀 필요해요.' }
     ]
 }
 
 const handleSelectRecruit = (recruit) => {
+    // 패널 열기 로직
     if (isDetailOpen.value && selectedRecruit.value?.id === recruit.id) {
         isDetailOpen.value = false
         selectedRecruit.value = null
     } else {
         selectedRecruit.value = recruit
         isDetailOpen.value = true
+
+        // 지도를 해당 모집글의 출발지 좌표를 이동시키기
+        if (mapComponent.value && recruit.startLat && recruit.startLng) {
+            mapComponent.value.moveToLocation(recruit.startLat, recruit.startLng)
+        }
     }
 }
 
@@ -111,7 +125,8 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
 <template>
     <div class="relative w-full h-full">
 
-        <Map ref="mapComponent" @update-location="handleLocationUpdate" />
+        <Map ref="mapComponent" :recruit-list="recruitList" @update-location="handleLocationUpdate"
+            @marker-click="handleSelectRecruit" />
 
         <div class="absolute inset-0 z-10 flex p-4 pointer-events-none">
 

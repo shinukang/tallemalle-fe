@@ -3,9 +3,9 @@ import { Minus, Plus } from 'lucide-vue-next'
 
 const props = defineProps({
     label: String,
-    modelValue: { type: Number, default: 4 },
+    modelValue: { type: Number, default: 3 },
     min: { type: Number, default: 2 },
-    max: { type: Number, default: 10 }
+    max: { type: Number, default: 4 }
 })
 
 const emit = defineEmits(['update:modelValue'])
