@@ -109,8 +109,9 @@ const getNotificationStyle = (type) => {
                 </RouterLink>
 
                 <button ref="toggleBtnRef" @click="toggleNotification"
-                    class="nav-item p-3 rounded-2xl transition-all relative"
-                    :class="showNotifications ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'">
+                    class="nav-item p-3 rounded-2xl transition-all relative" :class="(showNotifications || route.path === '/notification')
+                        ? 'text-indigo-600 bg-indigo-50'
+                        : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'">
                     <Bell class="w-6 h-6" />
                     <span v-if="unreadCount > 0"
                         class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
