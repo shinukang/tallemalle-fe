@@ -48,7 +48,7 @@ const loginInputError = reactive({
 
 // email 규칙
 const emailRules = () => {
-  if (loginForm.email.length < 10) {
+  if (loginForm.email.length < 0) {
     loginInputError.email.errorMessage = '이메일을 입력해주세요.'
     loginInputError.email.isValid = false
 
@@ -61,6 +61,10 @@ const emailRules = () => {
 
 // 비밀번호 규칙
 const passwordRules = () => {
+  const hasLowerLetter = /[a-z]/.test(loginForm.password)
+  const hasNumber = /[0-9]/.test(loginForm.password)
+  const hasSpecial = /[!@$]/.test(loginForm.password)
+  
   if (loginForm.password.length < 8) {
     loginInputError.password.errorMessage = '비밀번호는 8글자 이상 입력해야합니다.'
     loginInputError.password.isValid = false
@@ -68,11 +72,7 @@ const passwordRules = () => {
     return false
   }
 
-  const hasLowerLetter = /[a-z]/.test(loginForm.password)
-  const hasNumber = /[0-9]/.test(loginForm.password)
-  const hasSpecial = /[!@$]/.test(loginForm.password)
-
-  if (!(hasLowerLetter && hasNumber)) {
+  if (!(hasLowerLetter && hasNumber && hasSpecial)) {
     loginInputError.password.errorMessage = '비밀번호는 영문 소문자, 숫자, 특수문자를 모두 포함해야합니다.'
     loginInputError.password.isValid = false
 
@@ -109,6 +109,7 @@ const handleLogin = async () => {
     // return false
   }
 
+  // 로그인 결과
   if (res.status == 200) {
     authStore.login(res.data)
     alert('로그인되었습니다.')
