@@ -1,55 +1,103 @@
 <script setup>
+/**
+ * [파일 설명]
+ * 이 파일은 메시지 목록 안에 들어가는 '메시지 한 줄(말풍선)' 컴포넌트입니다.
+ * * * 주요 역할:
+ * 1. 메시지 타입(날짜, 시스템 알림, 남이 보낸 것, 내가 보낸 것)을 구분해서 다르게 보여줍니다.
+ * 2. 상대방 프로필 사진을 클릭하면 부모에게 알려주는 역할을 합니다.
+ */
+
+/**
+ * Props 정의
+ * - msg: 부모(MessageList)로부터 받은 메시지 데이터 객체 하나입니다.
+ * - msg 내부 구조 예시: { type: 'me', text: '안녕', time: '14:00', user: {...} }
+ */
 defineProps({
     msg: {
         type: Object,
-        required: true
+        required: true // 데이터가 없으면 에러를 띄움 (필수값)
     }
 })
 
+/**
+ * Emits 정의
+ * - open-profile: 상대방 프사를 눌렀을 때 "이 사람 누군지 보여줘!"라고 신호를 보냅니다.
+ */
 const emit = defineEmits(['open-profile'])
-
-const onProfileClick = (userId) => {
-    emit('open-profile', userId)
-}
 </script>
 
 <template>
-    <!-- 날짜 구분선 -->
+    <!-- 
+      Case 1: 날짜 표시줄 (Today, Yesterday 등) 
+      - v-if="msg.type === 'date'" 일 때만 보입니다.
+      - 화면 가운데 정렬(flex justify-center)
+    -->
     <div v-if="msg.type === 'date'" class="flex justify-center">
         <span class="text-[10px] font-bold text-slate-300 bg-slate-100 px-3 py-1 rounded-full uppercase">
             {{ msg.text }}
         </span>
     </div>
 
-    <!-- 시스템 메시지 -->
+    <!-- 
+      Case 2: 시스템 알림 메시지 (입장/퇴장 등)
+      - v-else-if="msg.type === 'system'"
+      - 연한 보라색 배경 박스로 디자인됨
+    -->
     <div v-else-if="msg.type === 'system'" class="flex justify-center">
         <div class="bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100/50">
             <p class="text-[11px] text-indigo-400 font-medium">{{ msg.text }}</p>
         </div>
     </div>
 
-    <!-- 상대방 메시지 -->
+    <!-- 
+      Case 3: 상대방이 보낸 메시지
+      - 프로필 사진 + 이름 + 흰색 말풍선 조합
+      - 왼쪽 정렬 (기본값)
+    -->
     <div v-else-if="msg.type === 'other'" class="flex items-end gap-3">
+        
+        <!-- 프로필 사진 (클릭 가능) -->
+        <!-- hover:scale-105: 마우스를 올리면 살짝 커지는 애니메이션 -->
         <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:scale-105 transition-transform"
-            @click="onProfileClick(msg.sender)">
-            <img :src="msg.avatar" alt="user" />
+            @click="emit('open-profile', msg.userId)">
+            <!-- 이미지가 없으면 엑박 대신 빈 공간이 나오도록 처리 -->
+            <img :src="msg.user?.img || msg.avatar" alt="user" class="w-full h-full object-cover" />
         </div>
+
+        <!-- 이름 + 말풍선 -->
         <div class="flex flex-col gap-1 max-w-[70%]">
-            <span class="text-[10px] text-slate-400 ml-1">{{ msg.sender }}</span>
+            <!-- 보낸 사람 이름 -->
+            <span class="text-[10px] text-slate-400 ml-1">{{ msg.user?.name || msg.sender }}</span>
+            
+            <!-- 흰색 말풍선 -->
+            <!-- 
+               rounded-tr-2xl ... : 말풍선 꼬리 모양을 만들기 위해 모서리 둥글기를 다르게 설정 
+               whitespace-pre-wrap: 줄바꿈 문자를 그대로 화면에 반영
+            -->
             <div
-                class="bg-white border border-slate-100 p-3.5 text-sm leading-relaxed shadow-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl text-slate-800">
+                class="bg-white border border-slate-100 p-3.5 text-sm leading-relaxed shadow-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl text-slate-800 break-words whitespace-pre-wrap">
                 {{ msg.text }}
             </div>
         </div>
+
+        <!-- 보낸 시간 (오후 2:30) -->
         <span class="text-[10px] text-slate-300 mb-1">{{ msg.time }}</span>
     </div>
 
-    <!-- 내 메시지 -->
+    <!-- 
+      Case 4: 내가 보낸 메시지
+      - 보라색 말풍선
+      - 오른쪽 정렬 (justify-end)
+      - 프로필 사진 없음
+    -->
     <div v-else-if="msg.type === 'me'" class="flex items-end gap-3 justify-end">
+        <!-- 보낸 시간 (말풍선 왼쪽에 위치) -->
         <span class="text-[10px] text-slate-300 mb-1">{{ msg.time }}</span>
+        
         <div class="flex flex-col gap-1 max-w-[70%] items-end">
+            <!-- 보라색 말풍선 (Text White) -->
             <div
-                class="bg-indigo-600 text-white p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100 rounded-tl-2xl rounded-tr-xl rounded-bl-2xl">
+                class="bg-indigo-600 text-white p-3.5 text-sm leading-relaxed shadow-lg shadow-indigo-100 rounded-tl-2xl rounded-tr-xl rounded-bl-2xl rounded-br-sm break-words whitespace-pre-wrap">
                 {{ msg.text }}
             </div>
         </div>
