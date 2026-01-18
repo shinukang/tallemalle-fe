@@ -91,12 +91,13 @@ const handleLogin = async () => {
 
   try {
     const res = await api.login(loginForm)
-    console.log('Login res:', res)
 
     if (res && res.status == 200) {
       localStorage.setItem('tm_driver_id', loginForm.name)
       alert('로그인 성공! 운행을 시작합니다.')
-      router.push('/driverNav/DriverPage')
+
+      router.push({ name: 'driverpage' })
+
     } else {
       alert('아이디와 비밀번호를 확인해주세요.')
     }

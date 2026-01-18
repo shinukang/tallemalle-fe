@@ -138,7 +138,7 @@ const fetchChatHistory = async () => {
         isLoading.value = true
         
         // 실제 파일 경로에 맞게
-        const response = await fetch('/api/chat') 
+        const response = await fetch('/json/chat') 
         
         // 응답이 성공(200 OK)이 아니면 에러 발생
         if (!response.ok) {

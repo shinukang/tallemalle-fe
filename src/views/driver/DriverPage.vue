@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Radio } from 'lucide-vue-next'
+import driverApi from '@/api/driver' // API 호출
 
 import DriverIncomeWidget from '@/components/driver/DriverIncomeWidget.vue'
 import DriverMapControls from '@/components/driver/DriverMapControls.vue'
@@ -16,18 +17,28 @@ const isTrafficOn = ref(false)
 const showCallModal = ref(false)
 const showPickupSheet = ref(false)
 const currentFare = ref(4800)
-const todayIncome = ref(124000) // 수입 상태 변수 추가
+const todayIncome = ref(124000)
 const naviTitle = ref('운행 대기 중')
 const naviSub = ref('주변의 콜을 기다리세요')
 const etaText = ref('--분')
 
-// --- 지도/소켓 관련 ---
-const userId = ref('driver_' + Math.random().toString(36).substring(7))
+// 📍 콜 정보 저장 (출발지, 도착지, 경로)
+const callInfo = ref({
+  departure: '',
+  destination: '',
+  path: []
+})
+
+// --- 지도 관련 변수 ---
 let map = null
 let driverMarker = null
+let polyline = null
 let socket = null
-let myLat = 37.3948
-let myLng = 127.1112
+let driveInterval = null
+
+// 초기 위치 (신대방삼거리역 부근)
+let myLat = 37.499935
+let myLng = 126.927324
 
 // --- 웹소켓 로직 ---
 const connectWebSocket = () => {
@@ -37,7 +48,6 @@ const connectWebSocket = () => {
   socket.onclose = () => setTimeout(connectWebSocket, 3000)
 }
 
-// --- 생명주기 훅 ---
 onMounted(() => {
   connectWebSocket()
   const KAKAO_KEY = 'f37807b77cb80bec5b35db61d2ad7dba'
@@ -49,9 +59,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (socket) socket.close()
+  if (driveInterval) clearInterval(driveInterval)
 })
 
-// --- 지도 초기화 ---
 const initMap = () => {
   const container = document.getElementById('map')
   map = new window.kakao.maps.Map(container, {
@@ -65,8 +75,46 @@ const initMap = () => {
   })
 }
 
-// --- 이벤트 핸들러 ---
-const triggerCall = () => (showCallModal.value = true)
+const subdividePath = (pathData, splitCount = 20) => {
+  const smoothPath = []
+  for (let i = 0; i < pathData.length - 1; i++) {
+    const start = pathData[i]
+    const end = pathData[i + 1]
+    for (let j = 0; j < splitCount; j++) {
+      const lat = start.lat + (end.lat - start.lat) * (j / splitCount)
+      const lng = start.lng + (end.lng - start.lng) * (j / splitCount)
+      smoothPath.push(new window.kakao.maps.LatLng(lat, lng))
+    }
+  }
+  if (pathData.length > 0) {
+    const last = pathData[pathData.length - 1]
+    smoothPath.push(new window.kakao.maps.LatLng(last.lat, last.lng))
+  }
+  return smoothPath
+}
+
+const triggerCall = async () => {
+  try {
+    const res = await driverApi.getNavigationPath()
+
+    if (res && res.data) {
+      callInfo.value = {
+        departure: res.data.departure || '알 수 없는 출발지',
+        destination: res.data.destination || '알 수 없는 도착지',
+        path: res.data.path || []
+      }
+      showCallModal.value = true
+    }
+  } catch (error) {
+    console.error('콜 정보 로드 실패:', error)
+    callInfo.value = {
+      departure: '신대방삼거리역',
+      destination: '당산역',
+      path: [] // 경로 없음
+    }
+    showCallModal.value = true
+  }
+}
 
 const acceptCall = () => {
   showCallModal.value = false
@@ -76,9 +124,62 @@ const acceptCall = () => {
 const startNavigation = () => {
   showPickupSheet.value = false
   isDriving.value = true
-  naviTitle.value = '강남역 가는 길'
+
+  naviTitle.value = '목적지로 이동 중'
   naviSub.value = '안전 운전 하세요'
-  etaText.value = '15분'
+
+  // 저장해둔 경로 데이터가 있으면 주행 시작
+  if (callInfo.value.path && callInfo.value.path.length > 0) {
+    runDriveSimulation(callInfo.value.path)
+  } else {
+    console.warn("경로 데이터가 없습니다.")
+  }
+}
+
+// --- 🏎️ 실제 주행 애니메이션 ---
+const runDriveSimulation = (pathData) => {
+  etaText.value = '25분'
+
+  // 1. 지도에 경로 그리기
+  const linePath = pathData.map(p => new window.kakao.maps.LatLng(p.lat, p.lng))
+
+  if (polyline) polyline.setMap(null)
+  polyline = new window.kakao.maps.Polyline({
+    path: linePath,
+    strokeWeight: 8,
+    strokeColor: '#6366f1',
+    strokeOpacity: 0.8,
+    strokeStyle: 'solid'
+  })
+  polyline.setMap(map)
+
+  const bounds = new window.kakao.maps.LatLngBounds()
+  linePath.forEach(p => bounds.extend(p))
+  map.setBounds(bounds)
+
+  const smoothPath = subdividePath(pathData, 30)
+
+  let index = 0
+  if (driveInterval) clearInterval(driveInterval)
+
+  driveInterval = setInterval(() => {
+    if (index >= smoothPath.length) {
+      clearInterval(driveInterval)
+      naviTitle.value = '도착'
+      naviSub.value = '운행이 종료되었습니다.'
+      isDriving.value = false
+      return
+    }
+
+    const currentPos = smoothPath[index]
+    driverMarker.setPosition(currentPos)
+
+    // 지도 중심 이동 (5프레임마다)
+    if (index % 5 === 0) {
+      map.panTo(currentPos)
+    }
+    index++
+  }, 20)
 }
 
 const toggleTraffic = () => {
@@ -99,47 +200,31 @@ const recenterMap = () => {
   <div class="h-full w-full relative bg-slate-900 overflow-hidden font-pretendard">
     <div id="map" class="w-full h-full kakao-dark-mode absolute inset-0 z-0"></div>
 
-    <DriverNavHeader
-      :is-driving="isDriving"
-      :title="naviTitle"
-      :sub-title="naviSub"
-      :eta="etaText"
-      :fare="currentFare"
-    />
+    <DriverNavHeader :is-driving="isDriving" :title="naviTitle" :sub-title="naviSub" :eta="etaText"
+      :fare="currentFare" />
 
-    <DriverIncomeWidget v-if="!isDriving" :income="todayIncome" />
-
-    <div
-      class="absolute right-4 top-28 z-20 transition-opacity duration-300"
-      :class="{ 'opacity-0 pointer-events-none': isDriving }"
-    >
-      <DriverMapControls
-        :is-traffic-on="isTrafficOn"
-        @toggle-traffic="toggleTraffic"
-        @recenter="recenterMap"
-      />
+    <div v-if="!isDriving" class="absolute top-6 right-4 z-20">
+      <DriverIncomeWidget :income="todayIncome" />
     </div>
 
-    <div
-      v-if="!isDriving && !showPickupSheet"
-      class="absolute inset-x-0 bottom-8 flex justify-center z-20 pointer-events-none pb-safe"
-    >
-      <button
-        @click="triggerCall"
-        class="pointer-events-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-full flex items-center justify-center text-white shadow-lg animate-pulse active:scale-95"
-      >
+    <div class="absolute right-4 top-28 z-20 transition-opacity duration-300"
+      :class="{ 'opacity-0 pointer-events-none': isDriving }">
+      <DriverMapControls :is-traffic-on="isTrafficOn" @toggle-traffic="toggleTraffic" @recenter="recenterMap" />
+    </div>
+
+    <div v-if="!isDriving && !showPickupSheet"
+      class="absolute inset-x-0 bottom-8 flex justify-center z-20 pointer-events-none pb-safe">
+      <button @click="triggerCall"
+        class="pointer-events-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-full flex items-center justify-center text-white shadow-lg animate-pulse active:scale-95">
         <Radio class="w-8 h-8" />
       </button>
     </div>
 
-    <DriverPickupSheet
-      :show="showPickupSheet"
-      passenger-name="김손님 고객"
-      location="경기도 성남시 분당구 판교역로 152"
-      @start-drive="startNavigation"
-    />
+    <DriverPickupSheet :show="showPickupSheet" passenger-name="김손님 고객" :location="callInfo.departure || '위치 정보 확인 중'"
+      @start-drive="startNavigation" />
 
-    <DriverCallModal :show="showCallModal" @accept="acceptCall" @reject="showCallModal = false" />
+    <DriverCallModal :show="showCallModal" :departure="callInfo.departure" :destination="callInfo.destination"
+      @accept="acceptCall" @reject="showCallModal = false" />
   </div>
 </template>
 
