@@ -193,11 +193,7 @@ const connectWebSocket = () => {
 
     // 연결 종료 시
     socket.addEventListener('close', () => {
-        console.log('WEBSOCKET CLOSED', {
-            code: e.code,
-            reason: e.reason,
-            wasClean: e.wasClean
-        })
+        console.log('WEBSOCKET CLOSED')
         isConnected.value = false
     })
 

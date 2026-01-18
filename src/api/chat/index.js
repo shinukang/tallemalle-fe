@@ -7,7 +7,7 @@ import api from '@/plugins/axiosinterceptor'
  */
 const getChatHistory = async () => {
     try {
-        const response = await api.get('/chat');
+        const response = await api.get('/json/chat');
         return response.data;
     } catch (error) {
         console.error('[API] 이전 채팅 내역 조회 실패:', error);
@@ -22,7 +22,7 @@ const getChatHistory = async () => {
  */
 const getChatParticipants = async () => {
     try {
-        const response = await api.get('/participants');
+        const response = await api.get('/json/participants');
         return response.data;
     } catch (error) {
         console.error('[API] 참여자 목록 조회 실패:', error);
@@ -37,7 +37,7 @@ const getChatParticipants = async () => {
  */
 const getRideDetail = async () => {
     try {
-        const response = await api.get('/ride_detail');
+        const response = await api.get('/json/ride_detail');
         return response.data;
     } catch (error) {
         console.error('[API] 여정 상세 정보 조회 실패:', error);
