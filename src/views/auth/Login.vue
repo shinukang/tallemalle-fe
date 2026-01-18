@@ -145,7 +145,7 @@ const loginWithGoogle = () => {
           <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-100">
             <CarFront class="text-white w-6 h-6" />
           </div>
-          <h1 class="text-xl font-bold tracking-tight text-indigo-900">탈래말래</h1>
+          <h1 class="text-2xl font-bold tracking-tight text-indigo-900">탈래말래</h1>
         </div>
         <h2 class="text-2xl font-bold text-slate-900">다시 오셨군요!</h2>
         <p class="text-slate-500 mt-2 text-sm">함께 탈 파트너가 기다리고 있어요.</p>
