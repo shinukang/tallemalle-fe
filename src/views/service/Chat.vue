@@ -3,7 +3,7 @@
  * [파일 설명]
  * 이 파일은 '실시간 채팅 페이지'의 메인(부모) 컴포넌트입니다.
  * * * 주요 역할:
- * 1. 페이지가 열리면 백엔드(또는 JSON 파일)에서 이전 대화 내역을 불러옵니다.
+ * 1. 페이지가 열리면 백엔드(또는 JSON 파일)에서 이전 대화 내역, 참여자 목록을 불러옵니다.
  * 2. WebSocket을 연결하여 실시간으로 메시지를 주고받습니다.
  * 3. 채팅 메시지 목록(messages)과 사용자 정보(usersData)를 관리하여 하위 컴포넌트에 내려줍니다.
  */
@@ -12,9 +12,9 @@ import { ref, reactive, onMounted, onUnmounted, provide } from 'vue'
 import ChatPanel from '@/components/chat/ChatPanel.vue'   // 채팅 화면 (중앙)
 import RideSidebar from '@/components/chat/RideSidebar.vue' // 참여자 목록 (우측)
 import ProfileModal from '@/components/chat/ProfileModal.vue' // 프로필 팝업
-import api from '@/api/user' // (참고) 실제 API 연동 시 사용
 import { useAuthStore } from '@/stores/auth' // 로그인 정보 저장소
 import { storeToRefs } from 'pinia'
+import api from '@/api/chat'
 
 // =========================================
 // 1. 상태(State) 변수 선언 구역
@@ -43,35 +43,17 @@ const myUserImg = ref('')
 const messages = ref([]) 
 
 /**
- * (NEW) 로딩 상태 관리
+ * 로딩 상태 관리
  * - isLoading: 데이터를 불러오는 중인가요?
  * - true면 '로딩 중...' 화면을 보여주고, 다 불러오면 false로 바꿉니다.
  */
 const isLoading = ref(false)
 
 /**
- * 사용자 데이터베이스 (Mock Data)
- * - ID를 키(Key)로 사용하여 사용자 정보(이름, 프사, 레벨 등)를 빠르게 찾기 위해 객체로 만들었습니다.
- * - 예: usersData['Ji-su'] -> 지수의 상세 정보
+ * (UPDATE) 사용자 데이터베이스
+ * - 빈 객체로 시작하고 API(getChatParticipants)를 통해 채워집니다.
  */
-const usersData = reactive({
-    "Ji-su": {
-        name: "지수", lv: "LV. 8", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ji-su",
-        meta: "가입 124일째 · 동승 48회", bio: '"주로 평일 아침 출근 시간에 판교역 근처에서 활동해요! 😊"',
-        score: 88, rank: "상위 5%", stats: { time: 24, silent: 18 },
-        reviews: [{ author: "에이든", date: "3일 전", content: "정말 친절하시고 시간도 딱 맞춰서 와주셨어요!" }]
-    },
-    "Aiden": {
-        name: "에이든", lv: "LV. 5", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden",
-        meta: "가입 42일째 · 동승 12회", bio: '"매너 있는 동승을 추구합니다. 조용히 가는 걸 선호해요!"',
-        score: 72, rank: "상위 15%", stats: { time: 8, silent: 10 },
-        reviews: [{ author: "지수", date: "1일 전", content: "대화가 정말 즐거웠습니다! 좋은 분이에요." }]
-    },
-    "Unknown": {
-        name: "알수없음", lv: "LV. 1", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown",
-        meta: "정보 없음", bio: "", score: 50, rank: "-", stats: { time: 0, silent: 0 }, reviews: []
-    }
-})
+const usersData = ref({}) 
 
 /**
  * 프로필 모달 관련 상태
@@ -92,6 +74,9 @@ const currentProfile = reactive({
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 
+// 여정 정보 상태 변수 추가
+const rideInfo = ref(null)
+
 // =========================================
 // 2. 생명주기(Lifecycle) & 초기화 로직
 // =========================================
@@ -110,9 +95,9 @@ onMounted(async () => {
     console.warn('[auth] 로그인 사용자 정보가 없습니다. localStorage USERINFO 확인 필요')
   }
 
-  // 2. 이전 채팅 내역 불러오기
-  // await를 써서 데이터를 다 가져올 때까지 기다린 후 웹소켓을 연결합니다.
-  await fetchChatHistory()
+  // 2. 초기 데이터 로드 (채팅 내역 + 참여자 목록)
+  // 내부에서 API 함수(getChatHistory)를 호출합니다.
+  await loadInitialData()
 
   // 3. 웹소켓 연결 시작
   connectWebSocket()
@@ -129,34 +114,41 @@ onUnmounted(() => {
 })
 
 /**
- * 채팅 내역 API 호출 함수
- * - 서버(혹은 JSON 파일)에서 데이터를 가져와 messages 변수에 채워넣습니다.
+ * 채팅 내역 로드 함수
+ * - api/chat/index.js의 함수를 호출합니다.
+ * - UI 관련 상태(isLoading, error 메시지 등)는 여전히 여기서 관리합니다.
  */
-const fetchChatHistory = async () => {
+const loadInitialData = async () => {
     try {
         // 로딩 시작 (화면에 '불러오는 중...' 표시)
         isLoading.value = true
         
-        // 실제 파일 경로에 맞게
-        const response = await fetch('/json/chat') 
-        
-        // 응답이 성공(200 OK)이 아니면 에러 발생
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+        // Promise.all을 사용하여 두 API를 동시에 호출합니다.
+        const [historyData, participantsData, rideDetailData] = await Promise.all([
+            api.getChatHistory(),       // 채팅 내역 가져오기
+            api.getChatParticipants(),  // 참여자 목록 가져오기
+            api.getRideDetail()         // 여정 정보 로드
+        ])
+
+        // 받아온 데이터 적용
+        messages.value = historyData || []
+        usersData.value = participantsData || {}
+        rideInfo.value = rideDetailData || null // 데이터 저장
+
+        // 만약 'Unknown'(알수없음) 유저가 없다면 기본값으로 추가 (안전장치)
+        if (!usersData.value['Unknown']) {
+            usersData.value['Unknown'] = {
+                name: "알수없음", lv: "LV. 1", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown",
+                meta: "정보 없음", bio: "", score: 50, rank: "-", stats: { time: 0, silent: 0 }, reviews: []
+            }
         }
-
-        // 가져온 데이터를 자바스크립트 객체로 변환
-        const data = await response.json()
         
-        // 변환된 데이터를 상태 변수에 저장 -> 화면이 자동으로 갱신됨
-        messages.value = data
-
     } catch (error) {
         console.error('채팅 내역 로드 실패:', error)
         // 실패했을 때 사용자에게 보여줄 안내 메시지 (빈 화면 대신 보여줌)
         messages.value = [
             { id: 1, type: 'date', text: 'Today' },
-            { id: 2, type: 'system', text: "⚠️ 이전 대화 내용을 불러오지 못했습니다." }
+            { id: 2, type: 'system', text: `⚠️ 데이터를 불러오는데 실패했습니다: ${error.message}` }
         ]
     } finally {
         // 성공하든 실패하든 로딩은 끝났으므로 false로 변경
@@ -201,7 +193,11 @@ const connectWebSocket = () => {
 
     // 연결 종료 시
     socket.addEventListener('close', () => {
-        console.log('WEBSOCKET CLOSED')
+        console.log('WEBSOCKET CLOSED', {
+            code: e.code,
+            reason: e.reason,
+            wasClean: e.wasClean
+        })
         isConnected.value = false
     })
 
@@ -255,7 +251,9 @@ const handleIncomingMessage = (data) => {
     if (userId === myUserId.value) return
 
     // 5. 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
-    const senderInfo = usersData[userId] || usersData['Unknown']
+    //const senderInfo = usersData[userId] || usersData['Unknown']
+    const senderInfo = usersData.value[userId] || usersData.value['Unknown']
+
     // 화면에 표시할 최종 유저 객체 조립
     const displayUser = {
         ...senderInfo,
@@ -321,9 +319,9 @@ const sendMessage = (textToSend) => {
  * @param {string} userId - 클릭한 사용자의 ID
  */
 const openProfile = (userId) => {
-    // usersData에서 정보 찾기
-    const data = usersData[userId] || usersData['Unknown']
 
+    // usersData.value로 접근
+    const data = usersData.value[userId] || usersData.value['Unknown']
     // currentProfile 반응형 객체에 데이터 덮어쓰기
     Object.assign(currentProfile, {
         id: userId,
@@ -358,6 +356,7 @@ provide('myUserName', myUserName)
             <ChatPanel 
                 v-else
                 :messages="messages" 
+                :ride-info="rideInfo"
                 :is-connected="isConnected" 
                 @send-message="sendMessage"
                 @open-profile="openProfile" 
@@ -366,6 +365,7 @@ provide('myUserName', myUserName)
             <!-- 3. 우측 사이드바 (참여자 목록 등) -->
             <RideSidebar 
                 :user-profiles="usersData" 
+                :ride-info="rideInfo"
                 @open-profile="openProfile" 
             />
         </main>

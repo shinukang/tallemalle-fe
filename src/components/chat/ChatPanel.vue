@@ -29,7 +29,8 @@ const props = defineProps({
     isConnected: {
         type: Boolean,
         default: false    // 기본값은 '연결 안 됨'
-    }
+    },
+    rideInfo: { type: Object, default: null }
 })
 
 /**
@@ -71,7 +72,7 @@ const forwardOpenProfile = (userId) => {
         
         <!-- 1. 상단 헤더 -->
         <!-- 부모에게서 받은 isConnected 정보를 헤더에게 그대로 전달합니다. -->
-        <ChatHeader :is-connected="isConnected" />
+        <ChatHeader :is-connected="isConnected" :ride-info="rideInfo" />
 
         <!-- 2. 메시지 리스트 (스크롤 영역) -->
         <!-- 

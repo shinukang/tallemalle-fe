@@ -24,7 +24,8 @@ defineProps({
     userProfiles: {
         type: Object,
         default: () => ({}) // 데이터가 없으면 빈 객체로 안전하게 초기화
-    }
+    },
+    rideInfo: { type: Object, default: null }
 })
 
 /**
@@ -56,8 +57,7 @@ const requestOpenProfile = (userId) => {
     <aside class="w-80 flex flex-col gap-6 h-full overflow-hidden hidden xl:flex">
         
         <!-- 1. 여정 정보 카드 (지도, 출발/도착지 등 정적 정보) -->
-        <RideInfoCard />
-
+        <RideInfoCard :ride-info="rideInfo" />
         <!-- 2. 멤버 리스트 영역 -->
         <!-- 
            :user-profiles -> 부모에게 받은 유저 데이터를 그대로 전달

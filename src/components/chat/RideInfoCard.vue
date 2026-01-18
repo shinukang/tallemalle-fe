@@ -11,6 +11,11 @@ import { ref } from 'vue'
 import { Info } from 'lucide-vue-next' // 정보(i) 아이콘
 import RideDetailModal from './RideDetailModal.vue' // 상세 내용을 보여줄 팝업창
 
+// Props로 받기
+defineProps({
+    rideInfo: { type: Object, default: null }
+})
+
 /**
  * 모달 상태 관리 변수
  * - false: 닫힘 (기본값)
@@ -53,7 +58,7 @@ const isRideDetailModalOpen = ref(false)
                 </div>
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase">Start</p>
-                    <p class="text-xs font-bold text-slate-700">강남역 2번 출구 앞</p>
+                    <p class="text-xs font-bold text-slate-700">{{ rideInfo?.route.start || '...' }}</p>
                 </div>
             </div>
 
@@ -68,7 +73,7 @@ const isRideDetailModalOpen = ref(false)
                 </div>
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase">Destination</p>
-                    <p class="text-xs font-bold text-slate-700">판교역 지하철 입구</p>
+                    <p class="text-xs font-bold text-slate-700">{{ rideInfo?.route.dest || '...' }}</p>
                 </div>
             </div>
         </div>
@@ -76,11 +81,12 @@ const isRideDetailModalOpen = ref(false)
 
     <!-- 
       상세 정보 모달
-      - HTML 구조상으로는 여기 있지만, 실제로는 화면 맨 위에 덮어씌워집니다(teleport나 fixed 등을 내부에서 사용).
-      - @close: 모달 내부에서 '닫기' 버튼을 누르면 변수를 false로 바꿔서 닫습니다.
+      모달에도 이미 받은 데이터를 그대로 넘겨줍니다. 
+      이렇게 하면 모달이 열릴 때마다 API를 다시 호출할 필요가 없습니다!
     -->
     <RideDetailModal 
         :is-open="isRideDetailModalOpen" 
+        :ride-info="rideInfo"
         @close="isRideDetailModalOpen = false" 
     />
 </template>

@@ -21,7 +21,8 @@ const props = defineProps({
     isConnected: {
         type: Boolean,
         default: false
-    }
+    },
+    rideInfo: { type: Object, default: null } 
 })
 
 // 페이지 이동을 담당하는 라우터 객체 가져오기
@@ -70,7 +71,10 @@ const goBack = () => {
             <div>
                 <div class="flex items-center gap-2">
                     <!-- 경로 제목 -->
-                    <h2 class="font-bold text-slate-900 text-sm md:text-base">강남역 2번 출구 → 판교역</h2>
+                    <!-- rideInfo가 로딩 전일 수 있으므로 Optional Chaining(?.) 사용 -->
+                    <h2 class="font-bold text-slate-900 text-sm md:text-base">
+                        {{ rideInfo ? `${rideInfo.route.start} → ${rideInfo.route.dest}` : '경로 정보 로딩 중...' }}
+                    </h2>
                     
                     <!-- 연결 상태 배지 (조건부 렌더링 v-if / v-else) -->
                     <!-- 연결 성공 시: 초록색 LIVE -->
