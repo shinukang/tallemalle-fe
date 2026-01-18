@@ -17,20 +17,16 @@ const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const { notifications } = storeToRefs(notificationStore)
 
-// 알림 팝업 상태 관리
 const showNotifications = ref(false)
-const notificationRef = ref(null) // 팝업 요소 참조용
-const toggleBtnRef = ref(null)    // 버튼 요소 참조용
+const notificationRef = ref(null)
+const toggleBtnRef = ref(null)
 
-// 메뉴 활성화 확인
 const isActive = (path) => route.path === path
 
-// 알림 토글 함수
 const toggleNotification = () => {
     showNotifications.value = !showNotifications.value
 }
 
-// 외부 클릭 감지 (팝업 닫기)
 const handleClickOutside = (event) => {
     if (
         showNotifications.value &&
@@ -43,43 +39,57 @@ const handleClickOutside = (event) => {
     }
 }
 
-// 라이프사이클 훅: 이벤트 리스너 등록/해제
-onMounted(() => {
+onMounted(async () => {
     document.addEventListener('click', handleClickOutside)
+    // ✅ 앱 시작 시 데이터가 비어있으면 가져오기
+    if (notifications.value.length === 0) {
+        await notificationStore.fetchNotifications()
+    }
 })
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
 })
 
-// 페이지 이동 시 팝업 닫기
 const goToNotifications = () => {
     showNotifications.value = false
     router.push('/notification')
 }
 
-// 최신 알림 5개 가져오기
+// 최신 알림 5개 (이미 정렬된 상태라면 slice만)
 const recentNotifications = computed(() => {
-    return notifications.value.slice(0, 5)
+    // 1. 원본 데이터를 복사([...]) 후 정렬
+    const sorted = [...notifications.value].sort((a, b) => {
+        // a와 b의 읽음 상태가 같으면? -> 순서 유지 (시간순)
+        if (a.isRead === b.isRead) return 0
+        // a가 읽음(true)이면? -> 뒤로 보냄(1)
+        return a.isRead ? 1 : -1
+    })
+
+    // 2. 정렬된 상태에서 상위 5개만 자르기
+    return sorted.slice(0, 5)
 })
-//읽지 않은 알림 갯수
+
 const unreadCount = computed(() => {
     return notifications.value.filter(n => !n.isRead).length
 })
 
+// ✅ [수정됨] 클릭 시 삭제하지 않고 '읽음 처리'만 함
 const handleNotificationClick = (id) => {
     notificationStore.markAsRead(id)
 }
+
+// ✅ 한글 이름(.name) 추가
 const getNotificationStyle = (type) => {
     switch (type) {
         case 'matching':
-            return { icon: UserPlus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: 'text-indigo-500' }
+            return { icon: UserPlus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: 'text-indigo-500', name: '매칭' }
         case 'event':
-            return { icon: Gift, bg: 'bg-pink-50', text: 'text-pink-600', label: 'text-pink-500' }
+            return { icon: Gift, bg: 'bg-pink-50', text: 'text-pink-600', label: 'text-pink-500', name: '이벤트' }
         case 'payment':
-            return { icon: CreditCard, bg: 'bg-amber-50', text: 'text-amber-600', label: 'text-amber-500' }
+            return { icon: CreditCard, bg: 'bg-amber-50', text: 'text-amber-600', label: 'text-amber-500', name: '결제' }
         default:
-            return { icon: Bell, bg: 'bg-slate-100', text: 'text-slate-500', label: 'text-slate-500' }
+            return { icon: Bell, bg: 'bg-slate-100', text: 'text-slate-500', label: 'text-slate-500', name: '알림' }
     }
 }
 </script>
@@ -170,7 +180,7 @@ const getNotificationStyle = (type) => {
                     <div class="flex flex-col gap-1 flex-1">
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold" :class="getNotificationStyle(item.type).label">
-                                {{ item.categoryLabel }}
+                                {{ getNotificationStyle(item.type).name }}
                             </span>
                             <span v-if="!item.isRead" class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                         </div>
