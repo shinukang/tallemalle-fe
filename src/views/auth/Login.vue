@@ -3,7 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/user'
-import { CarFront, Mail, Lock, MessageCircle } from 'lucide-vue-next'
+import { CarFront, Mail, Lock, MessageCircle, AlertCircle } from 'lucide-vue-next'
 
 // 라우터 인스턴스 생성
 const router = useRouter()
@@ -61,6 +61,10 @@ const emailRules = () => {
 
 // 비밀번호 규칙
 const passwordRules = () => {
+  const hasLowerLetter = /[a-z]/.test(loginForm.password)
+  const hasNumber = /[0-9]/.test(loginForm.password)
+  const hasSpecial = /[!@$]/.test(loginForm.password)
+  
   if (loginForm.password.length < 8) {
     loginInputError.password.errorMessage = '비밀번호는 8글자 이상 입력해야합니다.'
     loginInputError.password.isValid = false
@@ -68,12 +72,8 @@ const passwordRules = () => {
     return false
   }
 
-  const hasLowerLetter = /[a-z]/.test(loginForm.password)
-  const hasNumber = /[0-9]/.test(loginForm.password)
-  const hasSpecial = /[!@$]/.test(loginForm.password)
-
-  if (!(hasLowerLetter && hasNumber)) {
-    loginInputError.password.errorMessage = '비밀번호는 영문, 숫자, 특수문자를 모두 포함해야합니다.'
+  if (!(hasLowerLetter && hasNumber && hasSpecial)) {
+    loginInputError.password.errorMessage = '비밀번호는 영문 소문자, 숫자, 특수문자를 모두 포함해야합니다.'
     loginInputError.password.isValid = false
 
     return false
@@ -109,11 +109,12 @@ const handleLogin = async () => {
     // return false
   }
 
+  // 로그인 결과
   if (res.status == 200) {
     authStore.login(res.data)
     alert('로그인되었습니다.')
     router.push('/main')
-    console.log(authStore.user)
+    // console.log(authStore.user)
   } else {
     alert('아이디와 비밀번호를 확인해보세요.')
   }
@@ -135,12 +136,10 @@ const loginWithGoogle = () => {
 </script>
 
 <template>
-  <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 font-sans"
-  >
-    <div
-      class="bg-white w-full max-w-md rounded-[24px] shadow-xl overflow-hidden relative border border-white/50"
-    >
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 font-sans">
+    <div class="bg-white w-full max-w-md rounded-[24px] shadow-xl overflow-hidden relative border border-white/50">
+        
+      <!-- 상단 헤더 -->
       <div class="p-8 pb-4 flex flex-col items-center text-center">
         <div class="flex items-center gap-2 mb-6">
           <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-100">
@@ -152,31 +151,62 @@ const loginWithGoogle = () => {
         <p class="text-slate-500 mt-2 text-sm">함께 탈 파트너가 기다리고 있어요.</p>
       </div>
 
+      <!-- 로그인 폼 -->
       <form @submit.prevent="handleLogin" class="px-8 py-4 space-y-4">
-        <div
-          class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
-        >
-          <Mail class="absolute left-4 w-5 h-5 text-slate-400" />
-          <input
-            v-model="loginForm.email"
-            type="email"
-            placeholder="이메일 주소"
-            class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
-          />
+
+        <!-- 이메일 입력 -->
+        <div class="flex flex-col">
+          <div
+            class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            :class="[
+              loginInputError.email.errorMessage ? 'border-red-400' : 'border-slate-200'
+            ]"
+          >
+            <Mail class="absolute left-4 w-5 h-5 text-slate-400" />
+            <input
+              v-model="loginForm.email"
+              @blur="emailRules()"
+              type="email"
+              placeholder="이메일 주소"
+              class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
+            />
+          </div>
+          
+          <p 
+            v-if="loginInputError.email.errorMessage" 
+            class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
+          >
+            <AlertCircle class="w-3.5 h-3.5 mr-1" />
+            {{ loginInputError.email.errorMessage }}
+          </p>
         </div>
 
-        <div class="space-y-1">
+        <!-- 비밀번호 입력 -->
+        <div class="flex flex-col">
           <div
-            class="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
+            :class="[
+              loginInputError.password.errorMessage ? 'border-red-400' : 'border-slate-200'
+            ]"
           >
             <Lock class="absolute left-4 w-5 h-5 text-slate-400" />
             <input
               v-model="loginForm.password"
+              @blur="passwordRules()"
               type="password"
               placeholder="비밀번호"
               class="w-full pl-12 pr-4 py-4 bg-transparent outline-none text-sm placeholder:text-slate-400"
             />
           </div>
+          
+          <p 
+            v-if="loginInputError.password.errorMessage" 
+            class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
+          >
+            <AlertCircle class="w-3.5 h-3.5 mr-1" />
+            {{ loginInputError.password.errorMessage }}
+          </p>
+
           <div class="flex justify-end">
             <router-link
               to="/findpassword"
@@ -187,6 +217,7 @@ const loginWithGoogle = () => {
           </div>
         </div>
 
+        <!-- 로그인 버튼 -->
         <button
           type="submit"
           class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all mt-2 active:scale-[0.98]"
@@ -194,6 +225,8 @@ const loginWithGoogle = () => {
           로그인하기
         </button>
 
+
+        <!-- 구분선 -->
         <div class="mt-8 space-y-4">
           <div class="relative flex justify-center text-xs uppercase">
             <span class="bg-white px-3 text-slate-400 font-medium relative z-10"
@@ -204,6 +237,7 @@ const loginWithGoogle = () => {
             </div>
           </div>
 
+          <!-- 구글 로그인 -->
           <div class="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -218,6 +252,7 @@ const loginWithGoogle = () => {
               <span class="text-sm font-semibold text-slate-600">Google</span>
             </button>
 
+            <!-- 카카오 로그인 -->
             <button
               type="button"
               @click="loginWithKakao"
@@ -232,6 +267,7 @@ const loginWithGoogle = () => {
         </div>
       </form>
 
+      <!-- 하단 안내 -->
       <div class="p-8 pt-4 text-center">
         <p class="text-sm text-slate-500">
           아직 회원이 아니신가요?
