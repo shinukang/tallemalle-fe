@@ -15,4 +15,11 @@ const getNoticeDetail = async (noticeId) => {
   return { data: res.data.data[noticeId] }
 }
 
-export default { noticeList, getNoticeDetail }
+const faqList = async (req) => {
+  const res = await api.get('/json/faq', req)
+  console.log(res.data)
+
+  return res.data
+}
+
+export default { noticeList, getNoticeDetail, faqList }
