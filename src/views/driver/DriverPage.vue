@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Radio } from 'lucide-vue-next'
-import driverApi from '@/api/driver' // API 호출
+import { Radio, AlertCircle } from 'lucide-vue-next'
+import driverApi from '@/api/driver'
 
 import DriverIncomeWidget from '@/components/driver/DriverIncomeWidget.vue'
 import DriverMapControls from '@/components/driver/DriverMapControls.vue'
@@ -22,7 +22,10 @@ const naviTitle = ref('운행 대기 중')
 const naviSub = ref('주변의 콜을 기다리세요')
 const etaText = ref('--분')
 
-// 📍 콜 정보 저장 (출발지, 도착지, 경로)
+// 에러 메시지 상태 추가
+const errorMessage = ref('')
+
+// 콜 정보 저장 
 const callInfo = ref({
   departure: '',
   destination: '',
@@ -93,7 +96,18 @@ const subdividePath = (pathData, splitCount = 20) => {
   return smoothPath
 }
 
+// 에러 표시 함수
+const showToastError = (msg) => {
+  errorMessage.value = msg
+  setTimeout(() => {
+    errorMessage.value = ''
+  }, 3000)
+}
+
 const triggerCall = async () => {
+  // 에러 메시지 초기화
+  errorMessage.value = ''
+
   try {
     const res = await driverApi.getNavigationPath()
 
@@ -104,15 +118,27 @@ const triggerCall = async () => {
         path: res.data.path || []
       }
       showCallModal.value = true
+    } else {
+      // 데이터가 비었을 때
+      throw new Error('No Data')
     }
   } catch (error) {
     console.error('콜 정보 로드 실패:', error)
-    callInfo.value = {
-      departure: '신대방삼거리역',
-      destination: '당산역',
-      path: [] // 경로 없음
+
+    // 에러 상황별 메시지 처리
+    if (!error.response && error.message !== 'No Data') {
+      showToastError('서버와 연결할 수 없습니다.')
+    } else if (error.response && error.response.status >= 500) {
+      showToastError('서버 오류가 발생했습니다. 잠시 후 시도해주세요.')
+    } else {
+      callInfo.value = {
+        departure: '신대방삼거리역',
+        destination: '당산역',
+        path: []
+      }
+      showCallModal.value = true
+      showToastError('⚠️ 테스트용 기본 데이터를 불러왔습니다.')
     }
-    showCallModal.value = true
   }
 }
 
@@ -128,11 +154,11 @@ const startNavigation = () => {
   naviTitle.value = '목적지로 이동 중'
   naviSub.value = '안전 운전 하세요'
 
-  // 저장해둔 경로 데이터가 있으면 주행 시작
   if (callInfo.value.path && callInfo.value.path.length > 0) {
     runDriveSimulation(callInfo.value.path)
   } else {
-    console.warn("경로 데이터가 없습니다.")
+    // 여기서도 에러 띄우기 가능
+    showToastError("경로 데이터가 없어 안내를 시작할 수 없습니다.")
   }
 }
 
@@ -140,7 +166,6 @@ const startNavigation = () => {
 const runDriveSimulation = (pathData) => {
   etaText.value = '25분'
 
-  // 1. 지도에 경로 그리기
   const linePath = pathData.map(p => new window.kakao.maps.LatLng(p.lat, p.lng))
 
   if (polyline) polyline.setMap(null)
@@ -174,7 +199,6 @@ const runDriveSimulation = (pathData) => {
     const currentPos = smoothPath[index]
     driverMarker.setPosition(currentPos)
 
-    // 지도 중심 이동 (5프레임마다)
     if (index % 5 === 0) {
       map.panTo(currentPos)
     }
@@ -202,6 +226,17 @@ const recenterMap = () => {
 
     <DriverNavHeader :is-driving="isDriving" :title="naviTitle" :sub-title="naviSub" :eta="etaText"
       :fare="currentFare" />
+
+    <Transition enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform -translate-y-10 opacity-0" enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in" leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform -translate-y-10 opacity-0">
+      <div v-if="errorMessage"
+        class="absolute top-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 bg-rose-950/90 border border-rose-500/50 text-rose-200 rounded-full shadow-lg backdrop-blur-sm whitespace-nowrap">
+        <AlertCircle class="w-5 h-5 text-rose-500" />
+        <span class="text-sm font-bold">{{ errorMessage }}</span>
+      </div>
+    </Transition>
 
     <div v-if="!isDriving" class="absolute top-6 right-4 z-20">
       <DriverIncomeWidget :income="todayIncome" />
