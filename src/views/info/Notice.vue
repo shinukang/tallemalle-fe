@@ -2,11 +2,16 @@
 import { ref, onMounted } from 'vue'
 import { ChevronDown, List } from 'lucide-vue-next' // 아이콘 직접 임포트
 import api from '@/api/notice/index.js'
+import PageHeader from '@/components/layout/PageHeader.vue'
+import NoticeTabButton from '@/components/notice/NoticeTabButton.vue'
+import NoticeCard from '@/components/notice/NoticeCard.vue'
+import FaqItem from '@/components/notice/FaqItem.vue'
 
 // 상태 관리
 const activeTab = ref('notice')
 const activeFaq = ref(null)
 const noticeList = ref([])
+const faqs = ref([])
 
 // 공지사항 리스트 가져오기
 const getNoticeList = async () => {
@@ -19,17 +24,17 @@ const getNoticeList = async () => {
   }
 }
 
-const faqs = ref([
-  {
-    question: '매칭이 완료된 후 취소하면 어떻게 되나요?',
-    answer:
-      '배차가 완료된 후 취소할 경우 다른 동승자들에게 피해가 갈 수 있습니다. 잦은 취소 시 매너 온도가 하락하거나 이용이 제한될 수 있습니다.',
-  },
-  {
-    question: '결제는 어떤 방식으로 진행되나요?',
-    answer: '목적지 도착 후 정산하기 버튼을 누르면 사전에 등록하신 카드로 자동 결제됩니다.',
-  },
-])
+
+const getFaqList = async () => {
+  try {
+    const res = await api.faqList() // API 호출
+    // console.log("받아온 FAQ 데이터:", res) 
+
+    faqs.value = res.data || res 
+  } catch (error) {
+    console.error('FAQ를 불러오는 중 오류 발생:', error)
+  }
+}
 
 const toggleFaq = (index) => {
   activeFaq.value = activeFaq.value === index ? null : index
@@ -37,6 +42,7 @@ const toggleFaq = (index) => {
 
 onMounted(() => {
   getNoticeList()
+  getFaqList()
 })
 </script>
 
@@ -48,45 +54,27 @@ onMounted(() => {
     ></div>
 
     <div class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
-      <div class="border-b border-slate-100 bg-white/50 w-full">
-        <div class="max-w-5xl mx-auto px-8 py-8">
-          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">공지사항</h1>
-          <p class="text-sm text-slate-400 font-medium mt-1">
-            탈래말래의 새로운 소식과 자주 묻는 질문을 확인하세요.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="공지사항"
+        description="탈래말래의 새로운 소식과 자주 묻는 질문을 확인하세요."
+      />
 
       <div class="flex-1 overflow-y-auto custom-scroll p-8">
         <div class="max-w-5xl mx-auto space-y-6">
           <div
             class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[600px]"
           >
+            <!-- 공지사항 탭 버튼 -->
             <div class="flex border-b border-slate-50">
-              <button
-                @click="activeTab = 'notice'"
-                :class="[
-                  'flex-1 py-6 text-sm font-bold border-b-2 transition-all',
-                  activeTab === 'notice'
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30'
-                    : 'border-transparent text-slate-400 hover:text-slate-600 bg-white',
-                ]"
+              <NoticeTabButton :active="activeTab === 'notice'" @click="activeTab = 'notice'"
+                >공지사항</NoticeTabButton
               >
-                공지사항
-              </button>
-              <button
-                @click="activeTab = 'faq'"
-                :class="[
-                  'flex-1 py-6 text-sm font-bold border-b-2 transition-all',
-                  activeTab === 'faq'
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30'
-                    : 'border-transparent text-slate-400 hover:text-slate-600 bg-white',
-                ]"
+              <NoticeTabButton :active="activeTab === 'faq'" @click="activeTab = 'faq'"
+                >자주 묻는 질문 (FAQ)</NoticeTabButton
               >
-                자주 묻는 질문 (FAQ)
-              </button>
             </div>
 
+            <!-- 공지사항 카드 컴포넌트 (NoticeCard) -->
             <div
               v-if="activeTab === 'notice'"
               class="tab-content flex-1 overflow-y-auto custom-scroll p-8 space-y-4"
@@ -94,88 +82,22 @@ onMounted(() => {
               <div v-if="noticeList.length === 0" class="py-20 text-center text-slate-400">
                 등록된 공지사항이 없습니다.
               </div>
-              <RouterLink
-                v-for="(item, index) in noticeList"
-                :key="item.id || index"
-                :to="{ name: 'noticedetail', params: { num: item.id } }"
-                custom
-                v-slot="{ navigate }"
-              >
-                <div
-                  @click="navigate"
-                  class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:border-indigo-100 hover:shadow-md transition-all cursor-pointer group"
-                >
-                  <div class="flex justify-between items-center mb-4">
-                    <div class="flex gap-2">
-                      <span
-                        :class="[
-                          item.tagClass || 'bg-indigo-100 text-indigo-600',
-                          'text-[10px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider',
-                        ]"
-                      >
-                        {{ item.tag || '공지' }}
-                      </span>
-                      <span
-                        v-if="item.isEssential"
-                        class="bg-slate-100 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider"
-                      >
-                        필독
-                      </span>
-                    </div>
-                    <span class="text-[11px] font-medium text-slate-400">{{ item.date }}</span>
-                  </div>
-                  <h3
-                    class="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors"
-                  >
-                    {{ item.title }}
-                  </h3>
-                  <p class="text-sm text-slate-500 mt-2 leading-relaxed line-clamp-2">
-                    {{ item.description }}
-                  </p>
-                </div>
-              </RouterLink>
+              <NoticeCard v-for="item in noticeList" :key="item.id" :item="item" />
             </div>
 
+            <!-- FAQ 아코디언 컴포넌트 -->
             <div
               v-if="activeTab === 'faq'"
               class="tab-content flex-1 overflow-y-auto custom-scroll p-8 space-y-3"
             >
-              <div
+              <FaqItem
                 v-for="(item, index) in faqs"
                 :key="index"
-                class="faq-item bg-white p-6 rounded-[2rem] border border-slate-100 cursor-pointer hover:border-indigo-200 transition-all"
-                :class="{ active: activeFaq === index }"
-                @click="toggleFaq(index)"
-              >
-                <div class="flex justify-between items-center gap-4">
-                  <div class="flex gap-4 items-center flex-1">
-                    <span
-                      class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm shrink-0"
-                      >Q</span
-                    >
-                    <p class="text-[15px] font-bold text-slate-800 leading-snug">
-                      {{ item.question }}
-                    </p>
-                  </div>
-                  <div class="p-2 bg-slate-50 rounded-full shrink-0">
-                    <ChevronDown
-                      :class="[
-                        'w-4 h-4 text-slate-400 transition-transform duration-300',
-                        { 'rotate-180 text-indigo-600': activeFaq === index },
-                      ]"
-                    />
-                  </div>
-                </div>
-                <div class="faq-answer-container" :class="{ 'is-open': activeFaq === index }">
-                  <div class="faq-answer-content flex gap-4 pl-14 pt-2">
-                    <div
-                      class="text-[14px] text-slate-600 leading-relaxed font-medium bg-slate-50 p-4 rounded-2xl w-full"
-                    >
-                      {{ item.answer }}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                :question="item.question"
+                :answer="item.answer"
+                :is-open="activeFaq === index"
+                @toggle="toggleFaq(index)"
+              />
             </div>
           </div>
         </div>
@@ -217,26 +139,5 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* FAQ 아코디언 애니메이션 최적화 */
-.faq-answer-container {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition:
-    grid-template-rows 0.3s ease-out,
-    opacity 0.2s;
-  opacity: 0;
-  overflow: hidden;
-}
-
-.faq-answer-container.is-open {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  margin-top: 1rem;
-}
-
-.faq-answer-content {
-  min-height: 0;
 }
 </style>
