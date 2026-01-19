@@ -21,9 +21,7 @@ const goToDriverLogin = () => router.push('/driverlogin')
 
     <main class="flex-1 w-full h-full relative z-0">
       <RouterView v-slot="{ Component }">
-        <Transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </Transition>
+        <component :is="Component" :key="$route.fullPath" />
       </RouterView>
     </main>
 
