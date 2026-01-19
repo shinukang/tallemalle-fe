@@ -175,7 +175,7 @@ const connectWebSocket = () => {
         console.log('WEBSOCKET CONNECTED')
         isConnected.value = true
 
-        // [핵심 수정 1] 연결 되자마자 '입장 메시지' 전송
+        // 연결 되자마자 '입장 메시지' 전송
         // 내 정보를 담아서 보내면, 다른 사람들이 이를 받아 usersData에 나를 추가합니다.
         const enterMsg = {
             type: 'enter', // 입장 이벤트 타입
@@ -199,15 +199,7 @@ const connectWebSocket = () => {
         socket.send(JSON.stringify(enterMsg))
     })
 
-    // socket.onmessage = (e) => {
-    //     try {
-    //         const parsedData = JSON.parse(e.data)
-    //         const payload = parsedData.payload !== undefined ? parsedData.payload : parsedData
-    //         handleIncomingMessage(payload)
-    //     } catch (err) { handleIncomingMessage(e.data) }
-    // }
-
-    // 메시지 수신 시 (가장 중요!)
+    // 메시지 수신 시
     socket.addEventListener('message', (e) => {
         try {
             // 서버에서 온 데이터(JSON 문자열)를 객체로 변환
@@ -277,7 +269,7 @@ const handleIncomingMessage = (data) => {
         textContent = String(data)
     }
 
-    // 내가 보낸 메시지가 메아리쳐서 돌아온 경우 무시 (이미 화면에 그렸으므로)
+    // 내가 보낸 메시지 무시
     if (userId === myUserId.value) return
 
     // 유저 정보 등록 (enter, exist 메시지 모두 여기서 처리)
@@ -328,7 +320,6 @@ const handleIncomingMessage = (data) => {
     }
 
     // 기존 유저 존재 알림('exist') 처리
-    // 목록에는 [로직 1]에서 이미 추가되었으므로, 여기서는 그냥 종료합니다.
     if (msgType === 'exist') return
 
     // 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
@@ -364,7 +355,7 @@ const sendMessage = (textToSend) => {
     const now = new Date()
     const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
 
-    // 1. Optimistic Update (낙관적 업데이트)
+    // Optimistic Update (낙관적 업데이트)
     // 서버 응답 기다리지 않고 내 화면에 먼저 말풍선 띄우기 (반응속도 향상)
     messages.value.push({
         id: Date.now(),
@@ -373,7 +364,7 @@ const sendMessage = (textToSend) => {
         time: timeStr
     })
 
-    // 2. 실제 서버로 전송
+    // 실제 서버로 전송
     if (socket && isConnected.value) {
         const payload = {
             userId: myUserId.value,
