@@ -12,4 +12,4 @@ const getNavigationPath = async () => {
   }
 }
 
-export default { signup, login, getNavigationPath }
+export default { getNavigationPath }
