@@ -62,29 +62,14 @@ onMounted(() => {
           <div
             class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[600px]"
           >
+            <!-- 공지사항 탭 버튼 -->
             <div class="flex border-b border-slate-50">
-              <button
-                @click="activeTab = 'notice'"
-                :class="[
-                  'flex-1 py-6 text-sm font-bold border-b-2 transition-all',
-                  activeTab === 'notice'
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30'
-                    : 'border-transparent text-slate-400 hover:text-slate-600 bg-white',
-                ]"
+              <NoticeTabButton :active="activeTab === 'notice'" @click="activeTab = 'notice'"
+                >공지사항</NoticeTabButton
               >
-                공지사항
-              </button>
-              <button
-                @click="activeTab = 'faq'"
-                :class="[
-                  'flex-1 py-6 text-sm font-bold border-b-2 transition-all',
-                  activeTab === 'faq'
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/30'
-                    : 'border-transparent text-slate-400 hover:text-slate-600 bg-white',
-                ]"
+              <NoticeTabButton :active="activeTab === 'faq'" @click="activeTab = 'faq'"
+                >자주 묻는 질문 (FAQ)</NoticeTabButton
               >
-                자주 묻는 질문 (FAQ)
-              </button>
             </div>
 
             <!-- 공지사항 카드 컴포넌트 (NoticeCard) -->

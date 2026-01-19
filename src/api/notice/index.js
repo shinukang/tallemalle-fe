@@ -15,4 +15,13 @@ const getNoticeDetail = async (noticeId) => {
   return { data: res.data.data[noticeId] }
 }
 
-export default { noticeList, getNoticeDetail }
+const getFaq = async (req) => {
+  const res = await api.get('/json/Faq', req)
+  console.log(res.data)
+
+  // 전체 목록 중 해당 num(ID)을 가진 데이터만 찾아서 반환
+  // JSON 구조가 { "1": {...}, "2": {...} } 형태일 때:
+  return res.data
+}
+
+export default { noticeList, getNoticeDetail, getFaq }
