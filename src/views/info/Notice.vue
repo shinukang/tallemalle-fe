@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ChevronDown, List } from 'lucide-vue-next' // 아이콘 직접 임포트
 import api from '@/api/notice/index.js'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import NoticeTabButton from '@/components/notice/NoticeTabButton.vue'
@@ -24,7 +23,7 @@ const getNoticeList = async () => {
   }
 }
 
-
+// FAQ 리스트 가져오기
 const getFaqList = async () => {
   try {
     const res = await api.faqList() // API 호출
