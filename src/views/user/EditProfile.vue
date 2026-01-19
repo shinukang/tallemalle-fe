@@ -129,8 +129,8 @@ onMounted(async () => {
       Object.assign(form.value, res.data)
 
       if (form.value.phone === res.data.phone) {
-        isPhoneVerified = true
-        isPhoneChanged = false
+        isPhoneVerified.value = true
+        isPhoneChanged.value = false
       }
     }
   } catch (error) {
