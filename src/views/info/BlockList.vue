@@ -1,22 +1,32 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { CheckCircle, Info } from 'lucide-vue-next'
 import SettingPageLayout from '@/components/setting/SettingPageLayout.vue'
 import BlockedUserItem from '@/components/setting/BlockedUserItem.vue'
+import api from '@/api/block/index.js'
+const blockedUsers = ref([])
 
-// 차단된 유저 목록 데이터
-const blockedUsers = ref([
-    { id: 1, name: '매너없는택시', date: '2025. 11. 20.', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AngryUser' },
-    { id: 2, name: '약속안지킴', date: '2025. 12. 05.', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NoShow' },
-    { id: 3, name: '시끄러운사람', date: '2026. 01. 02.', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BadManner' },
-    { id: 4, name: '광고계정123', date: '2026. 01. 03.', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Spam' }
-])
+// FAQ 리스트 가져오기
+const getBlockList = async () => {
+  try {
+    const res = await api.blockList() // API 호출
+    // console.log("받아온 차단된 사용자 데이터:", res) 
+
+    blockedUsers.value = res.data || res 
+  } catch (error) {
+    console.error('차단된 사용자를 불러오는 중 오류 발생:', error)
+  }
+}
 
 const unblockUser = (id) => {
     if (confirm("이 사용자의 차단을 해제하시겠습니까?")) {
         blockedUsers.value = blockedUsers.value.filter(user => user.id !== id)
     }
 }
+
+onMounted(() => {
+  getBlockList()
+})
 </script>
 
 <template>
