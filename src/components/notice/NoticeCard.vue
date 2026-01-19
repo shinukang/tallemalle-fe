@@ -1,3 +1,9 @@
+<script setup>
+defineProps({
+  item: Object
+})
+</script>
+
 <template>
   <RouterLink :to="{ name: 'noticedetail', params: { num: item.id } }" custom v-slot="{ navigate }">
     <div
@@ -27,9 +33,3 @@
     </div>
   </RouterLink>
 </template>
-
-<script setup>
-defineProps({
-  item: Object
-})
-</script>
