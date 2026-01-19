@@ -35,6 +35,7 @@ const isCreateModalOpen = ref(false)
 const myStatus = ref(localStorage.getItem('myStatus') || 'IDLE')
 const myRecruitId = ref(Number(localStorage.getItem('myRecruitId')) || null)
 
+// 웹 소켓 변수
 let ws = null
 
 // ===================================================
@@ -72,20 +73,35 @@ onUnmounted(() => {
 // ============= RecruitListItem.vue ================
 // ===================================================
 
+// 상태 변수
+const isLoading = ref(false)
+const isError = ref(false)
+
 // --- 모집 리스트 로드 함수 (JSON 파일 받아오기) ---
 const fetchRecruits = async () => {
+
+    isLoading.value = true
+    isError.value = false
+
+    // === API 데이터 로딩 실패 및 빈 데이터 처리 ===
+    // === 상황:      서버가 꺼져있거나 네트워크 문제로 api.getRecruitList()가 실패할 경우, 사용자는 하얀 화면이나 무한 로딩을 보게 됩니다. ===
+    // === 해결 방법: try-catch를 보강하고, 에러 발생 시 사용자에게 알림을 주거나 '재시도 버튼'을 노출해야 합니다. ===
     try {
         const res = await api.getRecruitList()
 
         // 데이터가 정상이라면
-        if (res && res.data) {
-            recruitList.value = res.data
+        if (res && Array.isArray(red.data)) {
+            recruitList.value = res.data.filter(item => item.startLat && item.startLng)
             // 데이터에 문제가 있으면
         } else {
-            console.warn("데이터 형식이 올바르지 않거나 비어있습니다.")
+            recruitList.value = []
         }
     } catch (error) {
         console.log("fetchRecruits 에러 : ", error)
+        isError.value = true
+        alert("데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.")
+    } finally {
+        isLoading.value = false
     }
     // --- 기존 함수 로직 ---
     // recruitList.value = [
@@ -124,7 +140,9 @@ const joinChat = () => {
     if (myStatus.value !== 'IDLE') {
         // 만약 내가 들어간 방이면 채팅방으로 이동
         if (myRecruitId.value === selectedRecruit.value.id) {
-            router.push(`/chat/${selectedRecruit.value.id}`)
+            // 프론트 프로젝트에서는 그냥 chat으로 가게 변경
+            // router.push(`/chat/${selectedRecruit.value.id}`)
+            router.push("/chat")
             return
         }
         alert('이미 참여 중인 다른 모집이 있습니다.')
@@ -135,7 +153,9 @@ const joinChat = () => {
     updateMyStatus('JOINED', selectedRecruit.value.id)
 
     // 채팅방 이동
-    router.push(`/chat/${selectedRecruit.value.id}`)
+    // router.push(`/chat/${selectedRecruit.value.id}`)
+    // 마찬가지로 프론트 프로젝트에서는 그냥 chat으로 가게 변경
+    router.push('/chat')
 }
 
 // --- [UI 개선] 하단 버튼 텍스트/상태 ---
@@ -187,27 +207,28 @@ const handleCreateSubmit = (formData) => {
         return
     }
 
+    // ID 미리 생성
+    const newId = Date.now()
+
+    // 서버로 보낼 데이터 포장
     const payload = {
-        type: 'createRecruit', payload: formData
+        type: 'createRecruit',
+        payload: {
+            id: newId,
+            ...formData,
+            cur: 1,
+            max: formData.max || 4
+        }
     }
 
     if (ws && ws.readyState === WebSocket.OPEN) {
+        // 서버로 데이터 전송
         ws.send(JSON.stringify(payload))
 
-        // 모집장
-        // 실제로는 서버 DB ID를 받아야 하지만 임시로 타임스팸트
-        const newId = Date.now()
-
-        // 리스트에 즉시 반영
-        recruitList.value.unshift({
-            id: newId, // 생성해둔 ID 사용 (일치 보장)
-            ...payload.payload,
-            cur: 1
-        })
-
-        // 상태 저장
+        // 내 상태 변경
         updateMyStatus('OWNER', newId)
 
+        // 모달 닫기 및 알림
         isCreateModalOpen.value = false
         alert('모집이 시작되었습니다!')
 
@@ -225,30 +246,70 @@ const handleLocationUpdate = (coords) => {
     myLng.value = coords.lng
 }
 
-// --- 소켓 로직 ---
+
+// ===================================================
+// ==================== WebSocket ====================
+// ===================================================
+
+let reconnectInterval = null
+
+// === 상황 :     사용자가 이동 중에 인터넷이 잠깐 끊기거나, 서버가 재배포되어 소켓 연결이 끊어질 수 있습니다. 현재 코드는 onclose 로그만 찍고 끝납니다. ===
+// === 해결 방법: 연결이 끊어지면 3초 뒤에 자동으로 재연결을 시도하는 로직(Reconnect)이 필요합니다. ===
 const connectWebSocket = () => {
+    // 이미 연결되어 있으면 리턴
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        return
+    }
+
     const wsUrl = `ws://127.0.0.1:8080/ws/chat?userId=${encodeURIComponent(authStore.user.id)}`
     ws = new WebSocket(wsUrl)
+
     ws.onopen = () => {
         // 소켓 연결 확인용
         console.log("Socket Connected");
         isSocketConnected.value = true
+
+        // 재연결 시도 중이었다면 중단
+        if (reconnectInterval) {
+            clearInterval(reconnectInterval)
+            reconnectInterval = null
+        }
     }
+
     ws.onclose = () => {
         // 소켓 연결 끊어짐 확인용
         console.log("Socket disConnected")
         isSocketConnected.value = false
+
+        // 연결이 끊어지면 3초마다 재연결 시도
+        if (!reconnectInterval) {
+            reconnectInterval = setInterval(() => {
+                console.log("Socket reConnected try...")
+                connectWebSocket()
+            }, 3000)
+        }
     }
+
+    ws.onerror = (error) => {
+        console.error("Socket Error : ", error)
+        ws.close()
+    }
+
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
-            // 모집한 글이 서버에 등록 완료됐다는 신호를 받으면 리스트에 추가
+            // 1. 모집한 글이 서버에 등록 완료됐다는 신호를 받았을 때
             if (data.type === 'newRecruit') {
-                recruitList.value.unshift(data.recruit)
-            } else if (data.type === 'updateRecruit') {
+                // 백엔드에서 payload라는 이름으로 보내서 payload로 받기
+                recruitList.value.unshift(data.payload)
+            }
+            // 2. 글 수정 신호를 받았을 때
+            else if (data.type === 'updateRecruit') {
+                const targetRecruit = data.payload || data.recruit
+
                 const idx = recruitList.value.findIndex(r => r.id === data.recruit.id)
                 if (idx !== -1) {
-                    recruitList.value[idx] = data.recruit
+                    recruitList.value[idx] = targetRecruit
                 }
             }
         } catch (e) {
@@ -307,7 +368,7 @@ const mapCenterOffset = computed(() => {
                 :my-recruit-id="myRecruitId" @close="isDetailOpen = false" @join="joinChat" />
         </div>
 
-        <MapControls :nickname="authStore.user?.username" @zoom-in="zoomIn" @zoom-out="zoomOut"
+        <MapControls :nickname="authStore.user?.userName" @zoom-in="zoomIn" @zoom-out="zoomOut"
             @move-location="moveToCurrentLocation" />
 
         <BottomActionBar :class="bottomBarClass" :route-info="displayRoute" :button-state="actionButtonState"

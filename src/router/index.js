@@ -24,7 +24,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', alias: '/main', name: 'main', component: Main, meta: { requiresAuth: true } },
-    { path: '/chat', name: 'chat', component: Chat, meta: { requiresAuth: true } },
+    { path: '/chat/:id?', name: 'chat', component: Chat, meta: { requiresAuth: true, requiresActiveStatus: true } },
     { path: '/mypage', name: 'mypage', component: MyPage, meta: { requiresAuth: true } },
     { path: '/setting', name: 'setting', component: Setting, meta: { requiresAuth: true } },
     { path: '/editprofile', name: 'editprofile', component: EditProfile, meta: { requiresAuth: true } },
@@ -45,17 +45,41 @@ const router = createRouter({
     { path: '/driverlogin', name: 'driverlogin', component: DriverLogin, meta: { hideDriverNavbar: true } },
     { path: '/driversignup', name: 'driversignup', component: DriverSignup, meta: { hideDriverNavbar: true } },
     { path: '/driverpage', name: 'driverpage', component: DriverPage, meta: { hideDriverNavbar: false } },
+    // 잘못된 주소로 접속하면 다른 페이지로 리다이렉트 아래 둘 중 하나 선택
+    // 1. 메인으로 가게 처리
+    // { path: '/:pathMatch(.*)*', redirect: '' },
+    // 2. 에러 페이지로 이동
+    {
+      path: '/:pathMatch(.*)*',
+      component: {
+        template: '<div></div>',
+        setup() {
+          throw new Error('존재하지 않는 페이지입니다. 주소를 확인해주세요.')
+        }
+      }
+    }
   ]
 })
 
-// 네비게이션 가드 (로그인 안했으면 로그인 페이지로 팅겨내기)
+// 네비게이션 가드 
 router.beforeEach((to, from, next) => {
   const user = localStorage.getItem('USERINFO')
+  const myStatus = localStorage.getItem('myStatus')
+
+  // 1. 로그인 체크 (requiresAuth)
   if (to.meta.requiresAuth && !user) {
     next('/login')
-  } else {
-    next()
   }
+
+  if (to.meta.requiresActiveStatus) {
+    if (!myStatus || myStatus === 'IDLE') {
+      alert("참여 중인 채팅방이 없습니다.")
+      next('/') // 메인으로 강제 이동
+      return
+    }
+  }
+
+  next()
 })
 
 export default router
