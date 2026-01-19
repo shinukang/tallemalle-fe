@@ -3,59 +3,47 @@ import { computed } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { CarFront } from 'lucide-vue-next'
 import TheSidebar from './components/layout/Nav.vue'
-import DriverNav from './components/layout/DriverNav.vue'
+import ErrorBoundary from './components/util/ErrorBoundary.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const isLoginPage = computed(() => route.path === '/login')
 const isDriverMode = computed(() => route.path.startsWith('/driver'))
-const isDriverContext = computed(() => isDriverMode.value && !route.meta.hideDriverNavbar)
 const showSidebar = computed(() => !route.meta.hideNavbar && !isDriverMode.value)
 
 const goToDriverLogin = () => router.push('/driverlogin')
 </script>
 
 <template>
-  <div class="h-screen w-screen overflow-hidden bg-slate-50 relative flex">
+  <ErrorBoundary>
+    <div class="h-screen w-screen overflow-hidden bg-slate-50 relative flex">
 
-    <main class="flex-1 w-full h-full relative z-0">
-      <RouterView v-slot="{ Component }">
-        <Transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </Transition>
-      </RouterView>
-    </main>
+      <main class="flex-1 w-full h-full relative z-0">
+        <RouterView v-slot="{ Component }">
+          <component :is="Component" :key="$route.fullPath" />
+        </RouterView>
+      </main>
 
-    <Transition name="fade">
-      <button v-if="isLoginPage" @click="goToDriverLogin"
-        class="absolute top-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-        <CarFront class="w-4 h-4" />
-        <span class="text-sm font-bold">기사님 모드</span>
-      </button>
-    </Transition>
+      <Transition name="fade">
+        <button v-if="isLoginPage" @click="goToDriverLogin"
+          class="absolute top-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+          <CarFront class="w-4 h-4" />
+          <span class="text-sm font-bold">기사님 모드</span>
+        </button>
+      </Transition>
 
-    <Transition name="slide-left">
-      <div v-if="showSidebar" class="absolute left-4 top-4 bottom-4 z-50 hidden md:block">
-        <TheSidebar />
-      </div>
-    </Transition>
-
-    <Transition name="slide-left">
-      <div v-if="isDriverContext"
-        class="absolute left-4 top-4 bottom-4 z-50 flex flex-col justify-center pointer-events-none">
-
-        <div
-          class="pointer-events-auto relative shadow-2xl rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm border border-slate-200">
-          <DriverNav />
+      <Transition name="slide-left">
+        <div v-if="showSidebar" class="absolute left-4 top-4 bottom-4 z-50 hidden md:block">
+          <TheSidebar />
         </div>
-      </div>
-    </Transition>
-
-  </div>
+      </Transition>
+    </div>
+  </ErrorBoundary>
 </template>
 
 <style>
+/* 전역 스크롤바 스타일 */
 .custom-scroll::-webkit-scrollbar {
   width: 5px;
 }
@@ -65,6 +53,7 @@ const goToDriverLogin = () => router.push('/driverlogin')
   border-radius: 10px;
 }
 
+/* 페이드 애니메이션 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -75,6 +64,7 @@ const goToDriverLogin = () => router.push('/driverlogin')
   opacity: 0;
 }
 
+/* 왼쪽 슬라이드 애니메이션 */
 .slide-left-enter-active,
 .slide-left-leave-active {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);

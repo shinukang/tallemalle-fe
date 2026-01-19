@@ -14,51 +14,67 @@ const props = defineProps({
 // 'select-location': 장소 선택 시 좌표 정보 전달용 (새로 추가됨!)
 const emit = defineEmits(['update:modelValue', 'select-location'])
 
-// --- [추가] 검색 관련 상태 ---
+// 검색 상태 변수
 const searchResults = ref([]) // 검색 결과 리스트를 담을 배열
 const showDropdown = ref(false) // 드롭다운 표시 여부
 
-// --- [추가] 장소 검색 함수 (카카오 API) ---
+// 타이머 변수
+let timer = null
+
+// --- 장소 검색 함수 (카카오 API) ---
 const handleInput = (e) => {
     const keyword = e.target.value
+
     // 1. 입력된 텍스트를 부모에게 알림 (화면 갱신용)
     emit('update:modelValue', keyword)
 
-    // 2. 검색어가 없으면 드롭다운 닫고 종료
-    if (!keyword.trim()) {
-        searchResults.value = []
-        showDropdown.value = false
-        return
+    // 타이핑할 때마다 기존에 예약된 0.3초 뒤 검색 취소
+    if (timer) {
+        clearTimeout(timer)
     }
 
-    // 3. 카카오 장소 검색 객체 생성 (window.kakao가 로드되어 있어야 함)
-    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
-        console.error("카카오 지도 API가 로드되지 않았습니다.")
-        return
-    }
-
-    const ps = new window.kakao.maps.services.Places()
-
-    // 4. 키워드로 장소 검색 실행
-    ps.keywordSearch(keyword, (data, status, pagination) => {
-        if (status === window.kakao.maps.services.Status.OK) {
-            // 성공 시 결과 저장 및 드롭다운 열기
-            searchResults.value = data
-            showDropdown.value = true
-        } else {
-            // 실패하거나 결과 없으면 리스트 비우기
+    // 새로운 0.3초 뒤 검색 예약
+    timer = setTimeout(() => {
+        // 검색어가 없으면 초기화하고  종료
+        if (!keyword.trim()) {
             searchResults.value = []
             showDropdown.value = false
+            return
         }
-    })
+
+        // 카카오 API 로드 확인
+        if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
+            console.error("카카오 지도 API가 로드되지 않았습니다.")
+            return
+        }
+
+        // 검색 객체 생성 및 실행
+        const ps = new window.kakao.maps.services.Places()
+
+        // 키워드로 장소 검색 실행
+        ps.keywordSearch(keyword, (data, status, pagination) => {
+            if (status === window.kakao.maps.services.Status.OK) {
+                // 성공 시 결과 저장 및 드롭다운 열기
+                searchResults.value = data
+                showDropdown.value = true
+            } else {
+                // 실패하거나 결과 없으면 리스트 비우기
+                searchResults.value = []
+                showDropdown.value = false
+            }
+        })
+    }, 300)
+
+
+
 }
 
-// --- [추가] 장소 선택 핸들러 ---
+// --- 장소 선택 핸들러 ---
 const selectPlace = (place) => {
-    // 1. 입력창 텍스트를 선택한 장소 이름으로 변경
+    // 입력창 텍스트를 선택한 장소 이름으로 변경
     emit('update:modelValue', place.place_name)
 
-    // 2. 부모에게 상세 정보(좌표 포함) 전달
+    // 부모에게 상세 정보(좌표 포함) 전달
     // 카카오 API는 x가 경도(lng), y가 위도(lat)입니다.
     emit('select-location', {
         name: place.place_name,

@@ -2,8 +2,8 @@
 import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router' // 라우터 사용을 위해 추가
 import { CarFront, Mail, Lock, Check, User } from 'lucide-vue-next' // Lucide 아이콘
-import AuthBaseInput from '../../components/signup/AuthBaseInput.vue'
-import AuthLayout from '@/components/signup/AuthLayout.vue'
+import AuthBaseInput from '../../components/auth/AuthBaseInput.vue'
+import AuthLayout from '@/components/auth/AuthLayout.vue'
 import api from '@/api/user'
 
 const router = useRouter() 

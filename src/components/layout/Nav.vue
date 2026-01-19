@@ -2,8 +2,9 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { storeToRefs } from 'pinia'
 import { useNotificationStore } from '@/stores/notification'
+import { useRecruitStore } from '@/stores/recruit'
+import { storeToRefs } from 'pinia'
 import {
     CarFront, Home, MessageCircle, Bell, Megaphone,
     Settings, LogOut, UserPlus, CheckCircle2, CreditCard, Gift
@@ -12,6 +13,17 @@ import {
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const recruitStore = useRecruitStore()
+
+// 채팅 아이콘 클릭 시 실행될 함수
+const handleChatClick = () => {
+    if (recruitStore.status === 'IDLE') {
+        alert("참여 중인 채팅방이 없습니다. 먼저 모집에 참여해주세요!")
+        return
+    }
+
+    router.push('/chat')
+}
 
 // 알림 스토어 연결
 const notificationStore = useNotificationStore()
@@ -41,7 +53,7 @@ const handleClickOutside = (event) => {
 
 onMounted(async () => {
     document.addEventListener('click', handleClickOutside)
-    // ✅ 앱 시작 시 데이터가 비어있으면 가져오기
+    // 앱 시작 시 데이터가 비어있으면 가져오기
     if (notifications.value.length === 0) {
         await notificationStore.fetchNotifications()
     }
@@ -74,12 +86,12 @@ const unreadCount = computed(() => {
     return notifications.value.filter(n => !n.isRead).length
 })
 
-// ✅ [수정됨] 클릭 시 삭제하지 않고 '읽음 처리'만 함
+// 클릭 시 삭제하지 않고 '읽음 처리'만 함
 const handleNotificationClick = (id) => {
     notificationStore.markAsRead(id)
 }
 
-// ✅ 한글 이름(.name) 추가
+// 한글 이름(.name) 추가
 const getNotificationStyle = (type) => {
     switch (type) {
         case 'matching':
@@ -97,7 +109,7 @@ const getNotificationStyle = (type) => {
 <template>
     <div class="relative h-full z-50">
         <div
-            class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto shrink-0 bg-white/90 border border-white/50 shadow-xl relative z-40">
+            class="glass-panel w-20 h-full rounded-[2.5rem] flex flex-col items-center py-8 pointer-events-auto shrink-0 bg-white border border-slate-200 shadow-xl relative z-40">
 
             <div class="mb-12">
                 <div class="bg-indigo-600 p-2.5 rounded-2xl shadow-lg shadow-indigo-200">
@@ -111,12 +123,12 @@ const getNotificationStyle = (type) => {
                     <Home class="w-6 h-6" />
                 </RouterLink>
 
-                <RouterLink to="/chat" class="nav-item p-3 rounded-2xl transition-all relative"
+                <a @click.prevent="handleChatClick" class="nav-item p-3 rounded-2xl transition-all relative"
                     :class="isActive('/chat') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'">
                     <MessageCircle class="w-6 h-6" />
-                    <span
-                        class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-                </RouterLink>
+                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"
+                        v-if="false"></span>
+                </a>
 
                 <button ref="toggleBtnRef" @click="toggleNotification"
                     class="nav-item p-3 rounded-2xl transition-all relative" :class="(showNotifications || route.path === '/notification')
