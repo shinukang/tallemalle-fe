@@ -80,8 +80,8 @@ const actionButtonState = computed(() => {
 // 패널 열림 여부에 따른 하단 바 위치 조정
 const bottomBarClass = computed(() => {
     return isDetailOpen.value
-        ? 'left-4 md:left-[920px]'  // 상세 패널 열림 (오른쪽 밀림)
-        : 'left-4 md:left-[500px]'  // 닫힘 (기본 위치)
+        ? 'left-4 md:left-[920px]'  // 상세 패널 열림 (오른쪽 밀림)
+        : 'left-4 md:left-[500px]'  // 닫힘 (기본 위치)
 })
 
 // 지도에 보이는 영역만 리스트에 표시
@@ -160,7 +160,13 @@ const handleSocketMessage = (event) => {
     if (!event.data) return
 
     try {
-        const data = JSON.parse(event.data)
+        let data = JSON.parse(event.data)
+
+        // 이중 포장 풀기 (서버 payload가 문자열일 경우)
+        if (data.payload && typeof data.payload === 'string') {
+            try { data = JSON.parse(data.payload) } catch (e) { }
+        }
+
         if (!data || typeof data !== 'object') return
 
         console.log("📩 받은 메시지 : ", data)
@@ -179,6 +185,15 @@ const handleSocketMessage = (event) => {
                 }
             }
         }
+        // 기사님 위치 수신 -> 지도 업데이트
+        else if (data.type === 'driverLocation') {
+            mapComponent.value?.updateDriverMarker(data.payload)
+        }
+        // 경로 데이터 수신 -> 지도에 그리기
+        else if (data.type === 'drivingPath') {
+            mapComponent.value?.drawPath(data.payload)
+        }
+
     } catch (e) {
         console.error("🚨 이상한 데이터 수신:", event.data)
     }
@@ -204,6 +219,8 @@ const handleCreateSubmit = (formData) => {
         type: 'createRecruit',
         payload: {
             id: newId,
+            // 닉네임 실어 보내기
+            nickname: authStore.user?.userName || '익명 승객',
             ...formData,
             cur: 1,
             max: formData.max || 4
@@ -286,18 +303,23 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
 
         <div class="absolute inset-0 z-10 flex p-4 pointer-events-none">
             <div class="hidden md:block w-20 shrink-0 mr-4"></div>
+
             <RecruitListPanel :recruit-list="displayRecruitList" :is-open="true" :selected-id="selectedRecruit?.id"
                 :is-socket-connected="isConnected" @expand="isPanelOpen = true" @select="handleSelectRecruit" />
 
             <RecruitDetailPanel :recruit="selectedRecruit" :is-open="isDetailOpen" :my-status="myStatus"
                 :my-recruit-id="myRecruitId" @close="isDetailOpen = false" @join="joinChat" />
+
         </div>
+
 
         <MapControls :nickname="authStore.user?.userName" @zoom-in="zoomIn" @zoom-out="zoomOut"
             @move-location="moveToCurrentLocation" />
 
+
         <BottomActionBar :class="bottomBarClass" :route-info="displayRoute" :button-state="actionButtonState"
             @open-create="isCreateModalOpen = true" />
+
 
         <CreateRecruitModal :is-open="isCreateModalOpen" @close="isCreateModalOpen = false"
             @submit="handleCreateSubmit" />

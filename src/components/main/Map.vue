@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue' // [중요] watch 필수!
+import { ref, onMounted, watch } from 'vue'
+import taxiImg from '@/assets/images/taxi.png'
 
 // 부모(Main.vue)에게 받는 데이터
 const props = defineProps({
@@ -13,7 +14,9 @@ const emit = defineEmits(['update-location', 'marker-click', 'update-visible-lis
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const myMarker = ref(null)
+const driverMarker = ref(null)
 const recruitMarkers = ref(new Map()) // ID를 키로 관리하는 Map
+let polyline = null // 경로 선 객체
 
 // 초기 위치 (강남역 부근)
 const lat = ref(37.498095)
@@ -30,10 +33,9 @@ onMounted(() => {
 
             initGeolocation()
 
-            window.kakao.maps.event.addListener(mapInstance.value, 'idle', () => {
-                updateVisibleMarkers()
-            })
             // 처음 로드될 때 데이터가 있으면 마커 찍기
+            window.kakao.maps.event.addListener(mapInstance.value, 'idle', updateVisibleMarkers)
+
             if (props.recruitList.length > 0) {
                 updateRecruitMarkers()
             }
@@ -42,6 +44,7 @@ onMounted(() => {
 })
 
 // [핵심 기능] 오프셋을 적용한 좌표 이동 함수
+// [기능 1] 지도 중심 이동 (오프셋 적용)
 const moveWithOffset = (targetLat, targetLng) => {
     if (!mapInstance.value || !targetLat || !targetLng) return
 
@@ -76,15 +79,12 @@ const moveWithOffset = (targetLat, targetLng) => {
 // recruitList가 변하면(글이 추가되면) 마커를 다시 그립니다.
 watch(() => props.recruitList, () => {
     updateRecruitMarkers()
-}, {
-    deep: true
-})
+}, { deep: true })
 
+// [기능 2] 화면에 보이는 마커만 표시
 const updateVisibleMarkers = () => {
     // Map size 체크
-    if (!mapInstance.value || recruitMarkers.value.size === 0) {
-        return
-    }
+    if (!mapInstance.value || recruitMarkers.value.size === 0) return
 
     // 현재 지도의 영역(Bounds) 가져오기
     const bounds = mapInstance.value.getBounds()
@@ -96,25 +96,19 @@ const updateVisibleMarkers = () => {
         // 마커의 위치가 현재 영역 안에 있는지 확인 (카카오 API 제공)
         if (bounds.contain(marker.getPosition())) {
             // 영역 안이면 보이기
-            if (!marker.getMap()) {
-                marker.setMap(mapInstance.value)
-            }
+            if (!marker.getMap()) marker.setMap(mapInstance.value)
             // 보이는 마커의 ID를 배열에 추가
-            if (marker.recruitId) {
-                visibleIds.push(marker.recruitId)
-            }
+            if (marker.recruitId) visibleIds.push(marker.recruitId)
         } else {
             // 영역 밖이면 숨기기
-            if (marker.getMap()) {
-                marker.setMap(null)
-            }
+            if (marker.getMap()) marker.setMap(null)
         }
     })
-
     emit('update-visible-list', visibleIds)
 }
 
 // --- 모집글 마커 업데이트 함수 (Diffing 로직 적용) ---
+// [기능 3] 모집글 마커 업데이트
 const updateRecruitMarkers = () => {
     if (!mapInstance.value) return
 
@@ -135,14 +129,9 @@ const updateRecruitMarkers = () => {
     // 리스트에는 있는데 맵에 없는 마커 생성
     props.recruitList.forEach(recruit => {
         // 이미 존재하는 마커면 건너뛰기
-        if (recruitMarkers.value.has(recruit.id)) {
-            return
-        }
-
+        if (recruitMarkers.value.has(recruit.id)) return
         // 좌표 유효성 검사
-        if (!recruit.startLat || !recruit.startLng) {
-            return
-        }
+        if (!recruit.startLat || !recruit.startLng) return
 
         const loc = new window.kakao.maps.LatLng(recruit.startLat, recruit.startLng)
 
@@ -150,17 +139,13 @@ const updateRecruitMarkers = () => {
         const content = document.createElement('div')
         content.className = 'marker-pin'
         content.innerHTML = `
-      <div class="pin-head">
-        <span class="text-xs font-bold">${recruit.cur}/${recruit.max}</span>
-      </div>
-      <div class="pin-tail"></div>
-    `
-
+            <div class="pin-head"><span class="text-xs font-bold">${recruit.cur}/${recruit.max}</span></div>
+            <div class="pin-tail"></div>
+        `
         // 마커 클릭 시 이벤트 발생
-        content.addEventListener('click', () => {
-            emit('marker-click', recruit)
-        })
+        content.addEventListener('click', () => emit('marker-click', recruit))
 
+        // 지도에 표시하고 Map에 저장
         const overlay = new window.kakao.maps.CustomOverlay({
             position: loc,
             content: content,
@@ -171,7 +156,6 @@ const updateRecruitMarkers = () => {
         // 지도에 표시하고 Map에 저장
         overlay.setMap(mapInstance.value)
         overlay.recruitId = recruit.id // visible 체크용 ID 주입
-
         recruitMarkers.value.set(recruit.id, overlay)
     })
     // 보이는 목록 갱신
@@ -181,6 +165,7 @@ const updateRecruitMarkers = () => {
 // --- 내 위치 및 지도 제어 함수들 (기존 유지) ---
 // === 상황 :     브라우저에서 사용자가 "위치 정보 제공"을 거부(Block) 했을 때, 지도가 멈추거나 내 위치 마커가 생성되지 않습니다. ===
 // === 해결 방법: Map.vue에서 에러 콜백을 처리하고, Main.vue로 신호를 보내 사용자에게 "위치 권한이 필요합니다"라고 알려줘야 합니다. ===
+// [기능 4] 내 위치 마커
 const initGeolocation = () => {
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition((pos) => {
@@ -188,11 +173,7 @@ const initGeolocation = () => {
             lng.value = pos.coords.longitude
             updateMyMarker()
             emit('update-location', { lat: lat.value, lng: lng.value })
-        }, (error) => {
-            console.warn("위치 정보를 가져올 수 없습니다.", error.message)
-        }, { enableHighAccuracy: true, timeout: 5000 })
-    } else {
-        alert("이 브라우저는 위치 정보를 지원하지 않습니다.")
+        }, (err) => console.warn(err), { enableHighAccuracy: true, timeout: 5000 })
     }
 }
 
@@ -215,20 +196,72 @@ const updateMyMarker = () => {
     }
 }
 
+// 기사님 차량 마커
+const updateDriverMarker = ({ lat, lng, bearing }) => {
+    if (!mapInstance.value || !window.kakao) return
+
+    const loc = new window.kakao.maps.LatLng(lat, lng)
+
+    if (!driverMarker.value) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'driver-marker-wrapper'
+
+        const carImg = document.createElement('img')
+        carImg.src = taxiImg
+        carImg.className = 'driver-car-img'
+
+        wrapper.appendChild(carImg)
+
+        const overlay = new window.kakao.maps.CustomOverlay({
+            map: mapInstance.value,
+            position: loc,
+            content: wrapper,
+            yAnchor: 0.5,
+            zIndex: 200
+        })
+        overlay.carElement = carImg
+        driverMarker.value = overlay
+    } else {
+        driverMarker.value.setPosition(loc)
+        if (driverMarker.value.carElement) {
+            driverMarker.value.carElement.style.transform = `rotate(${bearing}deg)`
+        }
+    }
+}
+
+// 경로 선 그리기
+const drawPath = (pathData) => {
+    if (!mapInstance.value || !pathData) return
+
+    if (polyline) polyline.setMap(null)
+
+    const linePath = pathData.map(p => new window.kakao.maps.LatLng(p.lat, p.lng))
+
+    polyline = new window.kakao.maps.Polyline({
+        path: linePath,
+        strokeWeight: 6,
+        strokeColor: '#6366f1',
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid'
+    })
+    polyline.setMap(mapInstance.value)
+}
 // 줌 인 버튼
 const zoomIn = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() - 1)
 // 줌 아웃 버튼
 const zoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() + 1)
 // 내 위치로 이동 버튼
-const panToCurrent = () => {
-    moveWithOffset(lat.value, lng.value)
-}
+const panToCurrent = () => moveWithOffset(lat.value, lng.value)
+const moveToLocation = (tLat, tLng) => moveWithOffset(tLat, tLng)
 
-const moveToLocation = (targetLat, targetLng) => {
-    moveWithOffset(targetLat, targetLng)
-}
-
-defineExpose({ zoomIn, zoomOut, panToCurrent, moveToLocation })
+defineExpose({
+    zoomIn,
+    zoomOut,
+    panToCurrent,
+    moveToLocation,
+    updateDriverMarker,
+    drawPath
+})
 </script>
 
 <template>
@@ -276,6 +309,37 @@ defineExpose({ zoomIn, zoomOut, panToCurrent, moveToLocation })
     border-right: 6px solid transparent;
     border-top: 10px solid #f43f5e;
     margin-top: -2px;
+}
+
+.driver-marker-wrapper {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.driver-car-body {
+    width: 22px;
+    height: 42px;
+    background-color: #4f46e5;
+    border: 2px solid white;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    position: relative;
+    transition: transform 0.1s linear;
+}
+
+.driver-car-body::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 2px;
+    right: 2px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
 }
 
 @keyframes pulse {

@@ -3,6 +3,7 @@ import { AlertCircle } from 'lucide-vue-next';
 defineProps({
   modelValue: String,
   label: String,
+  labelClass: { type: String, default: 'text-slate-700' }, // 라벨 전용 클래스 추가
   type: { type: String, default: 'text' },
   placeholder: String,
   icon: [Object, Function],
@@ -15,7 +16,8 @@ defineEmits(['update:modelValue', 'blur']);
 </script>
 
 <template>
-  <div class="space-y-1.5 w-full"> <label v-if="label" class="text-sm font-bold text-slate-700 ml-1">{{ label }}</label>
+  <div class="space-y-1.5 w-full"> 
+    <label v-if="label" :class="['font-bold ml-1', labelClass]">{{ label }}</label>
     
     <div
       class="relative flex items-center transition-all focus-within:ring-4 focus-within:ring-indigo-500/10"
