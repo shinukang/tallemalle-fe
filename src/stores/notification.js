@@ -12,12 +12,12 @@ export const useNotificationStore = defineStore('notification', {
       try {
         const res = await notificationApi.getNotificationList()
 
-        // axios 응답 구조에 따라 res.data를 넣음
         if (res && res.data) {
           this.notifications = res.data
         }
       } catch (error) {
         console.error('Store 업데이트 실패:', error)
+        throw error
       }
     },
 
