@@ -1,18 +1,20 @@
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Camera, Send } from 'lucide-vue-next'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import SelectableTag from '@/components/tag/SelectableTag.vue'
+import api from '@/api/profile'
 
 const router = useRouter()
 
 // --- 상태 관리 ---
 const profileImage = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')
 const form = ref({
-  nickname: '판교동승왕',
-  phone: '010-1234-5678',
-  bio: '매일 판교로 출근하는 직장인입니다! 조용히 가는 걸 선호해요.',
+  name: '',
+  nickname: '',
+  phone: '',
+  bio: '',
   styles: ['style-1', 'style-3', 'style-5'],
 })
 
@@ -117,8 +119,23 @@ const handleSave = () => {
   router.push('/mypage')
 }
 
-onUnmounted(() => {
+onMounted(async () => {
   clearInterval(timerInterval.value)
+
+  try {
+    const res = await api.profile()
+
+    if (res.data) {
+      Object.assign(form.value, res.data)
+
+      if (form.value.phone === res.data.phone) {
+        isPhoneVerified = true
+        isPhoneChanged = false
+      }
+    }
+  } catch (error) {
+    console.log('프로필 로딩 중 오류 발생')
+  }
 })
 </script>
 
@@ -207,7 +224,7 @@ onUnmounted(() => {
               <div class="col-span-1 md:col-span-2">
                 <LabeledInput
                   id="userName"
-                  modelValue="홍길동"
+                  :modelValue="form.name"
                   label="이름"
                   readonly
                   align="left"

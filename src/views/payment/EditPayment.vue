@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { CreditCard, X, ShieldCheck } from 'lucide-vue-next'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import RoundBox from '@/components/layout/RoundBox.vue'
