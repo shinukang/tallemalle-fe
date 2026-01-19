@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock, UserPlus, AlertCircle } from 'lucide-vue-next'
-import api from '@/api/driver'
+import api from '@/api/user'
 import DriverAuthLayout from '@/components/driver/DriverAuthLayout.vue'
 import DriverAuthHeader from '@/components/driver/DriverAuthHeader.vue'
 import DriverAuthInput from '@/components/driver/DriverAuthInput.vue'
