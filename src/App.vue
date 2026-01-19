@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { CarFront } from 'lucide-vue-next'
 import TheSidebar from './components/layout/Nav.vue'
-import DriverNav from './components/layout/DriverNav.vue'
 import ErrorBoundary from './components/util/ErrorBoundary.vue'
 
 const route = useRoute()
@@ -11,7 +10,6 @@ const router = useRouter()
 
 const isLoginPage = computed(() => route.path === '/login')
 const isDriverMode = computed(() => route.path.startsWith('/driver'))
-const isDriverContext = computed(() => isDriverMode.value && !route.meta.hideDriverNavbar)
 const showSidebar = computed(() => !route.meta.hideNavbar && !isDriverMode.value)
 
 const goToDriverLogin = () => router.push('/driverlogin')
@@ -40,18 +38,6 @@ const goToDriverLogin = () => router.push('/driverlogin')
           <TheSidebar />
         </div>
       </Transition>
-
-      <Transition name="slide-left">
-        <div v-if="isDriverContext"
-          class="absolute left-4 top-4 bottom-4 z-50 flex flex-col justify-center pointer-events-none">
-
-          <div
-            class="pointer-events-auto relative shadow-2xl rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm border border-slate-200">
-            <DriverNav />
-          </div>
-        </div>
-      </Transition>
-
     </div>
   </ErrorBoundary>
 </template>

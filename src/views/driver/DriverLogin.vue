@@ -1,9 +1,8 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-// ✅ AlertCircle 아이콘 추가 (에러 표시에 사용)
 import { CarFront, User, Lock, Mail, AlertCircle } from 'lucide-vue-next'
-import api from '@/api/driver'
+import api from '@/api/user'
 
 import DriverAuthLayout from '@/components/driver/DriverAuthLayout.vue'
 import DriverAuthHeader from '@/components/driver/DriverAuthHeader.vue'
@@ -14,7 +13,7 @@ const router = useRouter()
 
 const autoLogin = ref(false)
 const isLoading = ref(false)
-const errorMessage = ref('') // ✅ 에러 메시지 상태
+const errorMessage = ref('')
 
 const loginForm = reactive({
   name: '',
@@ -156,9 +155,6 @@ const handleLogin = async () => {
             class="appearance-none w-5 h-5 rounded border border-slate-600 bg-slate-800 checked:bg-indigo-500 checked:border-indigo-500 transition-all" />
           <span class="text-sm text-slate-400 group-hover:text-slate-300">자동 로그인</span>
         </label>
-        <a href="#" class="text-sm text-indigo-400 font-bold hover:text-indigo-300">
-          비밀번호 찾기
-        </a>
       </div>
 
       <Transition enter-active-class="transition duration-200 ease-out"

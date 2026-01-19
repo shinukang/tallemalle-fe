@@ -1,7 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-// ✅ AlertCircle 아이콘 추가 (에러 표시에 사용)
 import { User, Lock, UserPlus, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/driver'
 import DriverAuthLayout from '@/components/driver/DriverAuthLayout.vue'
@@ -11,7 +10,7 @@ import DriverAuthButton from '@/components/driver/DriverAuthButton.vue'
 
 const router = useRouter()
 const isLoading = ref(false)
-const errorMessage = ref('') // ✅ 에러 메시지 상태 추가
+const errorMessage = ref('') 
 
 const signupForm = reactive({
   name: '',
