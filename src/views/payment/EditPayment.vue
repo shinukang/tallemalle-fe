@@ -3,6 +3,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { CreditCard, X, ShieldCheck } from 'lucide-vue-next'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import RoundBox from '@/components/layout/RoundBox.vue'
+import { useProfileStore } from '@/stores/profile'
+
+const profileStore = useProfileStore()
 
 const props = defineProps({
   isOpen: Boolean,
@@ -52,17 +55,39 @@ const handleCvc = (event, nextId) => {
 }
 
 const handleSubmit = () => {
+  // 1. 유효성 검사 (모든 필드가 채워졌는지 확인)
   if (
     cardNum.value.p1.length < 4 ||
+    cardNum.value.p2.length < 4 ||
+    cardNum.value.p3.length < 4 ||
+    cardNum.value.p4.length < 4 ||
     expiry.month.length < 2 ||
     expiry.year.length < 2 ||
     cvc.value.length < 3 ||
     !ownerName.value
   ) {
-    // 실제 앱에서는 alert 대신 커스텀 토스트나 메시지 박스 권장
     return
   }
-  alert('카드가 등록되었습니다!')
+
+  const randomId = Math.floor(Math.random() * 900) + 100
+
+  let company = 'BC카드'
+  const firstDigit = cardNum.value.p1[0]
+  if (firstDigit === '4') company = '신한카드'
+  else if (firstDigit === '5') company = '현대카드'
+  else if (firstDigit === '3') company = '삼성카드'
+
+  const newCard = {
+    id: randomId,
+    card_number: `${cardNum.value.p1}-${cardNum.value.p2}-${cardNum.value.p3}-${cardNum.value.p4}`,
+    card_company: company,
+    user_name: ownerName.value,
+    expiry_date: `${expiry.month}/${expiry.year}`,
+    cvc: cvc.value,
+  }
+
+  profileStore.addPayment(newCard)
+
   handleClose()
 }
 
