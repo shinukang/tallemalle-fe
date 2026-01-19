@@ -9,7 +9,7 @@
  */
 
 import { ref, reactive, onMounted, onUnmounted, provide } from 'vue'
-import ChatPanel from '@/components/chat/ChatPanel.vue'   // 채팅 화면 (중앙)
+import ChatPanel from '@/components/chat/ChatPanel.vue' // 채팅 화면 (중앙)
 import RideSidebar from '@/components/chat/RideSidebar.vue' // 참여자 목록 (우측)
 import ProfileModal from '@/components/chat/ProfileModal.vue' // 프로필 팝업
 import { useAuthStore } from '@/stores/auth' // 로그인 정보 저장소
@@ -40,7 +40,7 @@ const myUserImg = ref('')
  * 채팅 메시지 목록 (화면에 뿌려질 데이터)
  * - 처음엔 빈 배열([])로 시작하고, 서버에서 데이터를 받아오면 채워집니다.
  */
-const messages = ref([]) 
+const messages = ref([])
 
 /**
  * 로딩 상태 관리
@@ -53,7 +53,7 @@ const isLoading = ref(false)
  * (UPDATE) 사용자 데이터베이스
  * - 빈 객체로 시작하고 API(getChatParticipants)를 통해 채워집니다.
  */
-const usersData = ref({}) 
+const usersData = ref({})
 
 /**
  * 프로필 모달 관련 상태
@@ -62,9 +62,17 @@ const usersData = ref({})
  */
 const isProfileModalOpen = ref(false)
 const currentProfile = reactive({
-    id: '', name: '', lv: '', img: '', meta: '', bio: '',
-    score: 0, rank: '', stats: { time: 0, silent: 0 },
-    reviews: [], isBlocked: false
+  id: '',
+  name: '',
+  lv: '',
+  img: '',
+  meta: '',
+  bio: '',
+  score: 0,
+  rank: '',
+  stats: { time: 0, silent: 0 },
+  reviews: [],
+  isBlocked: false,
 })
 
 /**
@@ -108,9 +116,9 @@ onMounted(async () => {
  * - 연결된 소켓을 끊어줘야 메모리 누수나 오류를 방지할 수 있습니다.
  */
 onUnmounted(() => {
-    if (socket) {
-        socket.close()
-    }
+  if (socket) {
+    socket.close()
+  }
 })
 
 /**
@@ -119,41 +127,47 @@ onUnmounted(() => {
  * - UI 관련 상태(isLoading, error 메시지 등)는 여전히 여기서 관리합니다.
  */
 const loadInitialData = async () => {
-    try {
-        // 로딩 시작 (화면에 '불러오는 중...' 표시)
-        isLoading.value = true
-        
-        // Promise.all을 사용하여 두 API를 동시에 호출합니다.
-        const [historyData, participantsData, rideDetailData] = await Promise.all([
-            api.getChatHistory(),       // 채팅 내역 가져오기
-            api.getChatParticipants(),  // 참여자 목록 가져오기
-            api.getRideDetail()         // 여정 정보 로드
-        ])
+  try {
+    // 로딩 시작 (화면에 '불러오는 중...' 표시)
+    isLoading.value = true
 
-        // 받아온 데이터 적용
-        messages.value = historyData || []
-        usersData.value = participantsData || {}
-        rideInfo.value = rideDetailData || null // 데이터 저장
+    // Promise.all을 사용하여 두 API를 동시에 호출합니다.
+    const [historyData, participantsData, rideDetailData] = await Promise.all([
+      api.getChatHistory(), // 채팅 내역 가져오기
+      api.getChatParticipants(), // 참여자 목록 가져오기
+      api.getRideDetail(), // 여정 정보 로드
+    ])
 
-        // 만약 'Unknown'(알수없음) 유저가 없다면 기본값으로 추가 (안전장치)
-        if (!usersData.value['Unknown']) {
-            usersData.value['Unknown'] = {
-                name: "알수없음", lv: "LV. 1", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown",
-                meta: "정보 없음", bio: "", score: 50, rank: "-", stats: { time: 0, silent: 0 }, reviews: []
-            }
-        }
-        
-    } catch (error) {
-        console.error('채팅 내역 로드 실패:', error)
-        // 실패했을 때 사용자에게 보여줄 안내 메시지 (빈 화면 대신 보여줌)
-        messages.value = [
-            { id: 1, type: 'date', text: 'Today' },
-            { id: 2, type: 'system', text: `⚠️ 데이터를 불러오는데 실패했습니다: ${error.message}` }
-        ]
-    } finally {
-        // 성공하든 실패하든 로딩은 끝났으므로 false로 변경
-        isLoading.value = false
+    // 받아온 데이터 적용
+    messages.value = historyData || []
+    usersData.value = participantsData || {}
+    rideInfo.value = rideDetailData || null // 데이터 저장
+
+    // 만약 'Unknown'(알수없음) 유저가 없다면 기본값으로 추가 (안전장치)
+    if (!usersData.value['Unknown']) {
+      usersData.value['Unknown'] = {
+        name: '알수없음',
+        lv: 'LV. 1',
+        img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown',
+        meta: '정보 없음',
+        bio: '',
+        score: 50,
+        rank: '-',
+        stats: { time: 0, silent: 0 },
+        reviews: [],
+      }
     }
+  } catch (error) {
+    console.error('채팅 내역 로드 실패:', error)
+    // 실패했을 때 사용자에게 보여줄 안내 메시지 (빈 화면 대신 보여줌)
+    messages.value = [
+      { id: 1, type: 'date', text: 'Today' },
+      { id: 2, type: 'system', text: `⚠️ 데이터를 불러오는데 실패했습니다: ${error.message}` },
+    ]
+  } finally {
+    // 성공하든 실패하든 로딩은 끝났으므로 false로 변경
+    isLoading.value = false
+  }
 }
 
 // =========================================
@@ -165,66 +179,66 @@ const loadInitialData = async () => {
  * - 서버 주소(ws://...)로 연결을 시도하고, 각 이벤트(연결, 메시지수신, 종료, 에러)별 동작을 정의합니다.
  */
 const connectWebSocket = () => {
-    if (socket && socket.readyState === WebSocket.OPEN) return
-    // 웹소켓 서버 주소
-    const wsUri = "ws://localhost:8080/ws/chat"
-    socket = new WebSocket(wsUri)
+  if (socket && socket.readyState === WebSocket.OPEN) return
+  // 웹소켓 서버 주소
+  const wsUri = 'ws://localhost:8080/ws/chat'
+  socket = new WebSocket(wsUri)
 
-    // 연결 성공 시
-    socket.addEventListener('open', () => {
-        console.log('WEBSOCKET CONNECTED')
-        isConnected.value = true
+  // 연결 성공 시
+  socket.addEventListener('open', () => {
+    console.log('WEBSOCKET CONNECTED')
+    isConnected.value = true
 
-        // 연결 되자마자 '입장 메시지' 전송
-        // 내 정보를 담아서 보내면, 다른 사람들이 이를 받아 usersData에 나를 추가합니다.
-        const enterMsg = {
-            type: 'enter', // 입장 이벤트 타입
-            userId: myUserId.value,
-            userName: myUserName.value,
-            userImg: myUserImg.value,
-            text: '입장했습니다.',
-            // 내 상세 정보 (상대방 화면의 사이드바에 뜨기 위함)
-            user: {
-                name: myUserName.value,
-                img: myUserImg.value,
-                lv: 'LV. 5', // 실제 데이터가 있다면 연동
-                meta: '방금 접속',
-                bio: '반갑습니다!',
-                score: 50,
-                rank: '일반',
-                stats: { time: 0, silent: 0 },
-                reviews: []
-            }
-        }
-        socket.send(JSON.stringify(enterMsg))
-    })
+    // 연결 되자마자 '입장 메시지' 전송
+    // 내 정보를 담아서 보내면, 다른 사람들이 이를 받아 usersData에 나를 추가합니다.
+    const enterMsg = {
+      type: 'enter', // 입장 이벤트 타입
+      userId: myUserId.value,
+      userName: myUserName.value,
+      userImg: myUserImg.value,
+      text: '입장했습니다.',
+      // 내 상세 정보 (상대방 화면의 사이드바에 뜨기 위함)
+      user: {
+        name: myUserName.value,
+        img: myUserImg.value,
+        lv: 'LV. 5', // 실제 데이터가 있다면 연동
+        meta: '방금 접속',
+        bio: '반갑습니다!',
+        score: 50,
+        rank: '일반',
+        stats: { time: 0, silent: 0 },
+        reviews: [],
+      },
+    }
+    socket.send(JSON.stringify(enterMsg))
+  })
 
-    // 메시지 수신 시
-    socket.addEventListener('message', (e) => {
-        try {
-            // 서버에서 온 데이터(JSON 문자열)를 객체로 변환
-            const parsedData = JSON.parse(e.data)
-            // 데이터 구조에 따라 payload를 쓸지, 데이터 자체를 쓸지 결정
-            const payload = parsedData.payload !== undefined ? parsedData.payload : parsedData
-            // 화면에 표시하기 위한 처리 함수 호출
-            handleIncomingMessage(payload)
-        } catch (err) {
-            // JSON이 아닌 일반 문자열이 오면 그대로 처리
-            handleIncomingMessage(e.data)
-        }
-    })
+  // 메시지 수신 시
+  socket.addEventListener('message', (e) => {
+    try {
+      // 서버에서 온 데이터(JSON 문자열)를 객체로 변환
+      const parsedData = JSON.parse(e.data)
+      // 데이터 구조에 따라 payload를 쓸지, 데이터 자체를 쓸지 결정
+      const payload = parsedData.payload !== undefined ? parsedData.payload : parsedData
+      // 화면에 표시하기 위한 처리 함수 호출
+      handleIncomingMessage(payload)
+    } catch (err) {
+      // JSON이 아닌 일반 문자열이 오면 그대로 처리
+      handleIncomingMessage(e.data)
+    }
+  })
 
-    // 연결 종료 시
-    socket.addEventListener('close', () => {
-        console.log('WEBSOCKET CLOSED')
-        isConnected.value = false
-    })
+  // 연결 종료 시
+  socket.addEventListener('close', () => {
+    console.log('WEBSOCKET CLOSED')
+    isConnected.value = false
+  })
 
-    // 에러 발생 시
-    socket.addEventListener('error', (err) => {
-        console.error('WEBSOCKET ERROR', err)
-        isConnected.value = false
-    })
+  // 에러 발생 시
+  socket.addEventListener('error', (err) => {
+    console.error('WEBSOCKET ERROR', err)
+    isConnected.value = false
+  })
 }
 
 /**
@@ -232,115 +246,118 @@ const connectWebSocket = () => {
  * - 서버 데이터를 받아서 우리 화면에 맞는 형태(Message Item)로 변환해 목록에 추가합니다.
  */
 const handleIncomingMessage = (data) => {
-    if (!socket) return // 테스트용 예외처리
+  if (!socket) return
 
-    // 이중으로 인코딩된 JSON 문자열 처리 (가끔 서버에서 문자열을 두 번 감싸 보낼 때가 있음)
-    if (typeof data === 'string') {
-        try {
-            if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
-                const doubleParsed = JSON.parse(data)
-                if (typeof doubleParsed === 'object' && doubleParsed !== null) {
-                    data = doubleParsed
-                }
-            }
-        } catch (e) { /* 변환 실패하면 무시하고 원본 사용 */ }
-    }
-
-    // 현재 시간 포맷팅 (예: 14:30)
-    const now = new Date()
-    const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
-
-    // 데이터 필드 추출
-    let textContent = ''
-    let userId = 'Unknown'
-    let userName = null
-    let userImg = null
-    let msgType = data.type || 'other'
-
-    // 데이터가 객체라면(정상적인 JSON) 내부 필드 추출
-    if (typeof data === 'object' && data !== null) {
-        textContent = data.text || data.msg || data.message || data.content
-        if (!textContent) textContent = JSON.stringify(data) // 내용 없으면 전체 덤프
-        userId = data.userId || data.sender || data.id || data.user || 'Unknown'
-        userName = data.userName || data.name
-        userImg = data.userImg || data.img
-    } else {
-        // 데이터가 그냥 문자열이면 그대로 내용으로 사용
-        textContent = String(data)
-    }
-
-    // 내가 보낸 메시지 무시
-    if (userId === myUserId.value) return
-
-    // 유저 정보 등록 (enter, exist 메시지 모두 여기서 처리)
-    // 새로운 유저거나, 기존 목록에 없는 유저라면 usersData에 추가합니다.
-    if (userId !== 'Unknown' && !usersData.value[userId]) {
-        // console.log(`[ChatView] 유저 데이터 갱신: ${userName} (${userId})`)
-        const newUserData = data.user || {}
-        
-        usersData.value[userId] = {
-            name: userName || '이름 없음',
-            img: userImg || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-            lv: newUserData.lv || 'LV. 1',
-            meta: newUserData.meta || '정보 없음',
-            bio: newUserData.bio || '안녕하세요!',
-            score: newUserData.score || 50,
-            rank: newUserData.rank || '-',
-            stats: newUserData.stats || { time: 0, silent: 0 },
-            reviews: newUserData.reviews || []
+  // 이중으로 인코딩된 JSON 문자열 처리 (가끔 서버에서 문자열을 두 번 감싸 보낼 때가 있음)
+  if (typeof data === 'string') {
+    try {
+      if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
+        const doubleParsed = JSON.parse(data)
+        if (typeof doubleParsed === 'object' && doubleParsed !== null) {
+          data = doubleParsed
         }
+      }
+    } catch (e) {
+      /* 변환 실패하면 무시하고 원본 사용 */
     }
+  }
 
-    // 입장 메시지('enter') 처리 - Handshake
-    // 누군가 들어왔다는 소식을 들으면, "나도 여기 있어(exist)"라고 답장을 보냅니다.
-    // 이렇게 해야 새로 들어온 사람이 기존 접속자 정보를 알 수 있습니다.
-    if (msgType === 'enter') {
-        if (socket && isConnected.value) {
-            const existMsg = {
-                type: 'exist', // "나 여기 있어" 메시지
-                userId: myUserId.value,
-                userName: myUserName.value,
-                userImg: myUserImg.value,
-                text: '', 
-                user: {
-                    name: myUserName.value,
-                    img: myUserImg.value,
-                    lv: 'LV. 5', // 실제 내 정보가 있다면 연동
-                    meta: '현재 접속 중',
-                    bio: '반갑습니다!',
-                    score: 50,
-                    rank: '일반',
-                    stats: { time: 0, silent: 0 },
-                    reviews: []
-                }
-            }
-            socket.send(JSON.stringify(existMsg))
-        }
-        return // 채팅창에는 표시하지 않음
+  // 현재 시간 포맷팅 (예: 14:30)
+  const now = new Date()
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+
+  // 데이터 필드 추출
+  let textContent = ''
+  let userId = 'Unknown'
+  let userName = null
+  let userImg = null
+  let msgType = data.type || 'other'
+
+  // 데이터가 객체라면(정상적인 JSON) 내부 필드 추출
+  if (typeof data === 'object' && data !== null) {
+    textContent = data.text || data.msg || data.message || data.content
+    if (!textContent && msgType !== 'image') textContent = JSON.stringify(data)
+
+    userId = data.userId || data.sender || 'Unknown'
+    userName = data.userName || data.name
+    userImg = data.userImg || data.img
+  } else {
+    // 데이터가 그냥 문자열이면 그대로 내용으로 사용
+    textContent = String(data)
+  }
+
+  // 내가 보낸 메시지 무시
+  if (userId === myUserId.value) return
+
+  // 유저 정보 등록 (enter, exist 메시지 모두 여기서 처리)
+  // 새로운 유저거나, 기존 목록에 없는 유저라면 usersData에 추가합니다.
+  if (userId !== 'Unknown' && !usersData.value[userId]) {
+    // console.log(`[ChatView] 유저 데이터 갱신: ${userName} (${userId})`)
+    const newUserData = data.user || {}
+
+    usersData.value[userId] = {
+      name: userName || '이름 없음',
+      img: userImg || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+      lv: newUserData.lv || 'LV. 1',
+      meta: newUserData.meta || '정보 없음',
+      bio: newUserData.bio || '안녕하세요!',
+      score: newUserData.score || 50,
+      rank: newUserData.rank || '-',
+      stats: newUserData.stats || { time: 0, silent: 0 },
+      reviews: newUserData.reviews || [],
     }
+  }
 
-    // 기존 유저 존재 알림('exist') 처리
-    if (msgType === 'exist') return
-
-    // 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
-    const senderInfo = usersData.value[userId] || usersData.value['Unknown']
-
-    // 화면에 표시할 최종 유저 객체 조립
-    const displayUser = {
-        ...senderInfo,
-        name: userName || senderInfo.name, // 메시지에 이름이 있으면 우선 사용
-        img: userImg || senderInfo.img
+  // 입장 메시지('enter') 처리 - Handshake
+  // 누군가 들어왔다는 소식을 들으면, "나도 여기 있어(exist)"라고 답장을 보냅니다.
+  // 이렇게 해야 새로 들어온 사람이 기존 접속자 정보를 알 수 있습니다.
+  if (msgType === 'enter') {
+    if (socket && isConnected.value) {
+      const existMsg = {
+        type: 'exist', // "나 여기 있어" 메시지
+        userId: myUserId.value,
+        userName: myUserName.value,
+        userImg: myUserImg.value,
+        text: '',
+        user: {
+          name: myUserName.value,
+          img: myUserImg.value,
+          lv: 'LV. 5', // 실제 내 정보가 있다면 연동
+          meta: '현재 접속 중',
+          bio: '반갑습니다!',
+          score: 50,
+          rank: '일반',
+          stats: { time: 0, silent: 0 },
+          reviews: [],
+        },
+      }
+      socket.send(JSON.stringify(existMsg))
     }
+    return // 채팅창에는 표시하지 않음
+  }
 
-    // 최종 메시지 목록에 추가
-    messages.value.push({
-        id: Date.now() + Math.random(), // 고유 ID 생성
-        type: msgType, // 상대방이 보낸 메시지
-        userId: userId,
-        text: textContent,
-        time: timeStr,
-        user: displayUser // 프로필 표시용 정보
-    })
+  // 기존 유저 존재 알림('exist') 처리
+  if (msgType === 'exist') return
+
+  // 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
+  const senderInfo = usersData.value[userId] || usersData.value['Unknown']
+
+  // 화면에 표시할 최종 유저 객체 조립
+  const displayUser = {
+    ...senderInfo,
+    name: userName || senderInfo.name, // 메시지에 이름이 있으면 우선 사용
+    img: userImg || senderInfo.img,
+  }
+
+  // 최종 메시지 목록에 추가
+  messages.value.push({
+    id: Date.now() + Math.random(), // 고유 ID 생성
+    type: msgType, // 상대방이 보낸 메시지
+    userId: userId,
+    text: textContent,
+    time: timeStr,
+    user: displayUser, // 프로필 표시용 정보
+  })
 }
 
 // =========================================
@@ -352,37 +369,68 @@ const handleIncomingMessage = (data) => {
  * @param {string} textToSend - 입력창에 적은 텍스트
  */
 const sendMessage = (textToSend) => {
-    const now = new Date()
-    const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+  const now = new Date()
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
 
-    // Optimistic Update (낙관적 업데이트)
-    // 서버 응답 기다리지 않고 내 화면에 먼저 말풍선 띄우기 (반응속도 향상)
-    messages.value.push({
-        id: Date.now(),
-        type: 'me',
-        text: textToSend,
-        time: timeStr
-    })
+  // Optimistic Update (낙관적 업데이트)
+  // 서버 응답 기다리지 않고 내 화면에 먼저 말풍선 띄우기 (반응속도 향상)
+  messages.value.push({
+    id: Date.now(),
+    type: 'me',
+    text: textToSend,
+    time: timeStr,
+  })
 
-    // 실제 서버로 전송
-    if (socket && isConnected.value) {
-        const payload = {
-            userId: myUserId.value,
-            userName: myUserName.value,
-            userImg: myUserImg.value,
-            text: textToSend,
-            timestamp: now.toISOString()
-        }
-        // 객체를 문자열로 바꿔서 전송
-        socket.send(JSON.stringify(payload))
-    } else {
-        // 연결 끊겼을 때 안내 메시지
-        messages.value.push({
-            id: Date.now() + 1,
-            type: 'system',
-            text: '⚠️ 메시지를 전송할 수 없습니다 (연결 끊김)'
-        })
+  // 실제 서버로 전송
+  if (socket && isConnected.value) {
+    const payload = {
+      userId: myUserId.value,
+      userName: myUserName.value,
+      userImg: myUserImg.value,
+      text: textToSend,
+      timestamp: now.toISOString(),
     }
+    // 객체를 문자열로 바꿔서 전송
+    socket.send(JSON.stringify(payload))
+  } else {
+    // 연결 끊겼을 때 안내 메시지
+    messages.value.push({
+      id: Date.now() + 1,
+      type: 'system',
+      text: '⚠️ 메시지를 전송할 수 없습니다 (연결 끊김)',
+    })
+  }
+}
+
+/**
+ * 이미지 전송 함수
+ * - imageData: Base64 문자열
+ */
+const sendImage = (imageData) => {
+  const now = new Date()
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+
+  // 1. 내 화면에 이미지 표시
+  messages.value.push({
+    id: Date.now(),
+    type: 'image', // 타입: 이미지
+    isMe: true, // 내가 보냄 (표시용 구분)
+    text: imageData, // 이미지 데이터(URL)를 text 필드에 저장
+    time: timeStr,
+  })
+
+  // 2. 소켓 전송
+  if (socket && isConnected.value) {
+    const payload = {
+      type: 'image', // 서버에도 이미지 타입임을 알림
+      userId: myUserId.value,
+      userName: myUserName.value,
+      userImg: myUserImg.value,
+      text: imageData, // Base64 데이터 전송
+      timestamp: now.toISOString(),
+    }
+    socket.send(JSON.stringify(payload))
+  }
 }
 
 /**
@@ -390,18 +438,17 @@ const sendMessage = (textToSend) => {
  * @param {string} userId - 클릭한 사용자의 ID
  */
 const openProfile = (userId) => {
+  // usersData.value로 접근
+  const data = usersData.value[userId] || usersData.value['Unknown']
+  // currentProfile 반응형 객체에 데이터 덮어쓰기
+  Object.assign(currentProfile, {
+    id: userId,
+    ...data,
+    isBlocked: false,
+  })
 
-    // usersData.value로 접근
-    const data = usersData.value[userId] || usersData.value['Unknown']
-    // currentProfile 반응형 객체에 데이터 덮어쓰기
-    Object.assign(currentProfile, {
-        id: userId,
-        ...data,
-        isBlocked: false
-    })
-
-    // 모달 표시
-    isProfileModalOpen.value = true
+  // 모달 표시
+  isProfileModalOpen.value = true
 }
 
 // 하위 컴포넌트(Header, MemberList)에서 내 이름을 쓸 수 있도록 전달
@@ -409,45 +456,43 @@ provide('myUserName', myUserName)
 </script>
 
 <template>
-    <!-- 전체 레이아웃 컨테이너 -->
-    <div class="h-full flex gap-4 p-4 overflow-hidden relative">
-        <!-- 왼쪽 여백 (데스크탑에서만 보임, 균형 맞추기용) -->
-        <div class="hidden md:block w-20 shrink-0"></div>
-        <!-- 메인 콘텐츠 영역 (채팅창 + 사이드바) -->
-        <main class="flex-1 flex gap-6 overflow-hidden h-[calc(100vh-2rem)]">
-            
-            <!-- 1. 로딩 중일 때 표시할 화면 -->
-            <!-- v-if="isLoading": 데이터 불러오는 중이면 이 박스를 보여줍니다. -->
-            <div v-if="isLoading" class="flex-1 flex items-center justify-center bg-white/50 rounded-[2.5rem]">
-                <p class="text-slate-500 font-bold animate-pulse">대화 내용을 불러오는 중...</p>
-            </div>
+  <!-- 전체 레이아웃 컨테이너 -->
+  <div class="h-full flex gap-4 p-4 overflow-hidden relative">
+    <!-- 왼쪽 여백 (데스크탑에서만 보임, 균형 맞추기용) -->
+    <div class="hidden md:block w-20 shrink-0"></div>
+    <!-- 메인 콘텐츠 영역 (채팅창 + 사이드바) -->
+    <main class="flex-1 flex gap-6 overflow-hidden h-[calc(100vh-2rem)]">
+      <!-- 1. 로딩 중일 때 표시할 화면 -->
+      <!-- v-if="isLoading": 데이터 불러오는 중이면 이 박스를 보여줍니다. -->
+      <div
+        v-if="isLoading"
+        class="flex-1 flex items-center justify-center bg-white/50 rounded-[2.5rem]"
+      >
+        <p class="text-slate-500 font-bold animate-pulse">대화 내용을 불러오는 중...</p>
+      </div>
 
-            <!-- 2. 채팅 패널 (메인 화면) -->
-            <!-- v-else: 로딩이 끝나면(!isLoading) 이 패널을 보여줍니다. -->
-            <ChatPanel 
-                v-else
-                :messages="messages" 
-                :ride-info="rideInfo"
-                :is-connected="isConnected" 
-                @send-message="sendMessage"
-                @open-profile="openProfile" 
-            />
+      <!-- 2. 채팅 패널 (메인 화면) -->
+      <!-- v-else: 로딩이 끝나면(!isLoading) 이 패널을 보여줍니다. -->
+      <ChatPanel
+        v-else
+        :messages="messages"
+        :ride-info="rideInfo"
+        :is-connected="isConnected"
+        @send-message="sendMessage"
+        @send-image="sendImage"
+        @open-profile="openProfile"
+      />
 
-            <!-- 3. 우측 사이드바 (참여자 목록 등) -->
-            <RideSidebar 
-                :user-profiles="usersData" 
-                :ride-info="rideInfo"
-                @open-profile="openProfile" 
-            />
-        </main>
+      <!-- 3. 우측 사이드바 (참여자 목록 등) -->
+      <RideSidebar :user-profiles="usersData" :ride-info="rideInfo" @open-profile="openProfile" />
+    </main>
 
-        <!-- 3. 프로필 모달 (팝업) -->
-        <!-- 조건부 렌더링이 아니라 v-show나 내부 로직으로 제어 (is-open prop 전달) -->
-        <ProfileModal 
-            :is-open="isProfileModalOpen" 
-            :profile="currentProfile" 
-            @close="isProfileModalOpen = false" 
-        />
-
-    </div>
+    <!-- 3. 프로필 모달 (팝업) -->
+    <!-- 조건부 렌더링이 아니라 v-show나 내부 로직으로 제어 (is-open prop 전달) -->
+    <ProfileModal
+      :is-open="isProfileModalOpen"
+      :profile="currentProfile"
+      @close="isProfileModalOpen = false"
+    />
+  </div>
 </template>

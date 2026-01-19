@@ -1,45 +1,38 @@
 <script setup>
-import { ref, reactive, onMounted, nextTick, watch } from 'vue'
-import {
-  Camera,
-  UserMinus,
-  CreditCard,
-  CheckCircle2,
-  MapPin,
-  ArrowRight,
-  Quote,
-  Star,
-  X,
-  MessageSquareText,
-} from 'lucide-vue-next'
-import api from '@/api/profile'
-import RoundBox from '@/components/layout/RoundBox.vue' // RoundBox 컴포넌트 임포트
+import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
+import { UserMinus, CreditCard, CheckCircle2, X, Trash2, Check, AlertCircle } from 'lucide-vue-next'
+import RoundBox from '@/components/layout/RoundBox.vue'
 import EditPayment from '@/views/payment/EditPayment.vue'
+import EditProfile from '@/components/profile/EditProfile.vue'
 import HistoryEntry from '@/components/entry/HistoryEntry.vue'
 import ReviewEntry from '@/components/entry/ReviewEntry.vue'
+import { useProfileStore } from '@/stores/profile'
+
+const profileStore = useProfileStore()
 
 // --- 상태 ---
 const activeTab = ref('history') // 'history' | 'reviews'
 const isRideHistoryModalOpen = ref(false)
 const isEditPaymentModalOpen = ref(false)
+const isEditProfileOpen = ref(false)
 const isReviewModalOpen = ref(false)
+const isPaymentActionModalOpen = ref(false)
+const isLimitReachedModalOpen = ref(false)
+
 const currentHistory = ref({})
 const currentReview = ref({})
-const profileImage = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')
+const selectedPayment = ref(null)
 
-const profile = ref({
-  name: '',
-  nickname: '',
-  phone: '',
-  bio: '',
-  styles: ['style-1', 'style-3', 'style-5'],
-})
+// --- 계산된 속성 ---
+const sortedPaymentList = computed(() => {
+  const list = [...(profileStore.userInfo.payment.list || [])]
+  const defaultId = profileStore.userInfo.payment.default
 
-const history = reactive({
-  list: [],
-})
-const review = reactive({
-  list: [],
+  return list.sort((a, b) => {
+    if (a.id === defaultId) return -1
+    if (b.id === defaultId) return 1
+    return 0
+  })
 })
 
 // --- 스크롤 상태 감지 로직 ---
@@ -64,9 +57,8 @@ const checkScroll = (el, type) => {
   }
 }
 
-// 데이터 변화나 탭 전환 시 상태 업데이트
 watch(
-  [activeTab, () => history.list, () => review.list],
+  [activeTab, () => profileStore.userInfo.history, () => profileStore.userInfo.review],
   async () => {
     await nextTick()
     if (activeTab.value === 'history') checkScroll(historyScrollRef.value, 'history')
@@ -81,7 +73,7 @@ const switchTab = (tab) => {
 }
 
 const openRideDetail = (id) => {
-  const selected = history.list.find((item) => item.id === id)
+  const selected = profileStore.userInfo.history.find((item) => item.id === id)
   if (selected) {
     currentHistory.value = selected
     isRideHistoryModalOpen.value = true
@@ -94,65 +86,48 @@ const openMyReview = (item) => {
 }
 
 const handleEditPaymentModal = () => {
+  if (!isEditPaymentModalOpen.value && profileStore.userInfo.payment.list.length >= 2) {
+    isLimitReachedModalOpen.value = true
+    return
+  }
   isEditPaymentModalOpen.value = !isEditPaymentModalOpen.value
 }
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => (profileImage.value = e.target.result)
-    reader.readAsDataURL(file)
+const openPaymentAction = (card) => {
+  selectedPayment.value = card
+  isPaymentActionModalOpen.value = true
+}
+
+const setAsDefaultPayment = () => {
+  if (selectedPayment.value) {
+    profileStore.userInfo.payment.default = selectedPayment.value.id
+    isPaymentActionModalOpen.value = false
   }
 }
 
-const getHistory = async () => {
-  try {
-    const res = await api.history()
-    if (res.data) {
-      history.list = res.data
-      await nextTick()
-      checkScroll(historyScrollRef.value, 'history')
-    }
-  } catch (error) {
-    console.error('HISTORY: ', error)
-  }
-}
+const deletePaymentMethod = () => {
+  if (selectedPayment.value) {
+    const list = profileStore.userInfo.payment.list
+    const index = list.findIndex((c) => c.id === selectedPayment.value.id)
 
-const getReview = async () => {
-  try {
-    const res = await api.review()
-    if (res.data) {
-      review.list = res.data
-      await nextTick()
-      checkScroll(reviewScrollRef.value, 'reviews')
+    if (index !== -1) {
+      list.splice(index, 1)
+      if (selectedPayment.value.id === profileStore.userInfo.payment.default) {
+        profileStore.userInfo.payment.default = list.length > 0 ? list[0].id : 0
+      }
     }
-  } catch (error) {
-    console.error('REVIEW: ', error)
-  }
-}
-
-const getProfile = async () => {
-  try {
-    const res = await api.profile()
-    if (res.data) {
-      Object.assign(profile.value, res.data)
-      console.log(profile)
-    }
-  } catch (error) {
-    console.error('PROFILE: ', error)
+    isPaymentActionModalOpen.value = false
   }
 }
 
 onMounted(async () => {
-  getProfile()
-  getHistory()
-  getReview()
+  await profileStore.loadUserInfo()
 })
 </script>
 
 <template>
   <div class="h-full flex gap-4 p-4 overflow-hidden relative text-slate-900">
+    <!-- 왼쪽 여백 (MD 이상) -->
     <div class="hidden md:block w-20 shrink-0"></div>
 
     <div
@@ -171,7 +146,9 @@ onMounted(async () => {
         <div class="flex gap-4">
           <div class="text-right">
             <p class="text-[10px] font-bold text-slate-400 uppercase">누적 동승</p>
-            <p class="text-lg font-black text-indigo-600">{{ history.list.length }}회</p>
+            <p class="text-lg font-black text-indigo-600">
+              {{ profileStore.userInfo.history?.length || 0 }}회
+            </p>
           </div>
           <div class="w-px h-8 bg-slate-200 self-center"></div>
           <div class="text-right">
@@ -184,58 +161,62 @@ onMounted(async () => {
       <!-- 메인 컨테이너 -->
       <div class="flex-1 overflow-hidden p-8 flex flex-col">
         <div class="max-w-6xl mx-auto grid grid-cols-12 gap-8 w-full flex-1 min-h-0">
-          <!-- 프로필 카드 -->
+          <!-- 왼쪽 사이드바 -->
           <div class="col-span-12 lg:col-span-4 space-y-6 flex flex-col min-h-0">
-            <!-- 사용자 RoundBox 컴포넌트 적용 (p-8 -> padding="32px") -->
+            <!-- 프로필 카드 -->
             <RoundBox padding="32px" class="text-center relative overflow-hidden flex-none">
               <div class="absolute top-0 left-0 w-full h-24 bg-slate-50"></div>
               <div class="relative w-28 h-28 mx-auto mb-4 mt-4">
                 <img
-                  :src="profileImage"
+                  :src="
+                    profileStore.userInfo.profile.image ||
+                    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+                  "
                   class="w-full h-full rounded-full bg-white border-4 border-white shadow-xl object-cover"
                 />
-                <label
-                  class="absolute bottom-1 right-1 p-2.5 bg-indigo-600 text-white rounded-full shadow-lg border-2 border-white cursor-pointer hover:bg-indigo-700 transition-colors"
-                >
-                  <Camera class="w-4 h-4" />
-                  <input type="file" class="hidden" accept="image/*" @change="handleImageUpload" />
-                </label>
               </div>
-              <h2 class="text-xl font-bold text-slate-900">판교동승왕님</h2>
-              <p class="text-xs text-slate-400 mb-6 text-center">pangyo_king@gmail.com</p>
-              <RouterLink to="/editprofile">
-                <button
-                  class="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100"
-                >
-                  개인정보 수정
-                </button>
-              </RouterLink>
+              <h2 class="text-xl font-bold text-slate-900">
+                {{ profileStore.userInfo.profile.nickname || '사용자' }}
+              </h2>
+              <p class="text-xs text-slate-400 mb-6 text-center tracking-tight leading-relaxed">
+                {{ profileStore.userInfo.profile.bio || '등록된 자기소개가 없습니다.' }}
+              </p>
+              <button
+                @click="isEditProfileOpen = true"
+                class="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100"
+              >
+                개인정보 수정
+              </button>
             </RoundBox>
 
-            <!-- 매너 등급 (p-7 -> padding="28px") -->
+            <!-- 매너 등급 -->
             <RoundBox padding="28px" class="flex-none">
               <div class="flex justify-between items-start mb-4">
                 <div class="text-left">
                   <span
                     class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1"
-                    >나의 매너 등급</span
                   >
-                  <div class="flex items-baseline gap-1">
-                    <span class="text-4xl font-black text-indigo-600 tracking-tighter">85</span>
-                    <span class="text-sm font-bold text-slate-300">/ 100</span>
+                    나의 매너 등급
+                  </span>
+                  <div class="flex items-baseline gap-2">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-4xl font-black text-indigo-600 tracking-tighter">
+                        {{ profileStore.userInfo.profile.rating || 0 }}
+                      </span>
+                      <span class="text-sm font-bold text-slate-300">/ 100</span>
+                    </div>
+                    <span class="text-xs font-bold text-indigo-400 whitespace-nowrap mb-1">
+                      (상위 5%)
+                    </span>
                   </div>
                 </div>
               </div>
-              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-4">
+              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-2">
                 <div
-                  class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full"
-                  style="width: 85%"
+                  class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
+                  :style="{ width: (profileStore.userInfo.profile.rating || 0) + '%' }"
                 ></div>
               </div>
-              <p class="text-[11px] text-slate-400 mt-4 leading-relaxed text-center font-medium">
-                평점 4.8/5.0 <span class="text-indigo-600">상위 5%</span>의 매너를 가진
-                이용자입니다!
-              </p>
             </RoundBox>
 
             <div class="flex-1"></div>
@@ -249,9 +230,9 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- 탑승 기록 / 리뷰 탭 섹션 -->
+          <!-- 오른쪽 섹션 -->
           <div class="col-span-12 lg:col-span-8 space-y-6 flex flex-col min-h-0">
-            <!-- 결제 수단 (p-8 -> padding="32px") -->
+            <!-- 결제 수단 섹션 -->
             <RoundBox padding="32px" class="flex-none">
               <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-slate-900 flex items-center gap-2 text-left">
@@ -266,25 +247,49 @@ onMounted(async () => {
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
-                  class="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white shadow-xl shadow-slate-200"
+                  v-for="card in sortedPaymentList"
+                  :key="card.id"
+                  @click="openPaymentAction(card)"
+                  class="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white shadow-xl shadow-slate-200 cursor-pointer hover:ring-2 hover:ring-indigo-400 transition-all group"
                 >
                   <div class="flex items-center gap-4">
                     <div
-                      class="w-10 h-7 bg-white/10 rounded flex items-center justify-center text-[8px] font-black italic"
+                      class="w-10 h-7 bg-white/10 rounded flex items-center justify-center text-[8px] font-black italic uppercase"
                     >
-                      VISA
+                      {{ card.card_company?.includes('삼성') ? 'AMEX' : 'VISA' }}
                     </div>
                     <div class="text-left">
-                      <p class="text-xs font-bold">신한카드 (4215)</p>
-                      <p class="text-[10px] text-slate-400">기본 결제 수단</p>
+                      <p class="text-xs font-bold">
+                        {{ card.card_company }}
+                        ({{ card.card_number?.split('-').pop() }})
+                      </p>
+                      <p class="text-[10px] text-slate-400">
+                        {{
+                          card.id === profileStore.userInfo.payment.default
+                            ? '기본 결제 수단'
+                            : '결제 수단'
+                        }}
+                      </p>
                     </div>
                   </div>
-                  <CheckCircle2 class="w-5 h-5 text-indigo-400 flex-none" />
+                  <CheckCircle2
+                    v-if="card.id === profileStore.userInfo.payment.default"
+                    class="w-5 h-5 text-indigo-400 flex-none"
+                  />
+                </div>
+                <div
+                  v-if="
+                    !profileStore.userInfo.payment.list ||
+                    profileStore.userInfo.payment.list.length === 0
+                  "
+                  class="flex items-center justify-center p-5 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-sm font-bold col-span-full"
+                >
+                  등록된 결제 수단이 없습니다.
                 </div>
               </div>
             </RoundBox>
 
-            <!-- 기록/리뷰 탭 (내부 레이아웃을 위해 padding="0" 적용) -->
+            <!-- 기록/리뷰 탭 영역 -->
             <RoundBox padding="0" class="overflow-hidden flex flex-col flex-none h-[450px]">
               <div class="flex border-b border-slate-50 flex-none">
                 <button
@@ -308,13 +313,12 @@ onMounted(async () => {
                   "
                 >
                   받은 리뷰
-                  <span class="ml-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-md">{{
-                    review.list.length
-                  }}</span>
+                  <span class="ml-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-md">
+                    {{ profileStore.userInfo.review?.length || 0 }}
+                  </span>
                 </button>
               </div>
 
-              <!-- 리스트 영역 -->
               <div class="relative flex-1 min-h-0">
                 <!-- 탑승 기록 리스트 -->
                 <div
@@ -331,18 +335,14 @@ onMounted(async () => {
                     class="h-full overflow-y-auto custom-scroll p-6 pb-20 flex flex-col gap-2.5"
                   >
                     <HistoryEntry
-                      v-for="item in history.list"
+                      v-for="item in profileStore.userInfo.history"
                       :key="item.id"
-                      :start="item.start"
-                      :dest="item.dest"
-                      :time="item.time"
-                      :cost="item.cost"
-                      :people="item.people"
+                      v-bind="item"
                       @click="openRideDetail(item.id)"
                     />
                     <div
-                      v-if="history.list.length === 0"
-                      class="h-full flex items-center justify-center text-slate-300 text-sm"
+                      v-if="profileStore.userInfo.history?.length === 0"
+                      class="h-full flex items-center justify-center text-slate-300 text-sm font-medium"
                     >
                       기록이 없습니다.
                     </div>
@@ -365,15 +365,15 @@ onMounted(async () => {
                   >
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
                       <ReviewEntry
-                        v-for="item in review.list"
+                        v-for="item in profileStore.userInfo.review"
                         :key="item.id"
                         :review="item"
                         @click="openMyReview(item)"
                       />
                     </div>
                     <div
-                      v-if="review.list.length === 0"
-                      class="h-full flex items-center justify-center text-slate-300 text-sm"
+                      v-if="profileStore.userInfo.review?.length === 0"
+                      class="h-full flex items-center justify-center text-slate-300 text-sm font-medium"
                     >
                       리뷰가 없습니다.
                     </div>
@@ -386,83 +386,170 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 탑승 상세 모달 -->
-    <div
-      v-if="isRideHistoryModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-6"
-      @click="isRideHistoryModalOpen = false"
-    >
-      <div class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl" @click.stop>
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-slate-900 text-left">탑승 상세 정보</h2>
-          <button @click="isRideHistoryModalOpen = false">
-            <X class="w-6 h-6 text-slate-400" />
-          </button>
-        </div>
-        <div class="space-y-4 mb-8">
-          <div class="flex justify-between py-2 border-b border-slate-50">
-            <span class="text-slate-400 text-sm">경로</span>
-            <span class="text-slate-800 font-bold text-sm text-right"
-              >{{ currentHistory.start }} → {{ currentHistory.dest }}</span
-            >
-          </div>
-          <div class="flex justify-between py-2 border-b border-slate-50">
-            <span class="text-slate-400 text-sm">탑승 시각</span>
-            <span class="text-slate-800 font-bold text-sm text-right">{{
-              currentHistory.time
-            }}</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-slate-50">
-            <span class="text-slate-400 text-sm">결제 금액</span>
-            <span class="text-slate-800 font-bold text-sm text-right">{{
-              currentHistory.cost
-            }}</span>
-          </div>
-        </div>
-        <button
-          @click="isRideHistoryModalOpen = false"
-          class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
-        >
-          확인
-        </button>
-      </div>
-    </div>
-
-    <!-- 리뷰 상세 모달 -->
-    <div
-      v-if="isReviewModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-6"
-      @click="isReviewModalOpen = false"
-    >
-      <div class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl" @click.stop>
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-slate-900 text-left">리뷰 상세</h2>
-          <button @click="isReviewModalOpen = false">
-            <X class="w-6 h-6 text-slate-400" />
-          </button>
-        </div>
-        <div
-          class="bg-slate-50 p-6 rounded-3xl mb-8 italic text-slate-600 leading-relaxed text-left"
-        >
-          "{{ currentReview.contents }}"
-        </div>
-        <button
-          @click="isReviewModalOpen = false"
-          class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
-        >
-          확인
-        </button>
-      </div>
-    </div>
-
+    <!-- 모든 모달을 Teleport로 묶어 최상단에 렌더링 -->
     <Teleport to="body">
+      <!-- 1. 프로필 수정 모달 (EditProfile) -->
+      <EditProfile v-if="isEditProfileOpen" @close="isEditProfileOpen = false" />
+
+      <!-- 2. 결제 수단 추가 모달 -->
       <div
         v-if="isEditPaymentModalOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4"
+        class="fixed inset-0 z-[160] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4"
         @click="isEditPaymentModalOpen = false"
       >
         <div class="w-full max-w-md animate-in fade-in zoom-in duration-300" @click.stop>
-          <EditPayment @close="handleEditPaymentModal" />
+          <EditPayment @close="isEditPaymentModalOpen = false" />
+        </div>
+      </div>
+
+      <!-- 3. 결제 수단 관리 모달 -->
+      <div
+        v-if="isPaymentActionModalOpen"
+        class="fixed inset-0 z-[170] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
+        @click="isPaymentActionModalOpen = false"
+      >
+        <div
+          class="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200"
+          @click.stop
+        >
+          <div class="p-8 text-center border-b border-slate-50">
+            <div
+              class="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4"
+            >
+              <CreditCard class="w-8 h-8 text-slate-400" />
+            </div>
+            <h2 class="text-lg font-extrabold text-slate-900 mb-1">결제 수단 관리</h2>
+            <p class="text-sm text-slate-400 font-medium">
+              {{ selectedPayment?.card_company }} ({{
+                selectedPayment?.card_number?.split('-').pop()
+              }})
+            </p>
+          </div>
+          <div class="p-4 grid grid-cols-1 gap-2">
+            <button
+              v-if="selectedPayment?.id !== profileStore.userInfo.payment.default"
+              @click="setAsDefaultPayment"
+              class="flex items-center justify-center gap-2 w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all"
+            >
+              <Check class="w-4 h-4" /> 기본 결제 수단으로 설정
+            </button>
+            <button
+              @click="deletePaymentMethod"
+              class="flex items-center justify-center gap-2 w-full py-4 bg-slate-50 text-rose-500 rounded-2xl font-bold hover:bg-rose-50 transition-all"
+            >
+              <Trash2 class="w-4 h-4" /> 삭제하기
+            </button>
+            <button
+              @click="isPaymentActionModalOpen = false"
+              class="w-full py-4 text-slate-400 font-bold text-sm"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 탑승 상세 모달 -->
+      <div
+        v-if="isRideHistoryModalOpen"
+        class="fixed inset-0 z-[180] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
+        @click="isRideHistoryModalOpen = false"
+      >
+        <div
+          class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200"
+          @click.stop
+        >
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-900">탑승 상세 정보</h2>
+            <button @click="isRideHistoryModalOpen = false">
+              <X class="w-6 h-6 text-slate-400" />
+            </button>
+          </div>
+          <div class="space-y-4 mb-8">
+            <div class="flex justify-between py-2 border-b border-slate-50">
+              <span class="text-slate-400 text-sm">경로</span>
+              <span class="text-slate-800 font-bold text-sm text-right"
+                >{{ currentHistory.start }} → {{ currentHistory.dest }}</span
+              >
+            </div>
+            <div class="flex justify-between py-2 border-b border-slate-50">
+              <span class="text-slate-400 text-sm">탑승 시각</span>
+              <span class="text-slate-800 font-bold text-sm text-right">{{
+                currentHistory.time
+              }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-slate-50">
+              <span class="text-slate-400 text-sm">결제 금액</span>
+              <span class="text-slate-800 font-bold text-sm text-right">{{
+                currentHistory.cost
+              }}</span>
+            </div>
+          </div>
+          <button
+            @click="isRideHistoryModalOpen = false"
+            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. 리뷰 상세 모달 -->
+      <div
+        v-if="isReviewModalOpen"
+        class="fixed inset-0 z-[190] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
+        @click="isReviewModalOpen = false"
+      >
+        <div
+          class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200"
+          @click.stop
+        >
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-900">리뷰 상세</h2>
+            <button @click="isReviewModalOpen = false"><X class="w-6 h-6 text-slate-400" /></button>
+          </div>
+          <div class="bg-slate-50 p-6 rounded-3xl mb-8 italic text-slate-600 leading-relaxed">
+            "{{ currentReview.contents }}"
+          </div>
+          <button
+            @click="isReviewModalOpen = false"
+            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. 등록 제한 알림 -->
+      <div
+        v-if="isLimitReachedModalOpen"
+        class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
+        @click="isLimitReachedModalOpen = false"
+      >
+        <div
+          class="bg-white w-full max-w-xs rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200"
+          @click.stop
+        >
+          <div class="p-8 text-center">
+            <div
+              class="w-16 h-16 bg-amber-50 rounded-3xl flex items-center justify-center mx-auto mb-4"
+            >
+              <AlertCircle class="w-8 h-8 text-amber-500" />
+            </div>
+            <h2 class="text-lg font-extrabold text-slate-900 mb-2">등록 제한</h2>
+            <p class="text-sm text-slate-500 font-medium">
+              결제 수단은 최대 <span class="text-indigo-600 font-bold">2개</span>까지<br />등록할 수
+              있습니다.
+            </p>
+          </div>
+          <div class="p-4 pt-0">
+            <button
+              @click="isLimitReachedModalOpen = false"
+              class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
+            >
+              확인
+            </button>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -470,7 +557,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* 커스텀 스크롤바 숨기기 */
 .custom-scroll {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -478,8 +564,6 @@ onMounted(async () => {
 .custom-scroll::-webkit-scrollbar {
   display: none;
 }
-
-/* 동적 그라데이션 스타일 */
 .content-fade-wrapper::before,
 .content-fade-wrapper::after {
   content: '';
@@ -492,26 +576,20 @@ onMounted(async () => {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-
-/* 상단 그라데이션 */
 .content-fade-wrapper::before {
   top: 0;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
 }
-
-/* 하단 그라데이션 */
 .content-fade-wrapper::after {
   bottom: 0;
   background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
 }
-
 .show-top::before {
   opacity: 1;
 }
 .show-bottom::after {
   opacity: 1;
 }
-
 .glass-panel {
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }

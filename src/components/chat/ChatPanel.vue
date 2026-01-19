@@ -22,23 +22,24 @@ import ChatComposer from './ChatComposer.vue'
  * - isConnected: 현재 웹소켓 연결 상태. (ChatHeader에게 넘겨줘서 초록불/빨간불 표시 예정)
  */
 const props = defineProps({
-    messages: {
-        type: Array,
-        default: () => [] // 데이터가 안 넘어오면 빈 배열로 초기화
-    },
-    isConnected: {
-        type: Boolean,
-        default: false    // 기본값은 '연결 안 됨'
-    },
-    rideInfo: { type: Object, default: null }
+  messages: {
+    type: Array,
+    default: () => [], // 데이터가 안 넘어오면 빈 배열로 초기화
+  },
+  isConnected: {
+    type: Boolean,
+    default: false, // 기본값은 '연결 안 됨'
+  },
+  rideInfo: { type: Object, default: null },
 })
 
 /**
  * Emits 정의 (부모에게 보낼 신호)
  * - send-message: 사용자가 메시지를 입력하고 전송 버튼을 눌렀을 때
  * - open-profile: 사용자가 채팅창 내의 프로필 사진을 클릭했을 때
+ * - send-image 이벤트 추가
  */
-const emit = defineEmits(['send-message', 'open-profile'])
+const emit = defineEmits(['send-message', 'send-image', 'open-profile'])
 
 /**
  * [이벤트 전달 함수 1] 메시지 전송
@@ -46,8 +47,10 @@ const emit = defineEmits(['send-message', 'open-profile'])
  * - 이 컴포넌트는 직접 처리하지 않고, 부모(ChatView)에게 "얘가 이거 보낸대요~"라고 토스합니다.
  */
 const forwardSendMessage = (text) => {
-    emit('send-message', text)
+  emit('send-message', text)
 }
+
+const forwardSendImage = (imageData) => emit('send-image', imageData) // 이미지 전달 함수
 
 /**
  * [이벤트 전달 함수 2] 프로필 열기
@@ -55,38 +58,34 @@ const forwardSendMessage = (text) => {
  * - 마찬가지로 부모(ChatView)에게 "이 유저 ID의 프로필을 보여주세요"라고 토스합니다.
  */
 const forwardOpenProfile = (userId) => {
-    emit('open-profile', userId)
+  emit('open-profile', userId)
 }
 </script>
 
 <template>
-    <!-- 
+  <!-- 
       메인 컨테이너 스타일링
       - flex-1: 남은 공간을 꽉 채움
       - flex-col: 내부 요소들을 세로로 배치 (헤더 -> 리스트 -> 입력창)
       - glass-panel: 유리 같은 반투명 효과 (CSS 클래스)
       - relative: 내부 자식들의 위치 기준점
     -->
-    <div
-        class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden relative bg-white/90 backdrop-blur border border-white/50 shadow-xl">
-        
-        <!-- 1. 상단 헤더 -->
-        <!-- 부모에게서 받은 isConnected 정보를 헤더에게 그대로 전달합니다. -->
-        <ChatHeader :is-connected="isConnected" :ride-info="rideInfo" />
+  <div
+    class="flex-1 flex flex-col glass-panel rounded-[2.5rem] overflow-hidden relative bg-white/90 backdrop-blur border border-white/50 shadow-xl"
+  >
+    <!-- 1. 상단 헤더 -->
+    <!-- 부모에게서 받은 isConnected 정보를 헤더에게 그대로 전달합니다. -->
+    <ChatHeader :is-connected="isConnected" :ride-info="rideInfo" />
 
-        <!-- 2. 메시지 리스트 (스크롤 영역) -->
-        <!-- 
+    <!-- 2. 메시지 리스트 (스크롤 영역) -->
+    <!-- 
            :messages="messages" -> 대화 내용을 전달
            @open-profile="..."  -> 메시지 옆 얼굴 클릭 시 발생할 이벤트 연결
         -->
-        <MessageList 
-            :messages="messages" 
-            @open-profile="forwardOpenProfile" 
-        />
+    <MessageList :messages="messages" @open-profile="forwardOpenProfile" />
 
-        <!-- 3. 하단 입력창 -->
-        <!-- @send-message="..." -> 전송 버튼 클릭 시 발생할 이벤트 연결 -->
-        <ChatComposer @send-message="forwardSendMessage" />
-        
-    </div>
+    <!-- 3. 하단 입력창 -->
+    <!-- @send-message="..." -> 전송 버튼 클릭 시 발생할 이벤트 연결 -->
+    <ChatComposer @send-message="forwardSendMessage" @send-image="forwardSendImage" />
+  </div>
 </template>

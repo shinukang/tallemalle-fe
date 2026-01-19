@@ -33,4 +33,15 @@ const review = async (req) => {
   }
 }
 
-export default { profile, history, review }
+const payment = async (req) => {
+  try {
+    const res = await api.get('/json/payment', req)
+    return res
+  } catch (error) {
+    console.log('결제 수단 목록 조회 실패', error)
+    console.error('에러 상세:', error.response ? error.response.data : error.message)
+    return error
+  }
+}
+
+export default { profile, history, review, payment }

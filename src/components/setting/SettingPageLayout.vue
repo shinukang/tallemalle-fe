@@ -49,3 +49,15 @@ defineProps({
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 커스텀 스크롤바 */
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+</style>
