@@ -2,13 +2,9 @@
 
 # 🚕 TalleMalle (탈래말래)
 ### 실시간 위치 기반 동승 매칭 커뮤니티 서비스
+<img src="img/tallemalle_logo.png" width="300"/>  
 
-<img src="img\tallemalle_logo.png" alt="TalleMalle Logo" width="260"/>
-
-<br/>
-
-> **같은 방향, 같은 시간 — 더 스마트한 이동을 함께**
-
+같은 방향, 같은 시간 — 더 스마트한 이동을 함께
 </div>
 
 ---
@@ -54,38 +50,35 @@
 
 ## 🛠 기술 스택
 
-<table width="100%">
-<tr>
-<td valign="top" width="50%">
+### DBMS
 
-### 🖥 Frontend
+![Ubuntu](https://img.shields.io/badge/ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=FFFFFF)
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
 
-![Vue](https://img.shields.io/badge/Vue-3.x-42b883?style=flat-square&logo=vue.js)
-![Pinia](https://img.shields.io/badge/Pinia-Store-yellow?style=flat-square&logo=pinia)
-![Vite](https://img.shields.io/badge/Vite-Build-B73BFE?style=flat-square&logo=vite&logoColor=FFD62E)
-![Tailwind](https://img.shields.io/badge/TailwindCSS-Utility-38bdf8?style=flat-square&logo=tailwindcss)
-![Axios](https://img.shields.io/badge/Axios-HTTP-blue?style=flat-square&logo=axios)
-![WebSocket](https://img.shields.io/badge/WebSocket-Realtime-green?style=flat-square)
+### Frontend
+![Vue.js](https://img.shields.io/badge/vuejs-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
+![Pinia](https://img.shields.io/badge/Pinia-FFD500?style=for-the-badge&logo=pinia&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38bdf8?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+![WebSocket](https://img.shields.io/badge/WebSocket-Realtime-00B894?style=for-the-badge)
 
-</td>
-<td valign="top" width="50%">
+### Version Cntrol & Collaboration
 
-### 🎨 Design & Collaboration
+![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 
-![Figma](https://img.shields.io/badge/Figma-Design-F24E1E?style=flat-square&logo=figma)
-![GitHub](https://img.shields.io/badge/GitHub-Code-181717?style=flat-square&logo=github)
-![Discord](https://img.shields.io/badge/Discord-Communication-5865F2?style=flat-square&logo=discord&logoColor=white)
-
-</td>
-</tr>
-</table>
+### Deployment
+![AWS EC2](https://img.shields.io/badge/AWS%20EC2-red?style=for-the-badge&logo=amazonaws&logoColor=white)
 
 ---
 
 ## 🚀 프로젝트 소개
 
 ### 🎯 서비스 한 줄 요약
-**TalleMalle은 같은 경로로 이동하는 사람들을 실시간으로 연결하는 위치 기반 동승 커뮤니티 서비스입니다.**
+**TalleMalle은 같은 경로로 이동하는 사람들을 실시간으로 연결하는 위치 기반 동승 커뮤니티 서비스**
 
 <table width="100%">
 <tr>
