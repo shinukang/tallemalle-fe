@@ -13,7 +13,7 @@ const emit = defineEmits(['update-location', 'marker-click', 'update-visible-lis
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const myMarker = ref(null)
-const recruitMarkers = ref([]) // 모집글 마커 관리용 배열
+const recruitMarkers = ref(new Map()) // ID를 키로 관리하는 Map
 
 // 초기 위치 (강남역 부근)
 const lat = ref(37.498095)
@@ -73,13 +73,16 @@ const moveWithOffset = (targetLat, targetLng) => {
     map.panTo(newCenterPosition)
 }
 
-// [핵심] recruitList가 변하면(글이 추가되면) 마커를 다시 그립니다.
+// recruitList가 변하면(글이 추가되면) 마커를 다시 그립니다.
 watch(() => props.recruitList, () => {
     updateRecruitMarkers()
-}, { deep: true })
+}, {
+    deep: true
+})
 
 const updateVisibleMarkers = () => {
-    if (!mapInstance.value || recruitMarkers.value.length === 0) {
+    // Map size 체크
+    if (!mapInstance.value || recruitMarkers.value.size === 0) {
         return
     }
 
@@ -88,37 +91,58 @@ const updateVisibleMarkers = () => {
     // 화면에 보이는 모집글 ID들을 담을 배열
     const visibleIds = []
 
-    recruitMarkers.value.forEach(marker => {
+    // Map.forEach는 (value, key) 순서로 들어옴 value가 마커 객체
+    recruitMarkers.value.forEach((marker) => {
         // 마커의 위치가 현재 영역 안에 있는지 확인 (카카오 API 제공)
         if (bounds.contain(marker.getPosition())) {
-            // 영역 밖이면 숨기기
-            marker.setMap(mapInstance.value)
+            // 영역 안이면 보이기
+            if (!marker.getMap()) {
+                marker.setMap(mapInstance.value)
+            }
             // 보이는 마커의 ID를 배열에 추가
             if (marker.recruitId) {
                 visibleIds.push(marker.recruitId)
             }
         } else {
             // 영역 밖이면 숨기기
-            marker.setMap(null)
+            if (marker.getMap()) {
+                marker.setMap(null)
+            }
         }
     })
 
     emit('update-visible-list', visibleIds)
 }
 
-// --- 모집글 마커 업데이트 함수 ---
+// --- 모집글 마커 업데이트 함수 (Diffing 로직 적용) ---
 const updateRecruitMarkers = () => {
     if (!mapInstance.value) return
 
-    // 1. 기존 마커들 삭제 (초기화)
-    recruitMarkers.value.forEach(marker => marker.setMap(null))
-    recruitMarkers.value = []
+    // 새로운 데이터의 ID 목록을 Set으로 만들기
+    const newRecruitIds = new Set(props.recruitList.map(r => r.id))
 
-    // 2. 새 리스트로 마커 생성
+    // 리스트에 없는 마커 제거
+    // recruitMarkers Map을 순회하면서 검사
+    for (const [id, marker] of recruitMarkers.value) {
+        if (!newRecruitIds.has(id)) {
+            // 지도에서 제거
+            marker.setMap(null)
+            // 메모리에서 제거
+            recruitMarkers.value.delete(id)
+        }
+    }
+
+    // 리스트에는 있는데 맵에 없는 마커 생성
     props.recruitList.forEach(recruit => {
-        // 좌표가 없으면 생성 안 함
-        // Main.vue 데이터와 변수명(startLat, startLng)이 일치해야 함!
-        if (!recruit.startLat || !recruit.startLng) return
+        // 이미 존재하는 마커면 건너뛰기
+        if (recruitMarkers.value.has(recruit.id)) {
+            return
+        }
+
+        // 좌표 유효성 검사
+        if (!recruit.startLat || !recruit.startLng) {
+            return
+        }
 
         const loc = new window.kakao.maps.LatLng(recruit.startLat, recruit.startLng)
 
@@ -144,14 +168,19 @@ const updateRecruitMarkers = () => {
             zIndex: 50
         })
 
-        overlay.recruitId = recruit.id
+        // 지도에 표시하고 Map에 저장
+        overlay.setMap(mapInstance.value)
+        overlay.recruitId = recruit.id // visible 체크용 ID 주입
 
-        recruitMarkers.value.push(overlay)
+        recruitMarkers.value.set(recruit.id, overlay)
     })
+    // 보이는 목록 갱신
     updateVisibleMarkers()
 }
 
 // --- 내 위치 및 지도 제어 함수들 (기존 유지) ---
+// === 상황 :     브라우저에서 사용자가 "위치 정보 제공"을 거부(Block) 했을 때, 지도가 멈추거나 내 위치 마커가 생성되지 않습니다. ===
+// === 해결 방법: Map.vue에서 에러 콜백을 처리하고, Main.vue로 신호를 보내 사용자에게 "위치 권한이 필요합니다"라고 알려줘야 합니다. ===
 const initGeolocation = () => {
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition((pos) => {
@@ -159,7 +188,11 @@ const initGeolocation = () => {
             lng.value = pos.coords.longitude
             updateMyMarker()
             emit('update-location', { lat: lat.value, lng: lng.value })
-        }, null, { enableHighAccuracy: true })
+        }, (error) => {
+            console.warn("위치 정보를 가져올 수 없습니다.", error.message)
+        }, { enableHighAccuracy: true, timeout: 5000 })
+    } else {
+        alert("이 브라우저는 위치 정보를 지원하지 않습니다.")
     }
 }
 

@@ -1,19 +1,20 @@
 <script setup>
 import { X } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useRecruitStore } from '@/stores/recruit'
+
+const recruitStore = useRecruitStore()
 
 // 부모에게 받을 데이터
 const props = defineProps({
     recruit: Object,        // 선택된 모집글 정보 (없으면 null)
     isOpen: Boolean,        // 패널 열림 여부
-    myStatus: String,       // [추가] 나의 상태 (IDLE, OWNER, JOINED)
-    myRecruitId: Number     // [추가] 내가 속한 방 ID
 })
 
 // 부모에게 보낼 신호
 const emit = defineEmits(['close', 'join'])
 
-// --- [추가] 버튼 상태 계산 로직 (디자인 클래스 포함) ---
+// --- 버튼 상태 계산 로직 (디자인 클래스 포함) ---
 const joinButtonState = computed(() => {
     // 1. 데이터 없음
     if (!props.recruit) {
@@ -29,7 +30,7 @@ const joinButtonState = computed(() => {
     // 여기서는 일단 인원 마감을 우선시하되, 내 방이면 복귀가 뜨도록 순서 배치)
 
     // 3. 내가 이 방의 주인이나 참여자일 때 -> [복귀 가능]
-    if (props.myRecruitId === props.recruit.id) {
+    if (recruitStore.recruitId === props.recruit.id) {
         return {
             text: '채팅방으로 복귀',
             disabled: false,
@@ -47,7 +48,7 @@ const joinButtonState = computed(() => {
     }
 
     // 5. 내가 아무것도 안하고 있을 때 -> [입장 가능]
-    if (props.myStatus === 'IDLE') {
+    if (recruitStore.status === 'IDLE') {
         return {
             text: '동승 채팅방 입장',
             disabled: false,

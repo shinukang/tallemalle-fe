@@ -165,6 +165,7 @@ const loadInitialData = async () => {
  * - 서버 주소(ws://...)로 연결을 시도하고, 각 이벤트(연결, 메시지수신, 종료, 에러)별 동작을 정의합니다.
  */
 const connectWebSocket = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) return
     // 웹소켓 서버 주소
     const wsUri = "ws://localhost:8080/ws/chat"
     socket = new WebSocket(wsUri)
@@ -173,16 +174,38 @@ const connectWebSocket = () => {
     socket.addEventListener('open', () => {
         console.log('WEBSOCKET CONNECTED')
         isConnected.value = true
+
+        // 연결 되자마자 '입장 메시지' 전송
+        // 내 정보를 담아서 보내면, 다른 사람들이 이를 받아 usersData에 나를 추가합니다.
+        const enterMsg = {
+            type: 'enter', // 입장 이벤트 타입
+            userId: myUserId.value,
+            userName: myUserName.value,
+            userImg: myUserImg.value,
+            text: '입장했습니다.',
+            // 내 상세 정보 (상대방 화면의 사이드바에 뜨기 위함)
+            user: {
+                name: myUserName.value,
+                img: myUserImg.value,
+                lv: 'LV. 5', // 실제 데이터가 있다면 연동
+                meta: '방금 접속',
+                bio: '반갑습니다!',
+                score: 50,
+                rank: '일반',
+                stats: { time: 0, silent: 0 },
+                reviews: []
+            }
+        }
+        socket.send(JSON.stringify(enterMsg))
     })
 
-    // 메시지 수신 시 (가장 중요!)
+    // 메시지 수신 시
     socket.addEventListener('message', (e) => {
         try {
             // 서버에서 온 데이터(JSON 문자열)를 객체로 변환
             const parsedData = JSON.parse(e.data)
             // 데이터 구조에 따라 payload를 쓸지, 데이터 자체를 쓸지 결정
             const payload = parsedData.payload !== undefined ? parsedData.payload : parsedData
-            
             // 화면에 표시하기 위한 처리 함수 호출
             handleIncomingMessage(payload)
         } catch (err) {
@@ -209,7 +232,9 @@ const connectWebSocket = () => {
  * - 서버 데이터를 받아서 우리 화면에 맞는 형태(Message Item)로 변환해 목록에 추가합니다.
  */
 const handleIncomingMessage = (data) => {
-    // 1. 이중으로 인코딩된 JSON 문자열 처리 (가끔 서버에서 문자열을 두 번 감싸 보낼 때가 있음)
+    if (!socket) return // 테스트용 예외처리
+
+    // 이중으로 인코딩된 JSON 문자열 처리 (가끔 서버에서 문자열을 두 번 감싸 보낼 때가 있음)
     if (typeof data === 'string') {
         try {
             if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
@@ -221,15 +246,16 @@ const handleIncomingMessage = (data) => {
         } catch (e) { /* 변환 실패하면 무시하고 원본 사용 */ }
     }
 
-    // 2. 현재 시간 포맷팅 (예: 14:30)
+    // 현재 시간 포맷팅 (예: 14:30)
     const now = new Date()
     const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
 
-    // 3. 데이터 필드 추출
+    // 데이터 필드 추출
     let textContent = ''
     let userId = 'Unknown'
     let userName = null
     let userImg = null
+    let msgType = data.type || 'other'
 
     // 데이터가 객체라면(정상적인 JSON) 내부 필드 추출
     if (typeof data === 'object' && data !== null) {
@@ -243,11 +269,60 @@ const handleIncomingMessage = (data) => {
         textContent = String(data)
     }
 
-    // 4. 내가 보낸 메시지가 메아리쳐서 돌아온 경우 무시 (이미 화면에 그렸으므로)
+    // 내가 보낸 메시지 무시
     if (userId === myUserId.value) return
 
-    // 5. 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
-    //const senderInfo = usersData[userId] || usersData['Unknown']
+    // 유저 정보 등록 (enter, exist 메시지 모두 여기서 처리)
+    // 새로운 유저거나, 기존 목록에 없는 유저라면 usersData에 추가합니다.
+    if (userId !== 'Unknown' && !usersData.value[userId]) {
+        // console.log(`[ChatView] 유저 데이터 갱신: ${userName} (${userId})`)
+        const newUserData = data.user || {}
+        
+        usersData.value[userId] = {
+            name: userName || '이름 없음',
+            img: userImg || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+            lv: newUserData.lv || 'LV. 1',
+            meta: newUserData.meta || '정보 없음',
+            bio: newUserData.bio || '안녕하세요!',
+            score: newUserData.score || 50,
+            rank: newUserData.rank || '-',
+            stats: newUserData.stats || { time: 0, silent: 0 },
+            reviews: newUserData.reviews || []
+        }
+    }
+
+    // 입장 메시지('enter') 처리 - Handshake
+    // 누군가 들어왔다는 소식을 들으면, "나도 여기 있어(exist)"라고 답장을 보냅니다.
+    // 이렇게 해야 새로 들어온 사람이 기존 접속자 정보를 알 수 있습니다.
+    if (msgType === 'enter') {
+        if (socket && isConnected.value) {
+            const existMsg = {
+                type: 'exist', // "나 여기 있어" 메시지
+                userId: myUserId.value,
+                userName: myUserName.value,
+                userImg: myUserImg.value,
+                text: '', 
+                user: {
+                    name: myUserName.value,
+                    img: myUserImg.value,
+                    lv: 'LV. 5', // 실제 내 정보가 있다면 연동
+                    meta: '현재 접속 중',
+                    bio: '반갑습니다!',
+                    score: 50,
+                    rank: '일반',
+                    stats: { time: 0, silent: 0 },
+                    reviews: []
+                }
+            }
+            socket.send(JSON.stringify(existMsg))
+        }
+        return // 채팅창에는 표시하지 않음
+    }
+
+    // 기존 유저 존재 알림('exist') 처리
+    if (msgType === 'exist') return
+
+    // 보낸 사람 정보 매핑 (usersData에서 상세 정보 찾기)
     const senderInfo = usersData.value[userId] || usersData.value['Unknown']
 
     // 화면에 표시할 최종 유저 객체 조립
@@ -257,10 +332,10 @@ const handleIncomingMessage = (data) => {
         img: userImg || senderInfo.img
     }
 
-    // 6. 최종 메시지 목록에 추가
+    // 최종 메시지 목록에 추가
     messages.value.push({
         id: Date.now() + Math.random(), // 고유 ID 생성
-        type: 'other', // 상대방이 보낸 메시지
+        type: msgType, // 상대방이 보낸 메시지
         userId: userId,
         text: textContent,
         time: timeStr,
@@ -280,7 +355,7 @@ const sendMessage = (textToSend) => {
     const now = new Date()
     const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
 
-    // 1. Optimistic Update (낙관적 업데이트)
+    // Optimistic Update (낙관적 업데이트)
     // 서버 응답 기다리지 않고 내 화면에 먼저 말풍선 띄우기 (반응속도 향상)
     messages.value.push({
         id: Date.now(),
@@ -289,7 +364,7 @@ const sendMessage = (textToSend) => {
         time: timeStr
     })
 
-    // 2. 실제 서버로 전송
+    // 실제 서버로 전송
     if (socket && isConnected.value) {
         const payload = {
             userId: myUserId.value,

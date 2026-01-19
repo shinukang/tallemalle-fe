@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Camera, Send } from 'lucide-vue-next'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import SelectableTag from '@/components/tag/SelectableTag.vue'
-import api from '@/api/profile'
+import profileApi from '@/api/profile'
 
 const router = useRouter()
 
 // --- 상태 관리 ---
 const profileImage = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')
-const form = ref({
+const profile = ref({
   name: '',
   nickname: '',
   phone: '',
@@ -52,7 +52,7 @@ const handlePhoneInput = (e) => {
   } else if (val.length >= 8) {
     val = val.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3')
   }
-  form.value.phone = val
+  profile.value.phone = val
 
   if (val !== '010-1234-5678') {
     isPhoneChanged.value = true
@@ -64,7 +64,7 @@ const handlePhoneInput = (e) => {
 }
 
 const requestAuth = () => {
-  if (form.value.phone.length < 12) {
+  if (profile.value.phone.length < 12) {
     alert('휴대폰 번호를 올바르게 입력해주세요.')
     return
   }
@@ -121,14 +121,13 @@ const handleSave = () => {
 
 onMounted(async () => {
   clearInterval(timerInterval.value)
-
   try {
-    const res = await api.profile()
+    const res = await profileApi.profile()
 
     if (res.data) {
-      Object.assign(form.value, res.data)
+      Object.assign(profile.value, res.data)
 
-      if (form.value.phone === res.data.phone) {
+      if (profile.value.phone === res.data.phone) {
         isPhoneVerified.value = true
         isPhoneChanged.value = false
       }
@@ -211,7 +210,7 @@ onMounted(async () => {
               <div class="col-span-1 md:col-span-2">
                 <LabeledInput
                   id="nickname"
-                  v-model="form.nickname"
+                  v-model="profile.nickname"
                   label="닉네임 *"
                   placeholder="닉네임을 입력하세요"
                   filterType="none"
@@ -224,7 +223,7 @@ onMounted(async () => {
               <div class="col-span-1 md:col-span-2">
                 <LabeledInput
                   id="userName"
-                  :modelValue="form.name"
+                  :modelValue="profile.name"
                   label="이름"
                   readonly
                   align="left"
@@ -236,7 +235,7 @@ onMounted(async () => {
                 <div class="flex gap-2 items-end">
                   <LabeledInput
                     id="phone"
-                    :modelValue="form.phone"
+                    :modelValue="profile.phone"
                     @input="handlePhoneInput"
                     label="휴대폰 번호 *"
                     type="tel"
@@ -264,7 +263,7 @@ onMounted(async () => {
               <div class="col-span-1 md:col-span-2">
                 <label class="block text-xs font-bold text-slate-400 mb-2 ml-1">한 줄 소개</label>
                 <textarea
-                  v-model="form.bio"
+                  v-model="profile.bio"
                   class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 h-24 resize-none transition-all"
                 ></textarea>
               </div>
@@ -282,7 +281,7 @@ onMounted(async () => {
                 :key="tag"
                 :label="tag"
                 :value="tag"
-                v-model="form.styles"
+                v-model="profile.styles"
               />
             </div>
           </div>

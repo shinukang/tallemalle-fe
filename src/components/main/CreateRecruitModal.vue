@@ -80,46 +80,49 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <div v-if="isOpen"
-        class="fixed inset-0 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm z-[100]">
-        <div class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <Teleport to="body">
+        <div v-if="isOpen"
+            class="fixed inset-0 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm z-[100]">
+            <div
+                class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
 
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-slate-900">동승 모집하기</h2>
-                <button @click="emit('close')"
-                    class="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
-                    <X class="w-5 h-5" />
-                </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-5">
-
-                <div class="grid grid-cols-2 gap-3">
-                    <LocationInput label="출발지" v-model="form.start" @select-location="handleStartSelect"
-                        placeholder="장소 검색" label-color="text-emerald-500" />
-                    <LocationInput label="목적지" v-model="form.dest" @select-location="handleDestSelect"
-                        placeholder="장소 검색" label-color="text-rose-500" />
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-slate-900">동승 모집하기</h2>
+                    <button @click="emit('close')"
+                        class="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                        <X class="w-5 h-5" />
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <TimeSelect label="출발 시간" v-model="form.time" />
-                    <MemberCounter label="모집 인원" v-model="form.maxMember" />
+                <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-5">
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <LocationInput label="출발지" v-model="form.start" @select-location="handleStartSelect"
+                            placeholder="장소 검색" label-color="text-emerald-500" />
+                        <LocationInput label="목적지" v-model="form.dest" @select-location="handleDestSelect"
+                            placeholder="장소 검색" label-color="text-rose-500" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <TimeSelect label="출발 시간" v-model="form.time" />
+                        <MemberCounter label="모집 인원" v-model="form.maxMember" />
+                    </div>
+
+                    <TagInput label="태그 (선택)" v-model="form.tags" placeholder="예: #비흡연 #여성전용" />
+
+                    <Textarea label="하고 싶은 말" v-model="form.desc" placeholder="예: 짐이 조금 있어요" />
                 </div>
 
-                <TagInput label="태그 (선택)" v-model="form.tags" placeholder="예: #비흡연 #여성전용" />
+                <div class="p-6 border-t border-slate-100 bg-white">
+                    <button @click="handleSubmit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                        모집 시작하기
+                    </button>
+                </div>
 
-                <Textarea label="하고 싶은 말" v-model="form.desc" placeholder="예: 짐이 조금 있어요" />
             </div>
-
-            <div class="p-6 border-t border-slate-100 bg-white">
-                <button @click="handleSubmit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95">
-                    모집 시작하기
-                </button>
-            </div>
-
         </div>
-    </div>
+    </Teleport>
 </template>
 
 <style scoped>
