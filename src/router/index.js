@@ -18,6 +18,7 @@ import Privacy from '@/views/info/Privacy.vue'
 import DriverLogin from '@/views/driver/DriverLogin.vue'
 import DriverSignup from '@/views/driver/DriverSignup.vue'
 import DriverPage from '@/views/driver/DriverPage.vue'
+import NoticeDetail from '@/views/info/NoticeDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: '/changepassword', name: 'changepassword', component: ChangePassword, meta: { requiresAuth: true } },
     { path: '/blocklist', name: 'blocklist', component: BlockList, meta: { requiresAuth: true } },
     { path: '/notice', name: 'notice', component: Notice, meta: { requiresAuth: true } },
+    { path: '/noticedetail', name: 'noticedetail', component: NoticeDetail, meta: { requiresAuth: true } },
     { path: '/notification', name: 'notification', component: Notification, meta: { requiresAuth: true } },
     { path: '/terms', name: 'terms', component: Terms, meta: { requiresAuth: true } },
     { path: '/privacy', name: 'privacy', component: Privacy, meta: { requiresAuth: true } },

@@ -1,13 +1,10 @@
 <script setup>
+import { computed } from 'vue'
 const props = defineProps({
   id: String,
   label: String,
   modelValue: String,
   placeholder: String,
-  clearOnFocus: {
-    type: Boolean,
-    default: true,
-  },
   length: {
     type: Object,
     default: () => ({
@@ -23,11 +20,32 @@ const props = defineProps({
     type: String,
     default: 'none',
   },
+  align: {
+    type: String,
+    default: 'center',
+    validator: (value) => ['left', 'center', 'right'].includes(value),
+  },
+  // 읽기 전용 상태 추가
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emits = defineEmits(['update:modelValue', 'input'])
 
+const alignClass = computed(() => {
+  const alignment = {
+    left: 'text-left',
+    center: 'text-center',
+    right: 'text-right',
+  }
+  return alignment[props.align] || 'text-center'
+})
+
 const handleInput = (event) => {
+  if (props.readonly) return // 읽기 전용일 때는 입력 방지
+
   let val = event.target.value
 
   switch (props.filterType) {
@@ -50,18 +68,25 @@ const handleInput = (event) => {
 </script>
 
 <template>
-  <div class="space-y-1.5">
-    <label v-if="label" class="text-[11px] font-bold text-slate-500 ml-1">
+  <div class="w-full">
+    <label v-if="label" :for="id" class="block text-xs font-bold text-slate-400 mb-2 ml-1">
       {{ label }}
     </label>
+
     <input
       :id="id"
       :value="modelValue"
       @input="handleInput"
       :type="type"
       :placeholder="placeholder"
-      :length="length"
-      class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 text-xs text-center"
+      :readonly="readonly"
+      :class="[
+        'w-full px-5 py-4 transition-all duration-200 outline-none rounded-[1.25rem] text-sm font-semibold',
+        alignClass,
+        readonly
+          ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+          : 'bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 text-slate-700',
+      ]"
     />
   </div>
 </template>
