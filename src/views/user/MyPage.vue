@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import {
   Camera,
   UserMinus,
@@ -12,7 +12,9 @@ import {
   X,
   MessageSquareText,
 } from 'lucide-vue-next'
+import api from '@/api/profile'
 import EditPayment from '@/views/payment/EditPayment.vue'
+import HistoryEntry from '@/components/entry/HistoryEntry.vue'
 
 // --- 상태 ---
 const activeTab = ref('history') // 'history' | 'reviews'
@@ -23,29 +25,12 @@ const currentHistory = ref({})
 const currentReview = ref({})
 const profileImage = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')
 
-// --- 데이터 (Mock) ---
-const rideHistoryList = [
-  {
-    id: 1,
-    start: '강남역 2번 출구',
-    dest: '판교역',
-    date: '2024.03.24 (일)',
-    cost: '4,500원',
-    people: 4,
-    isDone: true,
-    time: '어제',
-  },
-  {
-    id: 2,
-    start: '합정역 7번 출구',
-    dest: '서울역',
-    date: '2024.03.21 (목)',
-    cost: '3,200원',
-    people: 2,
-    isDone: true,
-    time: '3일 전',
-  },
-]
+const history = reactive({
+  list: [],
+})
+const review = reactive({
+  list: [],
+})
 
 // --- 메소드 ---
 const switchTab = (tab) => {
@@ -75,6 +60,35 @@ const handleImageUpload = (event) => {
     reader.readAsDataURL(file)
   }
 }
+
+const getHistory = async () => {
+  try {
+    const res = await api.history()
+    if (res.data) {
+      console.log(res.data)
+      history.list = res.data
+    }
+  } catch (error) {
+    console.error('HISTORY: ', error)
+  }
+}
+
+const getReview = async () => {
+  try {
+    const res = await api.review()
+    if (res.data) {
+      console.log(res.data)
+      review.list = res.data
+    }
+  } catch (error) {
+    console.error('REVIEW: ', error)
+  }
+}
+
+onMounted(async () => {
+  getHistory()
+  getReview()
+})
 </script>
 
 <template>
@@ -94,7 +108,7 @@ const handleImageUpload = (event) => {
         <div class="flex gap-4">
           <div class="text-right">
             <p class="text-[10px] font-bold text-slate-400 uppercase">누적 동승</p>
-            <p class="text-lg font-black text-indigo-600">128회</p>
+            <p class="text-lg font-black text-indigo-600">{{ history.list.length }}회</p>
           </div>
           <div class="w-px h-8 bg-slate-200 self-center"></div>
           <div class="text-right">
@@ -236,39 +250,16 @@ const handleImageUpload = (event) => {
                 v-if="activeTab === 'history'"
                 class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4"
               >
-                <div
-                  v-for="ride in rideHistoryList"
-                  :key="ride.id"
-                  @click="openRideDetail(ride.id)"
-                  class="flex items-center gap-5 p-5 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-3xl transition-all cursor-pointer group"
-                >
-                  <div
-                    class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0 group-hover:scale-110 transition-transform"
-                  >
-                    <MapPin class="w-6 h-6" />
-                  </div>
-                  <div class="flex-1">
-                    <div class="flex justify-between items-start mb-1">
-                      <p class="text-sm font-bold text-slate-800">
-                        {{ ride.start }} → {{ ride.dest }}
-                      </p>
-                      <span
-                        class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded"
-                        >{{ ride.time }}</span
-                      >
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <p class="text-xs text-slate-400 font-medium">
-                        {{ ride.cost }} 결제 · 동승 {{ ride.people }}명
-                      </p>
-                      <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
-                      <p class="text-xs text-indigo-500 font-bold italic">정산 완료</p>
-                    </div>
-                  </div>
-                  <ArrowRight
-                    class="w-5 h-5 text-slate-200 group-hover:text-indigo-600 transform group-hover:translate-x-1 transition-all"
-                  />
-                </div>
+                <HistoryEntry
+                  v-for="item in history.list"
+                  :key="item.id"
+                  :start="item.start"
+                  :dest="item.dest"
+                  :time="item.time"
+                  :cost="item.cost"
+                  :people="item.people"
+                  @click="openRideDetail(item.id)"
+                />
               </div>
 
               <div v-if="activeTab === 'reviews'" class="flex-1 overflow-y-auto custom-scroll p-8">
