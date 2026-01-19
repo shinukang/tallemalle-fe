@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { Bell, ShieldCheck, ChevronRight, ExternalLink } from 'lucide-vue-next'
+import { Bell, ShieldCheck, ExternalLink } from 'lucide-vue-next'
 import SettingPageLayout from '@/components/setting/SettingPageLayout.vue'
 import SettingSection from '@/components/setting/SettingSection.vue'
 import SettingGoToPageItem from '@/components/setting/SettingGoToPageItem.vue'
@@ -12,8 +11,10 @@ const marketingConsent = ref(true)
 
 <template>
   <SettingPageLayout title="환경 설정" description="앱 알림, 보안 및 고객 지원 설정을 관리합니다.">
+    
     <div class="max-w-4xl mx-auto space-y-8 w-full">
-      <SettingSection title="알림 설정" :icon="Bell">
+      
+        <SettingSection title="알림 설정" :icon="Bell">
         <div class="space-y-6">
           <div class="flex items-center justify-between px-2">
             <div>
