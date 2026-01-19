@@ -1,6 +1,16 @@
 <script setup>
 import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
-import { UserMinus, CreditCard, CheckCircle2, X, Trash2, Check, AlertCircle } from 'lucide-vue-next'
+import {
+  UserMinus,
+  CreditCard,
+  CheckCircle2,
+  X,
+  Trash2,
+  Check,
+  AlertCircle,
+  AlertTriangle,
+  Star,
+} from 'lucide-vue-next'
 import RoundBox from '@/components/layout/RoundBox.vue'
 import EditPayment from '@/views/payment/EditPayment.vue'
 import EditProfile from '@/components/profile/EditProfile.vue'
@@ -18,10 +28,28 @@ const isEditProfileOpen = ref(false)
 const isReviewModalOpen = ref(false)
 const isPaymentActionModalOpen = ref(false)
 const isLimitReachedModalOpen = ref(false)
+const isWithdrawModalOpen = ref(false) // 회원 탈퇴 모달 상태 추가
 
 const currentHistory = ref({})
 const currentReview = ref({})
 const selectedPayment = ref(null)
+
+// --- 날짜 포맷팅 함수 ---
+const formatDateTime = (isoString) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return isoString
+
+  const week = ['일', '월', '화', '수', '목', '금', '토']
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const day = week[date.getDay()]
+  const hh = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+
+  return `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}`
+}
 
 // --- 계산된 속성 ---
 const sortedPaymentList = computed(() => {
@@ -120,6 +148,11 @@ const deletePaymentMethod = () => {
   }
 }
 
+const handleWithdrawConfirm = () => {
+  console.log('회원 탈퇴 처리됨')
+  isWithdrawModalOpen.value = false
+}
+
 onMounted(async () => {
   await profileStore.loadUserInfo()
 })
@@ -127,7 +160,6 @@ onMounted(async () => {
 
 <template>
   <div class="h-full flex gap-4 p-4 overflow-hidden relative text-slate-900">
-    <!-- 왼쪽 여백 (MD 이상) -->
     <div class="hidden md:block w-20 shrink-0"></div>
 
     <div
@@ -222,6 +254,7 @@ onMounted(async () => {
             <div class="flex-1"></div>
             <div class="pt-4 flex justify-center mt-auto flex-none">
               <button
+                @click="isWithdrawModalOpen = true"
                 class="flex items-center gap-1.5 text-slate-300 hover:text-rose-500 transition-all font-bold text-[11px]"
               >
                 <UserMinus class="w-3.5 h-3.5" />
@@ -388,7 +421,7 @@ onMounted(async () => {
 
     <!-- 모든 모달을 Teleport로 묶어 최상단에 렌더링 -->
     <Teleport to="body">
-      <!-- 1. 프로필 수정 모달 (EditProfile) -->
+      <!-- 1. 프로필 수정 모달 -->
       <EditProfile v-if="isEditProfileOpen" @close="isEditProfileOpen = false" />
 
       <!-- 2. 결제 수단 추가 모달 -->
@@ -472,11 +505,19 @@ onMounted(async () => {
                 >{{ currentHistory.start }} → {{ currentHistory.dest }}</span
               >
             </div>
-            <div class="flex justify-between py-2 border-b border-slate-50">
-              <span class="text-slate-400 text-sm">탑승 시각</span>
-              <span class="text-slate-800 font-bold text-sm text-right">{{
-                currentHistory.time
-              }}</span>
+            <div class="flex flex-col py-2 border-b border-slate-50 gap-2">
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">출발 시각</span>
+                <span class="text-slate-800 font-bold text-sm text-right">
+                  {{ formatDateTime(currentHistory.departure) }}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">도착 시각</span>
+                <span class="text-slate-800 font-bold text-sm text-right">
+                  {{ formatDateTime(currentHistory.arrival) }}
+                </span>
+              </div>
             </div>
             <div class="flex justify-between py-2 border-b border-slate-50">
               <span class="text-slate-400 text-sm">결제 금액</span>
@@ -504,16 +545,78 @@ onMounted(async () => {
           class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200"
           @click.stop
         >
-          <div class="flex justify-between items-center mb-6">
+          <!-- 모달 헤더 -->
+          <div class="flex justify-between items-center mb-8">
             <h2 class="text-xl font-bold text-slate-900">리뷰 상세</h2>
-            <button @click="isReviewModalOpen = false"><X class="w-6 h-6 text-slate-400" /></button>
+            <button @click="isReviewModalOpen = false">
+              <X class="w-6 h-6 text-slate-400 hover:text-slate-600 transition-colors" />
+            </button>
           </div>
-          <div class="bg-slate-50 p-6 rounded-3xl mb-8 italic text-slate-600 leading-relaxed">
-            "{{ currentReview.contents }}"
+
+          <!-- 작성자 프로필 및 별점 영역 -->
+          <div class="flex items-center justify-between mb-8 pb-8 border-b border-slate-50">
+            <div class="flex items-center gap-4">
+              <img
+                :src="currentReview.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna'"
+                class="w-16 h-16 rounded-[1.5rem] bg-slate-50 border-4 border-white shadow-lg object-cover"
+              />
+              <div class="text-left">
+                <p class="text-lg font-bold text-slate-900">{{ currentReview.from }}님</p>
+                <div class="flex gap-0.5 mt-1">
+                  <Star
+                    v-for="i in 5"
+                    :key="i"
+                    class="w-4 h-4"
+                    :class="
+                      i <= (currentReview.rating || 5)
+                        ? 'text-amber-400 fill-amber-400'
+                        : 'text-slate-200'
+                    "
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="bg-indigo-50 px-4 py-2 rounded-2xl">
+              <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">
+                Manner Score
+              </p>
+              <p class="text-sm font-black text-indigo-600">
+                + {{ (currentReview.rating || 5) * 2 }}pt
+              </p>
+            </div>
           </div>
+
+          <!-- 경로 정보 영역 -->
+          <div class="mb-8 text-left space-y-3">
+            <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              동승 경로 정보
+            </h4>
+            <div
+              class="flex items-center gap-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100"
+            >
+              <div class="flex flex-col items-center gap-1">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <div class="w-0.5 h-4 bg-slate-200"></div>
+                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+              </div>
+              <div class="flex-1 text-sm font-bold text-slate-700">
+                <p>{{ currentReview.departure }}</p>
+                <p class="mt-1">{{ currentReview.destination }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 리뷰 본문 영역: 텍스트 안에 따옴표 추가 -->
+          <div class="bg-slate-50 p-6 rounded-xl mb-10">
+            <p class="text-base text-slate-600 leading-relaxed text-left">
+              "{{ currentReview.contents }}"
+            </p>
+          </div>
+
+          <!-- 닫기 버튼 -->
           <button
             @click="isReviewModalOpen = false"
-            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
+            class="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-bold text-sm shadow-xl shadow-slate-200 hover:bg-slate-800 active:scale-[0.98] transition-all"
           >
             확인
           </button>
@@ -537,7 +640,7 @@ onMounted(async () => {
               <AlertCircle class="w-8 h-8 text-amber-500" />
             </div>
             <h2 class="text-lg font-extrabold text-slate-900 mb-2">등록 제한</h2>
-            <p class="text-sm text-slate-500 font-medium">
+            <p class="text-sm text-slate-500 font-medium leading-relaxed">
               결제 수단은 최대 <span class="text-indigo-600 font-bold">2개</span>까지<br />등록할 수
               있습니다.
             </p>
@@ -548,6 +651,45 @@ onMounted(async () => {
               class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold"
             >
               확인
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. 회원 탈퇴 확인 모달 -->
+      <div
+        v-if="isWithdrawModalOpen"
+        class="fixed inset-0 z-[210] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
+        @click="isWithdrawModalOpen = false"
+      >
+        <div
+          class="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200"
+          @click.stop
+        >
+          <div class="p-8 text-center">
+            <div
+              class="w-16 h-16 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-4"
+            >
+              <AlertTriangle class="w-8 h-8 text-rose-500" />
+            </div>
+            <h2 class="text-lg font-extrabold text-slate-900 mb-2">정말 탈퇴하시겠습니까?</h2>
+            <p class="text-sm text-slate-500 font-medium leading-relaxed">
+              탈퇴 시 사용자의 모든 데이터가 삭제되며<br />
+              <span class="text-rose-500 font-bold">복구가 불가능</span>합니다.
+            </p>
+          </div>
+          <div class="p-6 pt-0 flex gap-3">
+            <button
+              @click="isWithdrawModalOpen = false"
+              class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+            >
+              취소
+            </button>
+            <button
+              @click="handleWithdrawConfirm"
+              class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-bold hover:bg-rose-600 shadow-lg shadow-rose-100 transition-all"
+            >
+              탈퇴 확정
             </button>
           </div>
         </div>
