@@ -1,8 +1,9 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ArrowLeft, Lock, KeyRound, CheckCircle2, Info, AlertCircle } from 'lucide-vue-next'
+import AuthBaseInput from '../../components/signup/AuthBaseInput.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -125,75 +126,43 @@ const handleChangePassword = () => {
 
       <div class="flex-1 overflow-y-auto custom-scroll p-8 flex flex-col items-center">
         <div class="w-full max-w-lg space-y-8 mt-4">
-          <div class="space-y-2">
-            <label class="text-sm font-bold text-slate-700 ml-1">현재 비밀번호</label>
-            <div
-              class="relative bg-white rounded-2xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
-            >
-              <input
-                v-model="changePasswordForm.current"
-                type="password"
-                placeholder="사용 중인 비밀번호를 입력하세요"
-                class="w-full p-4 bg-transparent outline-none text-slate-800 placeholder:text-slate-400 rounded-2xl"
-              />
-              <Lock class="absolute right-4 top-4 w-5 h-5 text-slate-300" />
-            </div>
-          </div>
+          <AuthBaseInput
+            v-model="changePasswordForm.current"
+            label="현재 비밀번호"
+            type="password"
+            variant="settings"
+            bg-color="bg-white"
+            placeholder="사용 중인 비밀번호를 입력하세요"
+            icon-position="right"
+            :icon="Lock"
+          />
 
           <div class="h-px bg-slate-100 w-full my-6"></div>
 
           <div class="space-y-4">
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700 ml-1">새 비밀번호</label>
-              <div
-                class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
-                :class="[
-                  passwordInputError.new.errorMessage ? 'border-red-400' : 'border-slate-200',
-                ]"
-              >
-                <input
-                  v-model="changePasswordForm.new"
-                  @blur="passwordRules()"
-                  type="password"
-                  placeholder="새로운 비밀번호 (8자 이상)"
-                  class="w-full p-4 bg-transparent outline-none text-slate-800 placeholder:text-slate-400 rounded-2xl"
-                />
-                <KeyRound class="absolute right-4 top-4 w-5 h-5 text-slate-300" />
-              </div>
-              <p
-                v-if="passwordInputError.new.errorMessage"
-                class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
-              >
-                <AlertCircle class="w-3.5 h-3.5 mr-1" />
-                {{ passwordInputError.new.errorMessage }}
-              </p>
-            </div>
+            <AuthBaseInput
+              v-model="changePasswordForm.new"
+              label="새 비밀번호"
+              type="password"
+              variant="settings"
+              placeholder="새로운 비밀번호 (8자 이상)"
+              icon-position="right"
+              :icon="KeyRound"
+              :error="passwordInputError.new.errorMessage"
+              @blur="passwordRules"
+            />
 
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700 ml-1">새 비밀번호 확인</label>
-              <div
-                class="relative flex items-center bg-slate-50 border rounded-xl focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"
-                :class="[
-                  passwordInputError.confirm.errorMessage ? 'border-red-400' : 'border-slate-200',
-                ]"
-              >
-                <input
-                  v-model="changePasswordForm.confirm"
-                  @blur="checkConfirmPassword()"
-                  type="password"
-                  placeholder="새로운 비밀번호를 한 번 더 입력하세요"
-                  class="w-full p-4 bg-transparent outline-none text-slate-800 placeholder:text-slate-400 rounded-2xl"
-                />
-                <CheckCircle2 class="absolute right-4 top-4 w-5 h-5 text-slate-300" />
-              </div>
-              <p
-                v-if="passwordInputError.confirm.errorMessage"
-                class="flex items-center text-red-500 text-xs mt-1.5 ml-1 font-medium animate-in fade-in slide-in-from-top-1"
-              >
-                <AlertCircle class="w-3.5 h-3.5 mr-1" />
-                {{ passwordInputError.confirm.errorMessage }}
-              </p>
-            </div>
+            <AuthBaseInput
+              v-model="changePasswordForm.confirm"
+              label="새 비밀번호 확인"
+              type="password"
+              variant="settings"
+              placeholder="새로운 비밀번호를 한 번 더 입력하세요"
+              icon-position="right"
+              :icon="CheckCircle2"
+              :error="passwordInputError.confirm.errorMessage"
+              @blur="checkConfirmPassword"
+            />
           </div>
 
           <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">
