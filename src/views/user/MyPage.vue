@@ -1,5 +1,10 @@
 <script setup>
-import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
+import { ref, reactive, onMounted, nextTick, watch } from 'vue'
 import {
   UserMinus,
   X,
@@ -10,21 +15,32 @@ import {
   Star,
   CreditCard,
 } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { useProfileStore } from '@/stores/profile'
+import api from '@/api/profile'
 import RoundBox from '@/components/layout/RoundBox.vue'
 import EditPayment from '@/views/payment/EditPayment.vue'
 import EditProfile from '@/components/profile/EditProfile.vue'
 import HistoryEntry from '@/components/entry/HistoryEntry.vue'
 import ReviewEntry from '@/components/entry/ReviewEntry.vue'
 import PaymentEntry from '@/components/entry/PaymentEntry.vue'
-import { useProfileStore } from '@/stores/profile'
-import api from '@/api/profile'
-import { useRouter } from 'vue-router'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const profileStore = useProfileStore()
 const router = useRouter()
 
-// --- 상태 ---
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언) - [변수]
+ * ==============================================================================
+ */
 const activeTab = ref('history') // 'history' | 'reviews'
+
+// 모달 상태 관리
 const isRideHistoryModalOpen = ref(false)
 const isEditPaymentModalOpen = ref(false)
 const isEditProfileOpen = ref(false)
@@ -33,11 +49,41 @@ const isPaymentActionModalOpen = ref(false)
 const isLimitReachedModalOpen = ref(false)
 const isWithdrawModalOpen = ref(false)
 
+// 선택된 데이터 상태
 const currentHistory = ref({})
 const currentReview = ref({})
 const selectedPayment = ref(null)
 
-// --- 날짜 포맷팅 함수 ---
+// 스크롤 상태 감지 로직용 Ref 및 상태
+const historyScrollRef = ref(null)
+const reviewScrollRef = ref(null)
+const scrollState = reactive({
+  history: { top: false, bottom: false },
+  reviews: { top: false, bottom: false },
+})
+
+/**
+ * ==============================================================================
+ * 4. COMPUTED (계산된 속성)
+ * ==============================================================================
+ */
+// 탭 전환 및 데이터 변경 감지 워처 (스크롤 상태 계산)
+watch(
+  [activeTab, () => profileStore.userInfo.history, () => profileStore.userInfo.review],
+  async () => {
+    await nextTick()
+    if (activeTab.value === 'history') checkScroll(historyScrollRef.value, 'history')
+    else checkScroll(reviewScrollRef.value, 'reviews')
+  },
+  { deep: true },
+)
+
+/**
+ * ==============================================================================
+ * 5. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
+// 날짜 포맷팅 유틸리티
 const formatDateTime = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -54,14 +100,7 @@ const formatDateTime = (isoString) => {
   return `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}`
 }
 
-// --- 스크롤 상태 감지 로직 ---
-const historyScrollRef = ref(null)
-const reviewScrollRef = ref(null)
-const scrollState = reactive({
-  history: { top: false, bottom: false },
-  reviews: { top: false, bottom: false },
-})
-
+// 스크롤 위치 확인
 const checkScroll = (el, type) => {
   if (!el) return
   const { scrollTop, scrollHeight, clientHeight } = el
@@ -76,21 +115,12 @@ const checkScroll = (el, type) => {
   }
 }
 
-watch(
-  [activeTab, () => profileStore.userInfo.history, () => profileStore.userInfo.review],
-  async () => {
-    await nextTick()
-    if (activeTab.value === 'history') checkScroll(historyScrollRef.value, 'history')
-    else checkScroll(reviewScrollRef.value, 'reviews')
-  },
-  { deep: true },
-)
-
-// --- 메소드 ---
+// 탭 전환
 const switchTab = (tab) => {
   activeTab.value = tab
 }
 
+// 탑승 상세 정보 열기
 const openRideDetail = (id) => {
   const selected = profileStore.userInfo.history.find((item) => item.id === id)
   if (selected) {
@@ -99,11 +129,13 @@ const openRideDetail = (id) => {
   }
 }
 
+// 리뷰 상세 열기
 const openMyReview = (item) => {
   currentReview.value = item
   isReviewModalOpen.value = true
 }
 
+// 카드 추가 핸들러
 const handleAddPayment = () => {
   if (profileStore.userInfo.payment.method.length >= 2) {
     isLimitReachedModalOpen.value = true
@@ -112,11 +144,13 @@ const handleAddPayment = () => {
   isEditPaymentModalOpen.value = true
 }
 
+// 카드 관리 핸들러
 const handleManagePayment = (card) => {
   selectedPayment.value = card
   isPaymentActionModalOpen.value = true
 }
 
+// 기본 결제 수단 설정
 const setAsDefaultPayment = () => {
   if (selectedPayment.value) {
     profileStore.userInfo.payment.default = selectedPayment.value.id
@@ -124,6 +158,7 @@ const setAsDefaultPayment = () => {
   }
 }
 
+// 결제 수단 삭제
 const deletePaymentMethod = () => {
   if (selectedPayment.value) {
     const list = profileStore.userInfo.payment.method
@@ -139,11 +174,18 @@ const deletePaymentMethod = () => {
   }
 }
 
+// 회원 탈퇴 확인
 const handleWithdrawConfirm = () => {
   isWithdrawModalOpen.value = false
   router.push('login')
 }
 
+/**
+ * ==============================================================================
+ * 6. METHODS - DATA & NETWORK (데이터 통신 및 소켓) - [연동 API 함수]
+ * ==============================================================================
+ */
+// 전체 사용자 정보 Fetch
 const fetchAllUserInfo = async () => {
   try {
     const results = await Promise.allSettled([
@@ -172,6 +214,11 @@ const fetchAllUserInfo = async () => {
   }
 }
 
+/**
+ * ==============================================================================
+ * 7. LIFECYCLE (생명주기 훅) - [마운트 관련]
+ * ==============================================================================
+ */
 onMounted(async () => {
   fetchAllUserInfo()
 })
