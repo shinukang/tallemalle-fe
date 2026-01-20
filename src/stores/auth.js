@@ -11,8 +11,6 @@ import { defineStore } from 'pinia'
  * 2. CONFIG & STORES (Auth Store 정의)
  * ==============================================================================
  */
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
 
 // 다른 페이지에서 const authStore = useAuthStore() 변수 선언해주고
 // authStore.user, authStore.user.id, authStore.user.email 이런식으로 사용하면 됨
