@@ -252,9 +252,9 @@
 # 🎥 기능 테스트
 
 <details>
-<summary>💬 [회원가입/로그인 시연 영상]</summary>
+<summary>🔒 [회원가입/로그인 시연 영상]</summary>
 
-[회원가입/로그인 영상 보기](https://github.com/user-attachments/assets/04d6b38d-6a47-423f-b5e7-a16b3ed3efb2)
+[회원가입/로그인 영상 보기](https://github.com/user-attachments/assets/371186d8-b244-44cb-8337-7ac301cb62ac)
 
 </details>
 
