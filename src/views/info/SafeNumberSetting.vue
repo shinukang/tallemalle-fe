@@ -1,18 +1,38 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Phone, ShieldCheck, Info, CheckCircle2, AlertCircle } from 'lucide-vue-next'
 import SettingPageLayout from '@/components/setting/SettingPageLayout.vue'
 import SettingSection from '@/components/setting/SettingSection.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어)
+ * ==============================================================================
+ */
 const router = useRouter()
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수)
+ * ==============================================================================
+ */
 // 안심번호 활성화 상태
 const isSafeNumberEnabled = ref(true)
 
 // 연결된 실제 번호 (예시 데이터)
 const phoneNumber = ref('010-1234-5678')
 
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (기능 및 UI 로직)
+ * ==============================================================================
+ */
 const toggleSafeNumber = () => {
   // 실제 API 연동 시 이곳에서 처리
   console.log('안심번호 상태 변경:', isSafeNumberEnabled.value)
@@ -26,7 +46,6 @@ const toggleSafeNumber = () => {
   >
     <div class="max-w-3xl mx-auto space-y-6 w-full">
       
-      <!-- 상태 설정 섹션 -->
       <SettingSection title="서비스 활성화" :icon="ShieldCheck">
         <div class="p-2 flex items-center justify-between">
           <div>
@@ -47,7 +66,6 @@ const toggleSafeNumber = () => {
         </div>
       </SettingSection>
 
-      <!-- 연결 정보 섹션 -->
       <SettingSection title="연결 정보" :icon="Phone">
         <div class="p-2 space-y-4">
           <div class="flex items-center justify-between">
@@ -81,7 +99,6 @@ const toggleSafeNumber = () => {
         </div>
       </SettingSection>
 
-      <!-- 이용 안내 섹션 -->
       <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
         <div class="flex items-center gap-2 mb-4">
           <Info class="w-4 h-4 text-slate-400" />
