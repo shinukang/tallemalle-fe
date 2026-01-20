@@ -25,14 +25,6 @@ const goToDriverLogin = () => router.push('/driverlogin')
         </RouterView>
       </main>
 
-      <Transition name="fade">
-        <button v-if="isLoginPage" @click="goToDriverLogin"
-          class="absolute top-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-          <CarFront class="w-4 h-4" />
-          <span class="text-sm font-bold">기사님 모드</span>
-        </button>
-      </Transition>
-
       <Transition name="slide-left">
         <div v-if="showSidebar" class="absolute left-4 top-4 bottom-4 z-50 hidden md:block">
           <TheSidebar />

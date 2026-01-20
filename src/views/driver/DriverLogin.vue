@@ -1,43 +1,51 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { CarFront, User, Lock, Mail, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/user'
 
+// Components
 import DriverAuthLayout from '@/components/driver/DriverAuthLayout.vue'
 import DriverAuthHeader from '@/components/driver/DriverAuthHeader.vue'
 import DriverAuthInput from '@/components/driver/DriverAuthInput.vue'
 import DriverAuthButton from '@/components/driver/DriverAuthButton.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES
+ * ==============================================================================
+ */
 const router = useRouter()
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS
+ * ==============================================================================
+ */
 const autoLogin = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 const loginForm = reactive({
-  name: '',
   email: '',
   password: '',
 })
 
 const loginInputError = reactive({
-  name: { errorMessage: null, isValid: false },
   email: { errorMessage: null, isValid: false },
   password: { errorMessage: null, isValid: false },
 })
 
-// --- 유효성 검사 규칙 (기존 코드 유지) ---
-const nameRules = () => {
-  if (loginForm.name.length < 5) {
-    loginInputError.name.errorMessage = 'ID는 5글자 이상 입력해야합니다.'
-    loginInputError.name.isValid = false
-    return false
-  }
-  loginInputError.name.errorMessage = ''
-  loginInputError.name.isValid = true
-}
-
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (유효성 검사)
+ * ==============================================================================
+ */
 const emailRules = () => {
   if (!loginForm.email.includes('@')) {
     loginInputError.email.errorMessage = '이메일 형식으로 입력해야합니다.'
@@ -70,26 +78,25 @@ const passwordRules = () => {
   loginInputError.password.isValid = true
 }
 
-// --- 로그인 핸들러 ---
+/**
+ * ==============================================================================
+ * 5. METHODS - API & NETWORK (로그인 처리)
+ * ==============================================================================
+ */
 const handleLogin = async () => {
   console.log('🚀 로그인 시도!')
 
   // 1. 에러 메시지 초기화
   errorMessage.value = ''
 
-  nameRules()
   emailRules()
   passwordRules()
 
-  if (
-    !loginInputError.name.isValid ||
-    !loginInputError.email.isValid ||
-    !loginInputError.password.isValid
-  ) {
+  if (!loginInputError.email.isValid || !loginInputError.password.isValid) {
     return
   }
 
-  if (!loginForm.name || !loginForm.password || !loginForm.email) {
+  if (!loginForm.password || !loginForm.email) {
     errorMessage.value = '모든 정보를 입력해주세요.'
     return
   }
@@ -107,16 +114,14 @@ const handleLogin = async () => {
   } catch (error) {
     console.error('로그인 에러:', error)
 
-    // ✅ 에러 처리 로직 (파일 분리 없이 여기서 바로 처리)
     if (!error.response) {
       // 1. 인터넷 끊김 등 네트워크 에러
       errorMessage.value = '서버와 연결할 수 없습니다. 인터넷 상태를 확인해주세요.'
     } else {
       const { status, data } = error.response
 
-      // 2. 400번대 에러 (사용자 실수 - 비번 틀림 등)
+      // 2. 400번대 에러 (사용자 실수)
       if (status >= 400 && status < 500) {
-        // 백엔드가 메시지를 줬으면 그걸 보여주고, 없으면 기본 메시지
         errorMessage.value = data?.message || '입력하신 정보를 다시 확인해주세요.'
       }
       // 3. 500번대 에러 (서버 문제)
@@ -133,6 +138,13 @@ const handleLogin = async () => {
     isLoading.value = false
   }
 }
+
+/**
+ * ==============================================================================
+ * 6. LIFECYCLE
+ * ==============================================================================
+ */
+// (사용된 라이프사이클 훅 없음)
 </script>
 
 <template>
@@ -140,9 +152,6 @@ const handleLogin = async () => {
     <DriverAuthHeader title="기사님 로그인" subtitle="오늘도 안전운행 하세요! 🚕" :icon="CarFront" theme="indigo" />
 
     <form @submit.prevent="handleLogin" class="space-y-5">
-      <DriverAuthInput label="User Name" v-model="loginForm.name" @blur="nameRules" placeholder="아이디를 입력하세요"
-        :error-message="loginInputError.name.errorMessage" :icon="User" />
-
       <DriverAuthInput label="Email" v-model="loginForm.email" @blur="emailRules" placeholder="이메일을 입력하세요"
         :error-message="loginInputError.email.errorMessage" :icon="Mail" />
 
