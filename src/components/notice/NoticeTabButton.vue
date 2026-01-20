@@ -1,3 +1,16 @@
+<script setup>
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (Props 및 Emits 정의)
+ * ==============================================================================
+ */
+defineProps({
+  active: Boolean // 현재 탭의 활성화 여부
+})
+
+defineEmits(['click']) // 버튼 클릭 시 부모 컴포넌트로 알림
+</script>
+
 <template>
   <button
     @click="$emit('click')"
@@ -11,10 +24,3 @@
     <slot></slot>
   </button>
 </template>
-
-<script setup>
-defineProps({
-  active: Boolean
-})
-defineEmits(['click'])
-</script>
