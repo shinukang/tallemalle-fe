@@ -284,7 +284,14 @@
 ▶️ [마이 페이지 시연 영상 보기](video/driverpage.mp4)
 
 <details>
-<summary>[기사 전용 페이지 시연 영상]</summary>
+<summary>🔔 [알림 기능 시연 영상]</summary>
+
+[알림 기능 영상 보기](https://github.com/user-attachments/assets/24a70d17-5dbc-47b7-bb25-79a55d9bdd95)
+
+</details>
+
+<details>
+<summary>🚕 [기사 전용 페이지 시연 영상]</summary>
 
 [기사 전용 페이지 시연 영상 보기](https://github.com/user-attachments/assets/efaad669-b891-44fd-ad4d-4e2d74e94843)
 
