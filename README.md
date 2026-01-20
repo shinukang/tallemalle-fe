@@ -84,18 +84,16 @@
 <tr>
 <td width="50%" valign="top">
 
-### 🌐 Service (Deployment)
+### 🌐 Service Deployment
 
-👉 **TalleMalle 바로가기**  
-🔗 https://여기에-배포-도메인-주소
+<a href="https://여기에-배포-도메인-주소" target="_blank">👉 TalleMalle 바로가기</a>
 
 </td>
 <td width="50%" valign="top">
 
-### 🎨 Design (Figma)
+### 🎨 Design
 
-👉 **UI/UX 설계 보러가기**  
-🔗 https://www.figma.com/file/여기에-피그마-링크
+<a href="https://www.figma.com/design/6BxeWDZ9Ex9Xqae0dqT3tJ/TalleMalle?t=HvXokjkooTvJFMmy-1" target="_blank">👉 Figma 보러가기</a>
 
 </td>
 </tr>
@@ -156,7 +154,7 @@
 
 ---
 
-## 🖼 서비스 화면
+## 📸 서비스 화면
 
 - 메인 지도 화면
 - 모집글 작성 모달

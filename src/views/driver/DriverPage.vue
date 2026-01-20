@@ -64,7 +64,6 @@ const initMap = () => {
   const container = document.getElementById('map')
   map = new window.kakao.maps.Map(container, { center: new window.kakao.maps.LatLng(myLat, myLng), level: 4 })
 
-  // CustomOverlay 내용을 이미지 태그로 변경
   driverMarker = new window.kakao.maps.CustomOverlay({
     position: new window.kakao.maps.LatLng(myLat, myLng),
     content: `
@@ -72,7 +71,7 @@ const initMap = () => {
         <img id="car-body" src="${taxiImg}" class="car-image" alt="Taxi Marker" />
       </div>
     `,
-    map: map,
+    map: null, // 택시를 처음에는 지도에 표시하지 않음 
   })
 }
 
@@ -99,6 +98,8 @@ const startNavigation = () => {
 
 // 주행 시뮬레이션 로직
 const runDriveSimulation = (pathData) => {
+  if (driverMarker) driverMarker.setMap(map)
+
   etaText.value = '15분'
   const linePath = pathData.map(p => new window.kakao.maps.LatLng(p.lat, p.lng))
 
@@ -210,7 +211,7 @@ const triggerCall = async () => {
   try {
     // API 호출 (여기서는 데이터만 받아옴)
     const res = await driverApi.getNavigationPath()
-    
+
     // 비즈니스 로직 및 데이터 검증
     const naviData = res.data
     if (naviData && naviData.path) {
@@ -220,16 +221,16 @@ const triggerCall = async () => {
         path: naviData.path
       }
       showCallModal.value = true
-    } else { 
-      throw new Error('Invalid Data: 경로 정보 없음') 
+    } else {
+      throw new Error('Invalid Data: 경로 정보 없음')
     }
-    
+
   } catch (error) {
     // 예외 처리는 여기서 통합 수행
     console.error('API Error:', error)
-    
+
     const status = error.response?.status
-    if(status === 404) {
+    if (status === 404) {
       showToastError('요청하신 경로를 찾을 수 없습니다.')
     } else if (status >= 500) {
       showToastError('서버 통신 오류가 발생했습니다.')
@@ -237,7 +238,7 @@ const triggerCall = async () => {
       showToastError('경로 데이터를 불러오는데 실패했습니다.')
     }
     // 에러 상황이어도 모달을 띄워야 한다면 유지, 아니면 제거
-    showCallModal.value = true 
+    showCallModal.value = true
   }
 }
 
@@ -328,8 +329,8 @@ onUnmounted(() => {
 }
 
 :deep(.car-marker-container) {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -337,7 +338,7 @@ onUnmounted(() => {
 }
 
 :deep(.car-image) {
-  width: 40px;
+  width: 50px;
   height: auto;
   transition: transform 0.1s linear;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
