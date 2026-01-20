@@ -1,43 +1,57 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ArrowLeft, Lock, KeyRound, CheckCircle2 } from 'lucide-vue-next'
+import { Lock, KeyRound, CheckCircle2 } from 'lucide-vue-next'
 import AuthBaseInput from '../../components/auth/AuthBaseInput.vue'
 import PasswordPolicy from '../../components/auth/PasswordPolicy.vue'
 import SettingPageLayout from '@/components/setting/SettingPageLayout.vue'
-import Setting from '../info/Setting.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES
+ * ==============================================================================
+ */
 const router = useRouter()
 const authStore = useAuthStore()
 
-// 상태 관리
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 관리)
+ * ==============================================================================
+ */
+// 비밀번호 변경 폼 데이터
 const changePasswordForm = reactive({
-  current: '',
-  new: '',
-  confirm: '',
+  current: '', // 현재 비밀번호
+  new: '',     // 새 비밀번호
+  confirm: '', // 새 비밀번호 확인
 })
 
-// 에러 메시지 표시용 상태
+// 각 입력 필드별 에러 상태 및 유효성 결과
 const passwordInputError = reactive({
-  current: {
-    errorMessage: null,
-    isValid: false,
-  },
-  new: {
-    errorMessage: null,
-    isValid: false,
-  },
-  confirm: {
-    errorMessage: null,
-    isValid: false,
-  },
+  current: { errorMessage: null, isValid: false },
+  new: { errorMessage: null, isValid: false },
+  confirm: { errorMessage: null, isValid: false },
 })
 
-// 비밀번호 유효성 검증
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (기능 및 UI 로직)
+ * ==============================================================================
+ */
+
+/**
+ * [실시간 유효성 검사]
+ * 버튼의 활성화/비활성화 상태를 결정합니다.
+ * @returns {Boolean} 모든 조건 충족 시 true
+ */
 const isFormValid = computed(() => {
-  // 현재 비밀번호 맞는지 확인해야 함
-  // 비밀번호 복잡도 확인
+  // 새 비밀번호 복잡도 체크 (8자 이상, 소문자/숫자/특수문자 포함)
   const hasLower = /[a-z]/.test(changePasswordForm.new)
   const hasNumber = /[0-9]/.test(changePasswordForm.new)
   const hasSpecial = /[!@$]/.test(changePasswordForm.new)
@@ -45,14 +59,17 @@ const isFormValid = computed(() => {
 
   const isPasswordValid = hasLower && hasNumber && hasSpecial && isLenValid
 
-  // 비밀번호 일치 확인
+  // 새 비밀번호와 확인 입력값 일치 여부 체크
   const isConfirmValid =
     changePasswordForm.new === changePasswordForm.confirm && changePasswordForm.confirm !== ''
 
   return isPasswordValid && isConfirmValid
 })
 
-// 비밀번호 규칙
+/**
+ * [검사 규칙] 새 비밀번호 유효성 체크
+ * blur 시점에 실행되어 에러 메시지를 표시합니다.
+ */
 const passwordRules = () => {
   const hasLower = /[a-z]/.test(changePasswordForm.new)
   const hasNumber = /[0-9]/.test(changePasswordForm.new)
@@ -62,8 +79,7 @@ const passwordRules = () => {
     passwordInputError.new.errorMessage = '비밀번호는 8글자 이상 입력해야합니다.'
     passwordInputError.new.isValid = false
   } else if (!(hasLower && hasNumber && hasSpecial)) {
-    passwordInputError.new.errorMessage =
-      '비밀번호는 영문 소문자, 숫자, 특수문자(!@$)를 모두 포함해야합니다.'
+    passwordInputError.new.errorMessage = '비밀번호는 영문 소문자, 숫자, 특수문자(!@$)를 모두 포함해야합니다.'
     passwordInputError.new.isValid = false
   } else {
     passwordInputError.new.errorMessage = ''
@@ -71,7 +87,9 @@ const passwordRules = () => {
   }
 }
 
-// 비밀번호 재입력 확인 에러메세지
+/**
+ * [검사 규칙] 비밀번호 재입력 일치 여부 체크
+ */
 const checkConfirmPassword = () => {
   if (changePasswordForm.confirm && changePasswordForm.new !== changePasswordForm.confirm) {
     passwordInputError.confirm.errorMessage = '새 비밀번호가 일치하지 않습니다.'
@@ -82,24 +100,36 @@ const checkConfirmPassword = () => {
   }
 }
 
+/**
+ * ==============================================================================
+ * 5. METHODS - API SERVICE METHODS (서버 연동)
+ * ==============================================================================
+ */
+
+/**
+ * 비밀번호 변경 요청 실행
+ */
 const handleChangePassword = () => {
+  // 1. 필수 입력값 존재 여부 확인
   if (!changePasswordForm.current || !changePasswordForm.new || !changePasswordForm.confirm) {
     alert('모든 항목을 입력해주세요.')
     return
   }
+
+  // 2. 폼 유효성 최종 확인 (안전장치)
   if (changePasswordForm.new.length < 8) {
     passwordInputError.new.errorMessage = '패스워드는 8글자 이상 입력해야합니다.'
     passwordInputError.new.isValid = false
-
-    return false
+    return
   }
+
   if (changePasswordForm.confirm && changePasswordForm.new !== changePasswordForm.confirm) {
     passwordInputError.confirm.errorMessage = '새 비밀번호가 일치하지 않습니다.'
     passwordInputError.confirm.isValid = false
-
-    return false
+    return
   }
 
+  // TODO: 실제 API 서버 연동 로직 필요
   alert('비밀번호가 성공적으로 변경되었습니다.')
   router.push('/setting')
 }
@@ -149,6 +179,7 @@ const handleChangePassword = () => {
           @blur="checkConfirmPassword"
         />
       </div>
+
       <PasswordPolicy />
     </div>
     
