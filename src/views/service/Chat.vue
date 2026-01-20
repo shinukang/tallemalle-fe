@@ -89,6 +89,18 @@ const recruitStore = useRecruitStore()
 // 여정 정보 상태 변수 추가
 const rideInfo = ref(null)
 
+// [NEW] 퇴장 메시지 전송 함수
+const sendLeaveMessage = () => {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    const leaveMsg = {
+      type: 'leave',
+      userId: myUserId.value,
+      userName: myUserName.value,
+    }
+    socket.send(JSON.stringify(leaveMsg))
+  }
+}
+
 // =========================================
 // 2. 생명주기(Lifecycle) & 초기화 로직
 // =========================================
@@ -120,6 +132,7 @@ onMounted(async () => {
  * - 연결된 소켓을 끊어줘야 메모리 누수나 오류를 방지할 수 있습니다.
  */
 onUnmounted(() => {
+  sendLeaveMessage()
   if (socket) {
     socket.close()
   }
@@ -222,6 +235,9 @@ const connectWebSocket = () => {
       },
     }
     socket.send(JSON.stringify(enterMsg))
+
+    // [NEW] 브라우저 창 닫음/새로고침 시에도 퇴장 처리를 위해 이벤트 추가
+    window.addEventListener('beforeunload', sendLeaveMessage)
   })
 
   // 메시지 수신 시
@@ -243,6 +259,7 @@ const connectWebSocket = () => {
   socket.addEventListener('close', () => {
     console.log('WEBSOCKET CLOSED')
     isConnected.value = false
+    window.removeEventListener('beforeunload', sendLeaveMessage)
   })
 
   // 에러 발생 시
@@ -297,6 +314,15 @@ const handleIncomingMessage = (data) => {
     textContent = String(data)
   }
 
+  // [NEW] 퇴장 메시지 처리 (목록에서 삭제)
+  if (msgType === 'leave') {
+    if (usersData.value[userId]) {
+      // 1. 유저 목록에서 제거 (반응형이므로 MemberList도 즉시 업데이트됨)
+      delete usersData.value[userId]
+      console.log(`[ChatView] 유저 퇴장: ${userName} (${userId})`)
+    }
+    return
+  }
   // 내가 보낸 메시지 무시
   if (userId === myUserId.value) return
 

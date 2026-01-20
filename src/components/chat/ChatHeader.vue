@@ -8,10 +8,11 @@
  * 3. '나가기' 버튼을 통해 채팅방을 종료하고 메인으로 돌아갑니다.
  */
 
-import { inject } from 'vue'
+import { ref, inject } from 'vue'
 import { MapPin, LogOut, Wifi, WifiOff } from 'lucide-vue-next' // 예쁜 아이콘들
 import { useRouter } from 'vue-router' // 페이지 이동을 위한 도구
 import { useRecruitStore } from '@/stores/recruit'
+import ExitConfirmModal from './ExitConfirmModal.vue' // [NEW] 확인 모달 임포트
 
 const recruitStore = useRecruitStore()
 
@@ -21,11 +22,11 @@ const recruitStore = useRecruitStore()
  * 이 값이 true면 초록불(LIVE), false면 빨간불(Disconnected)을 띄웁니다.
  */
 const props = defineProps({
-    isConnected: {
-        type: Boolean,
-        default: false
-    },
-    rideInfo: { type: Object, default: null }
+  isConnected: {
+    type: Boolean,
+    default: false,
+  },
+  rideInfo: { type: Object, default: null },
 })
 
 // 페이지 이동을 담당하는 라우터 객체 가져오기
@@ -39,67 +40,95 @@ const router = useRouter()
  */
 const myUserName = inject('myUserName', '나')
 
+// [NEW] 모달 상태 관리
+const isExitModalOpen = ref(false)
+
 /**
- * [이벤트 핸들러] 뒤로 가기 / 나가기
- * - 오른쪽 상단 로그아웃 아이콘을 누르면 실행됩니다.
+ * [이벤트 핸들러] 나가기 버튼 클릭
+ * - 바로 나가지 않고 모달을 엽니다.
  */
-const goBack = () => {
+const handleExitClick = () => {
+  isExitModalOpen.value = true
+}
 
-    recruitStore.clear()
-
-    router.push('/main')
+/**
+ * [실제 동작] 모달에서 '확인'을 눌렀을 때 실행
+ */
+const confirmExit = () => {
+  recruitStore.clear()
+  router.push('/main')
 }
 </script>
 
 <template>
-    <!-- 
+  <!-- 
       헤더 전체 컨테이너
       - flex justify-between: 왼쪽(정보)과 오른쪽(버튼)을 양 끝으로 벌림
       - shrink-0: 화면이 줄어들어도 헤더 높이는 찌그러지지 않게 고정
     -->
-    <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-white/50 shrink-0">
+  <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-white/50 shrink-0">
+    <!-- 왼쪽 영역: 아이콘 + 텍스트 -->
+    <div class="flex items-center gap-4">
+      <!-- 지도 핀 아이콘 박스 -->
+      <div
+        class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0"
+      >
+        <MapPin class="w-6 h-6" />
+      </div>
 
-        <!-- 왼쪽 영역: 아이콘 + 텍스트 -->
-        <div class="flex items-center gap-4">
+      <!-- 텍스트 정보 영역 -->
+      <div>
+        <div class="flex items-center gap-2">
+          <!-- 경로 제목 -->
+          <!-- rideInfo가 로딩 전일 수 있으므로 Optional Chaining(?.) 사용 -->
+          <h2 class="font-bold text-slate-900 text-sm md:text-base">
+            {{
+              rideInfo ? `${rideInfo.route.start} → ${rideInfo.route.dest}` : '경로 정보 로딩 중...'
+            }}
+          </h2>
 
-            <!-- 지도 핀 아이콘 박스 -->
-            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
-                <MapPin class="w-6 h-6" />
-            </div>
-
-            <!-- 텍스트 정보 영역 -->
-            <div>
-                <div class="flex items-center gap-2">
-                    <!-- 경로 제목 -->
-                    <!-- rideInfo가 로딩 전일 수 있으므로 Optional Chaining(?.) 사용 -->
-                    <h2 class="font-bold text-slate-900 text-sm md:text-base">
-                        {{ rideInfo ? `${rideInfo.route.start} → ${rideInfo.route.dest}` : '경로 정보 로딩 중...' }}
-                    </h2>
-
-                    <!-- 연결 상태 배지 (조건부 렌더링 v-if / v-else) -->
-                    <!-- 연결 성공 시: 초록색 LIVE -->
-                    <span v-if="isConnected"
-                        class="flex items-center text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
-                        <Wifi class="w-3 h-3 mr-1" /> LIVE
-                    </span>
-                    <!-- 연결 끊김 시: 빨간색 Disconnected -->
-                    <span v-else
-                        class="flex items-center text-[10px] text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full font-bold">
-                        <WifiOff class="w-3 h-3 mr-1" /> Disconnected
-                    </span>
-                </div>
-
-                <!-- 부가 정보: 실시간 표시 + 내 닉네임(Inject로 받은 값) -->
-                <p class="text-xs text-slate-400">
-                    실시간 채팅방 · <span class="text-indigo-600 font-bold ml-1">{{ myUserName }}</span>님 참여중
-                </p>
-            </div>
+          <!-- 연결 상태 배지 (조건부 렌더링 v-if / v-else) -->
+          <!-- 연결 성공 시: 초록색 LIVE -->
+          <span
+            v-if="isConnected"
+            class="flex items-center text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full font-bold"
+          >
+            <Wifi class="w-3 h-3 mr-1" /> LIVE
+          </span>
+          <!-- 연결 끊김 시: 빨간색 Disconnected -->
+          <span
+            v-else
+            class="flex items-center text-[10px] text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full font-bold"
+          >
+            <WifiOff class="w-3 h-3 mr-1" /> Disconnected
+          </span>
         </div>
 
-        <!-- 오른쪽 영역: 나가기 버튼 -->
-        <button @click="goBack"
-            class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
-            <LogOut class="w-5 h-5" />
-        </button>
+        <!-- 부가 정보: 실시간 표시 + 내 닉네임(Inject로 받은 값) -->
+        <p class="text-xs text-slate-400">
+          실시간 채팅방 · <span class="text-indigo-600 font-bold ml-1">{{ myUserName }}</span
+          >님 참여중
+        </p>
+      </div>
     </div>
+
+    <!-- 
+            [UPDATE] 오른쪽 영역: 나가기 버튼 
+            - 눈에 잘 띄도록 디자인 변경 (배경색, 텍스트 추가)
+        -->
+    <button
+      @click="handleExitClick"
+      class="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm"
+    >
+      <span class="text-xs font-bold">모집 나가기</span>
+      <LogOut class="w-4 h-4" />
+    </button>
+
+    <!-- [NEW] 나가기 확인 모달 -->
+    <ExitConfirmModal
+      :is-open="isExitModalOpen"
+      @close="isExitModalOpen = false"
+      @confirm="confirmExit"
+    />
+  </div>
 </template>
