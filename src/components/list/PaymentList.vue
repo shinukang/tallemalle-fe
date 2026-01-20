@@ -1,13 +1,13 @@
 <script setup>
 import { computed } from 'vue'
-import { CreditCard, CheckCircle2 } from 'lucide-vue-next'
+import { CreditCard } from 'lucide-vue-next'
 import RoundBox from '@/components/layout/RoundBox.vue'
 import { useProfileStore } from '@/stores/profile'
 import PaymentEntry from '@/components/entry/PaymentEntry.vue'
 
 const profileStore = useProfileStore()
 
-const emit = defineEmits(['add-card', 'manage-card'])
+const emits = defineEmits(['register-payment', 'manage-payment'])
 
 // 기본 결제 수단을 최상단으로 올리는 정렬 로직
 const sortedList = computed(() => {
@@ -20,8 +20,12 @@ const sortedList = computed(() => {
   })
 })
 
-const handleAdd = () => emit('add-card')
-const handleManage = (card) => emit('manage-card', card)
+const handleRegisterPayment = () => {
+  emits('register-payment')
+}
+const handleManagePayment = (card) => {
+  emits('manage-payment', card)
+}
 </script>
 
 <template>
@@ -31,7 +35,7 @@ const handleManage = (card) => emit('manage-card', card)
         <CreditCard class="w-5 h-5 text-indigo-600" /> 나의 결제 수단
       </h3>
       <button
-        @click="handleAdd"
+        @click="handleRegisterPayment"
         class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-all"
       >
         카드 추가
@@ -43,7 +47,7 @@ const handleManage = (card) => emit('manage-card', card)
         v-for="card in sortedList"
         :key="card.id"
         :card="card"
-        @click="handleManage(card)"
+        @click="handleManagePayment(card)"
       />
 
       <!-- 데이터가 없을 때 -->
