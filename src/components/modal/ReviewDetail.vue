@@ -1,4 +1,16 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
+import { X, Star } from 'lucide-vue-next' // Star 아이콘도 사용되므로 추가
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const props = defineProps({
   currentReview: {
     type: Object,
@@ -7,6 +19,12 @@ const props = defineProps({
 })
 const emits = defineEmits(['modal'])
 
+/**
+ * ==============================================================================
+ * 3. METHODS - UI & LOGIC (기능 처리 및 이벤트 핸들러)
+ * ==============================================================================
+ */
+// 모달 닫기 핸들러
 const handleClose = () => {
   emits('modal', 'none')
 }
@@ -16,8 +34,10 @@ const handleClose = () => {
   <div
     class="fixed inset-0 z-[190] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6"
   >
+    <!-- 배경 클릭 시 닫기 방지 (내부 클릭 이벤트 버블링 차단) -->
     <div
       class="bg-white w-full max-w-lg rounded-[3rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200"
+      @click.stop
     >
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-xl font-bold text-slate-900">리뷰 상세</h2>

@@ -119,7 +119,6 @@ const openMyReview = (item) => {
 
 // 카드 추가 핸들러
 const handleRegisterPayment = () => {
-  console.log(profileStore.userInfo.payment.method)
   if (profileStore.userInfo.payment.method.length >= 2) {
     handleModal('limit-reached')
     return
@@ -142,7 +141,6 @@ const handleWithdrawConfirm = () => {
 // 모달 관리 핸들러
 const handleModal = (active) => {
   activeModal.value = active
-  console.log(active)
 }
 
 /**
@@ -175,7 +173,7 @@ const fetchAllUserInfo = async () => {
       profileStore.loadReview(reviewResult.value.data)
     }
   } catch (error) {
-    // console.error('Critical error during fetchAllData:', error)
+    console.error('Critical error during fetchAllData:', error)
   }
 }
 
