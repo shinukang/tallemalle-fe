@@ -210,7 +210,7 @@ const fetchAllUserInfo = async () => {
       profileStore.loadReview(reviewResult.value.data)
     }
   } catch (error) {
-    console.error('Critical error during fetchAllData:', error)
+    // console.error('Critical error during fetchAllData:', error)
   }
 }
 

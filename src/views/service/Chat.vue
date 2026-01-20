@@ -184,7 +184,7 @@ const fetchInitialData = async () => {
       }
     }
   } catch (error) {
-    console.error('fetchInitialData 실패:', error)
+    // console.error('fetchInitialData 실패:', error)
     messages.value = [
       { id: 1, type: 'date', text: 'Today' },
       { id: 2, type: 'system', text: `⚠️ 데이터를 불러오는데 실패했습니다: ${error.message}` },
@@ -203,7 +203,7 @@ const connectWebSocket = () => {
 
   // 연결 성공
   socket.addEventListener('open', () => {
-    console.log('WEBSOCKET CONNECTED')
+    // console.log('WEBSOCKET CONNECTED')
     isConnected.value = true
 
     // 입장 메시지 전송
@@ -243,14 +243,14 @@ const connectWebSocket = () => {
 
   // 연결 종료
   socket.addEventListener('close', () => {
-    console.log('WEBSOCKET CLOSED')
+    // console.log('WEBSOCKET CLOSED')
     isConnected.value = false
     window.removeEventListener('beforeunload', sendLeaveMessage)
   })
 
   // 에러 발생
   socket.addEventListener('error', (err) => {
-    console.error('WEBSOCKET ERROR', err)
+    // console.error('WEBSOCKET ERROR', err)
     isConnected.value = false
   })
 }
@@ -302,7 +302,7 @@ const handleSocketMessage = (data) => {
   if (msgType === 'leave') {
     if (usersData.value[userId]) {
       delete usersData.value[userId]
-      console.log(`[ChatView] 유저 퇴장: ${userName} (${userId})`)
+      // console.log(`[ChatView] 유저 퇴장: ${userName} (${userId})`)
     }
     return
   }
