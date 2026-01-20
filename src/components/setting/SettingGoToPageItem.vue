@@ -1,3 +1,27 @@
+<script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
+import { ChevronRight } from 'lucide-vue-next'
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (Props 정의)
+ * ==============================================================================
+ */
+defineProps({
+  label: String,    // 메인 텍스트
+  subLabel: String, // 아래 작은 설명 텍스트
+  to: String,       // 이동할 경로 (없으면 클릭 불가)
+  showArrow: {      // to가 없어도 화살표를 강제로 보여줄지 여부
+    type: Boolean,
+    default: true
+  }
+})
+</script>
+
 <template>
   <component
     :is="to ? 'router-link' : 'div'"
@@ -19,17 +43,3 @@
     </div>
   </component>
 </template>
-
-<script setup>
-import { ChevronRight } from 'lucide-vue-next'
-
-defineProps({
-  label: String,    // 메인 텍스트
-  subLabel: String, // 아래 작은 설명 텍스트
-  to: String,       // 이동할 경로 (없으면 클릭 불가)
-  showArrow: {      // to가 없어도 화살표를 강제로 보여줄지 여부
-    type: Boolean,
-    default: true
-  }
-})
-</script>

@@ -1,30 +1,46 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { reactive, ref, computed } from 'vue'
-import { useRouter } from 'vue-router' // 라우터 사용을 위해 추가
-import { CarFront, Mail, Lock, Check, User } from 'lucide-vue-next' // Lucide 아이콘
+import { useRouter } from 'vue-router'
+import { Mail, Lock, Check, User } from 'lucide-vue-next'
 import AuthBaseInput from '../../components/auth/AuthBaseInput.vue'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
 import api from '@/api/user'
 
-const router = useRouter() 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어)
+ * ==============================================================================
+ */
+const router = useRouter()
 
-// --- 상태 관리 ---
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 및 Computed)
+ * ==============================================================================
+ */
+// 회원가입 폼 데이터
 const signupForm = reactive({
-  email: '', // 이메일
-  name: '', // 이름
-  password: '', // 비밀번호
+  email: '',
+  name: '',
+  password: '',
 })
 
-const passwordConfirm = ref('') // 비밀번호 확인
+// 비밀번호 확인용 단일 상태
+const passwordConfirm = ref('')
 
-// --- 에러 메시지 표시용 상태 ---
+// 에러 메시지 및 유효성 상태
 const signupInputError = reactive({
   email: { errorMessage: null, isValid: false },
   name: { errorMessage: null, isValid: false },
   password: { errorMessage: null, isValid: false },
 })
 
-// --- 실시간 유효성 검사 (Computed) ---
+// 전체 폼 유효성 검사 (Computed)
 const isFormValid = computed(() => {
   // 1. 이메일 정규식 확인
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -38,7 +54,6 @@ const isFormValid = computed(() => {
   const hasNumber = /[0-9]/.test(signupForm.password)
   const hasSpecial = /[!@$]/.test(signupForm.password)
   const isLenValid = signupForm.password.length >= 8
-
   const isPasswordValid = hasLower && hasNumber && hasSpecial && isLenValid
 
   // 4. 비밀번호 일치 확인
@@ -48,6 +63,11 @@ const isFormValid = computed(() => {
   return isEmailValid && isNameValid && isPasswordValid && isConfirmValid
 })
 
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (기능 및 UI 로직)
+ * ==============================================================================
+ */
 // --- UI 메시지 표시용 ---
 const emailRules = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -92,114 +112,102 @@ const passwordRules = () => {
   }
 }
 
-// --- [수정 3] 회원가입 요청 로직 활성화 ---
-const signup = async () => {
+/**
+ * ==============================================================================
+ * 5. METHODS - API & NETWORK (서버 연동)
+ * ==============================================================================
+ */
+// --- 회원가입 처리 ---
+const handleSignup = async () => {
   if (!isFormValid.value) return
 
   try {
-    console.log('회원가입 요청 데이터 전송:', signupForm)
-
-    // 실제 API 호출 (주석 해제됨)
-    // 백엔드가 200 OK 또는 201 Created 등을 반환한다고 가정
     const res = await api.signup(signupForm)
-    console.log('Signup Response:', res)
+    
+    // 성공 시 처리 (HTTP 200, 201 등 2xx 응답)
+    // console.log('Signup Response:', res)
+    alert('회원가입이 완료되었습니다. 로그인해주세요.')
+    router.push('/login')
 
-    // 성공 시 처리 (백엔드 응답 구조에 따라 res.data 또는 res.status 체크)
-    if (res.status === 200 || res.status === 201) {
-      alert('회원가입이 완료되었습니다. 로그인해주세요.')
-      // 라우터로 로그인 페이지 이동
-      router.push('/login')
-    } else {
-      // 200 계열이 아닐 경우 에러 처리
-      alert('회원가입에 실패했습니다. 다시 시도해주세요.')
-    }
   } catch (error) {
-    console.error('회원가입 에러:', error)
-    // 에러 메시지가 서버에서 온다면 그 메시지를 보여주는 것이 좋습니다.
-    alert('회원가입 중 오류가 발생했습니다.')
+    // API 서버에서 오는 400, 500번대 에러는 모두 이쪽으로 들어옵니다.
+    console.error('회원가입 실패:', error)
+    const message = error.response?.data?.message || '회원가입에 실패했습니다. 다시 시도해주세요.'
+    alert(message)
   }
 }
 </script>
 
 <template>
   <div class="signup-page-wrapper">
-  <AuthLayout :key="$route.path">
-    <template #header>
-      <h2 class="text-xl font-bold text-slate-900">회원가입</h2>
-      <p class="text-slate-500 mt-2 text-sm">간편하게 가입하고 서비스를 이용해보세요.</p>
-    </template>
+    <AuthLayout :key="$route.path">
+      <template #header>
+        <h2 class="text-xl font-bold text-slate-900">회원가입</h2>
+        <p class="text-slate-500 mt-2 text-sm">간편하게 가입하고 서비스를 이용해보세요.</p>
+      </template>
 
-    <form class="p-8 pt-4 space-y-5" @submit.prevent="signup">
-      <!-- 1. 이메일 입력 -->
-      <AuthBaseInput
-        v-model="signupForm.email"
-        label="이메일 계정"
-        type="email"
-        placeholder="example@tallemalle.com"
-        :icon="Mail"
-        :error="signupInputError.email.errorMessage"
-        @blur="emailRules"
-      />
+      <form class="p-8 pt-4 space-y-5" @submit.prevent="handleSignup">
+        <AuthBaseInput
+          v-model="signupForm.email"
+          label="이메일 계정"
+          type="email"
+          placeholder="example@tallemalle.com"
+          :icon="Mail"
+          :error="signupInputError.email.errorMessage"
+          @blur="emailRules"
+        />
 
-      <!-- 2. 닉네임 입력 -->
-      <AuthBaseInput
-        v-model="signupForm.name"
-        label="닉네임"
-        type="text"
-        placeholder="닉네임을 입력해주세요"
-        :icon="User"
-        :error="signupInputError.name.errorMessage"
-        @blur="nicknameRules"
-      />
+        <AuthBaseInput
+          v-model="signupForm.name"
+          label="닉네임"
+          type="text"
+          placeholder="닉네임을 입력해주세요"
+          :icon="User"
+          :error="signupInputError.name.errorMessage"
+          @blur="nicknameRules"
+        />
 
-      <!-- 3. 비밀번호 입력 -->
-      <AuthBaseInput
-        v-model="signupForm.password"
-        label="비밀번호"
-        type="password"
-        placeholder="비밀번호 입력"
-        :icon="Lock"
-        :error="signupInputError.password.errorMessage"
-        @blur="passwordRules"
-      />
+        <AuthBaseInput
+          v-model="signupForm.password"
+          label="비밀번호"
+          type="password"
+          placeholder="비밀번호 입력"
+          :icon="Lock"
+          :error="signupInputError.password.errorMessage"
+          @blur="passwordRules"
+        />
 
-      <!-- 4. 비밀번호 확인 -->
-      <AuthBaseInput
-        v-model="passwordConfirm"
-        label="비밀번호 확인"
-        type="password"
-        placeholder="비밀번호 재입력"
-        :icon="Check"
-        :error="
-          passwordConfirm && signupForm.password !== passwordConfirm
-            ? '비밀번호가 일치하지 않습니다.'
-            : null
-        "
-      />
+        <AuthBaseInput
+          v-model="passwordConfirm"
+          label="비밀번호 확인"
+          type="password"
+          placeholder="비밀번호 재입력"
+          :icon="Check"
+          :error="
+            passwordConfirm && signupForm.password !== passwordConfirm
+              ? '비밀번호가 일치하지 않습니다.'
+              : null
+          "
+        />
 
-      <!-- 5. 회원가입 버튼 -->
-      <button
-        :disabled="!isFormValid"
-        type="submit"
-        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
-      >
-        <span>가입 완료</span>
-        <Check class="w-5 h-5" />
-      </button>
-    </form>
+        <button
+          :disabled="!isFormValid"
+          type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
+        >
+          <span>가입 완료</span>
+          <Check class="w-5 h-5" />
+        </button>
+      </form>
 
-    <!-- footer -->
-    <template #footer>
-      <p class="text-sm text-slate-500">
-        이미 계정이 있으신가요?
-        <!-- RouterLink를 사용하여 라우팅 처리 -->
-        <RouterLink to="/login" class="text-indigo-600 font-bold hover:underline ml-1">
-          로그인
-        </RouterLink>
-      </p>
-    </template>
-  </AuthLayout>
+      <template #footer>
+        <p class="text-sm text-slate-500">
+          이미 계정이 있으신가요?
+          <RouterLink to="/login" class="text-indigo-600 font-bold hover:underline ml-1">
+            로그인
+          </RouterLink>
+        </p>
+      </template>
+    </AuthLayout>
   </div>
 </template>
-
-

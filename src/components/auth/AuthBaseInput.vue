@@ -1,5 +1,16 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { AlertCircle } from 'lucide-vue-next';
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (Props, Emits)
+ * ==============================================================================
+ */
 defineProps({
   modelValue: String,
   label: String,
@@ -12,16 +23,20 @@ defineProps({
   iconPosition: { type: String, default: 'left' } ,
   bgColor: { type: String, default: '' } // 배경색 클래스를 직접 받을 수 있게 추가
 });
+
 defineEmits(['update:modelValue', 'blur']);
 </script>
 
 <template>
   <div class="space-y-1.5 w-full"> 
-    <label v-if="label" :class="['font-bold ml-1', labelClass]">{{ label }}</label>
+    <label v-if="label" :class="['font-bold ml-1', labelClass]">
+      {{ label }}
+    </label>
     
     <div
       class="relative flex items-center transition-all focus-within:ring-4 focus-within:ring-indigo-500/10"
-      :class="[bgColor ? bgColor : 'bg-slate-50',
+      :class="[
+        bgColor ? bgColor : 'bg-slate-50',
         error ? 'border-red-400' : 'border-slate-200',
         'border rounded-xl focus-within:border-indigo-600'
       ]"
@@ -40,7 +55,6 @@ defineEmits(['update:modelValue', 'blur']);
         :placeholder="placeholder"
         class="w-full bg-transparent outline-none text-slate-800 placeholder:text-slate-400 rounded-xl"
         :class="[
-          // 로그인/사인업용 폰트 크기는 text-sm, 설정은 그대로
           variant === 'settings' ? 'py-4 text-base' : 'py-3.5 text-sm',
           iconPosition === 'left' ? 'pl-12 pr-4' : 'pl-4 pr-12'
         ]"

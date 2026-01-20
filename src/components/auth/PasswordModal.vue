@@ -1,4 +1,9 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (Props 및 Emits 정의)
+ * ==============================================================================
+ */
 defineProps({
   isOpen: Boolean,
   title: String,
@@ -8,7 +13,7 @@ defineProps({
   iconClass: { type: String, default: 'bg-indigo-50 text-indigo-600' }
 })
 
-defineEmits(['confirm'])
+defineEmits(['confirm']) // 확인 버튼 클릭 시 부모에게 알림
 </script>
 
 <template>
@@ -23,8 +28,10 @@ defineEmits(['confirm'])
         <slot name="description">{{ description }}</slot>
       </p>
 
-      <button @click="$emit('confirm')" 
-        class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-xl active:scale-95">
+      <button 
+        @click="$emit('confirm')" 
+        class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-xl active:scale-95"
+      >
         {{ buttonText }}
       </button>
     </div>

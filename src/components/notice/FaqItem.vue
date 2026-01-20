@@ -1,10 +1,23 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ChevronDown } from 'lucide-vue-next'
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (Props 및 Emits 정의)
+ * ==============================================================================
+ */
 defineProps({
-  question: String,
-  answer: String,
-  isOpen: Boolean,
+  question: String, // 질문 텍스트
+  answer: String,   // 답변 텍스트
+  isOpen: Boolean,   // 아코디언 열림 상태 (부모 컴포넌트에서 제어)
 })
+
+// 클릭 시 부모에게 인덱스 토글을 요청하는 이벤트
 defineEmits(['toggle'])
 </script>
 
@@ -18,10 +31,12 @@ defineEmits(['toggle'])
       <div class="flex gap-4 items-center flex-1">
         <span
           class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm shrink-0"
-          >Q</span
         >
+          Q
+        </span>
         <p class="text-[15px] font-bold text-slate-800 leading-snug">{{ question }}</p>
       </div>
+
       <div class="p-2 bg-slate-50 rounded-full shrink-0">
         <ChevronDown
           :class="[
@@ -31,6 +46,7 @@ defineEmits(['toggle'])
         />
       </div>
     </div>
+
     <div class="faq-answer-container" :class="{ 'is-open': isOpen }">
       <div class="faq-answer-content flex gap-4 pl-14 pt-2">
         <div
@@ -44,7 +60,10 @@ defineEmits(['toggle'])
 </template>
 
 <style scoped>
-/* FAQ 아코디언 애니메이션 최적화 */
+/**
+ * FAQ 아코디언 애니메이션 최적화
+ * grid-template-rows를 0fr -> 1fr로 전환하여 동적인 높이 변화를 구현합니다.
+ */
 .faq-answer-container {
   display: grid;
   grid-template-rows: 0fr;
@@ -54,11 +73,14 @@ defineEmits(['toggle'])
   opacity: 0;
   overflow: hidden;
 }
+
 .faq-answer-container.is-open {
   grid-template-rows: 1fr;
   opacity: 1;
   margin-top: 1rem;
 }
+
+/* 내부 콘텐츠의 최소 높이를 0으로 설정하여 그리드 전환이 자연스럽게 작동하도록 함 */
 .faq-answer-content {
   min-height: 0;
 }

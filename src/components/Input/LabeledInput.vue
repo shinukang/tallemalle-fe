@@ -1,5 +1,16 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { computed } from 'vue'
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const props = defineProps({
   id: String,
   label: String,
@@ -25,7 +36,6 @@ const props = defineProps({
     default: 'center',
     validator: (value) => ['left', 'center', 'right'].includes(value),
   },
-  // 읽기 전용 상태 추가
   readonly: {
     type: Boolean,
     default: false,
@@ -34,6 +44,11 @@ const props = defineProps({
 
 const emits = defineEmits(['update:modelValue', 'input'])
 
+/**
+ * ==============================================================================
+ * 3. COMPUTED (계산된 속성)
+ * ==============================================================================
+ */
 const alignClass = computed(() => {
   const alignment = {
     left: 'text-left',
@@ -43,6 +58,11 @@ const alignClass = computed(() => {
   return alignment[props.align] || 'text-center'
 })
 
+/**
+ * ==============================================================================
+ * 4. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
 const handleInput = (event) => {
   if (props.readonly) return // 읽기 전용일 때는 입력 방지
 

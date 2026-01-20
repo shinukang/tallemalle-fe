@@ -1,4 +1,9 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Lock, Mail, MailCheck } from 'lucide-vue-next'
@@ -6,11 +11,28 @@ import AuthBaseInput from '@/components/auth/AuthBaseInput.vue'
 import PasswordLayout from '@/components/auth/PasswordLayout.vue'
 import PasswordModal from '@/components/auth/PasswordModal.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES
+ * ==============================================================================
+ */
 const router = useRouter()
+
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수)
+ * ==============================================================================
+ */
 const email = ref('')
 const emailError = ref('')
 const isModalOpen = ref(false)
 
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (UI 및 기능 로직)
+ * ==============================================================================
+ */
+// 비밀번호 찾기 처리
 const handleFindPassword = () => {
   emailError.value = ''
 
@@ -29,6 +51,7 @@ const handleFindPassword = () => {
   isModalOpen.value = true
 }
 
+// 고객센터 알림창
 const showAlert = () => {
   window.alert('고객센터(02-1234-5678)로 문의해주세요.')
 }
@@ -79,8 +102,7 @@ const showAlert = () => {
     @confirm="router.push('/login')"
   >
     <template #description>
-      <span class="font-bold text-indigo-600">{{ email }}</span
-      >으로<br />
+      <span class="font-bold text-indigo-600">{{ email }}</span>으로<br />
       비밀번호 재설정 링크를 보냈습니다.<br />메일함을 확인해주세요.
     </template>
   </PasswordModal>

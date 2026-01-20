@@ -1,10 +1,20 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref } from 'vue'
 import { Bell, ShieldCheck, ExternalLink } from 'lucide-vue-next'
 import SettingPageLayout from '@/components/setting/SettingPageLayout.vue'
 import SettingSection from '@/components/setting/SettingSection.vue'
 import SettingGoToPageItem from '@/components/setting/SettingGoToPageItem.vue'
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수)
+ * ==============================================================================
+ */
 // 마케팅 수신 동의 상태 (토글용)
 const marketingConsent = ref(true)
 </script>
@@ -14,7 +24,7 @@ const marketingConsent = ref(true)
     
     <div class="max-w-4xl mx-auto space-y-8 w-full">
       
-        <SettingSection title="알림 설정" :icon="Bell">
+      <SettingSection title="알림 설정" :icon="Bell">
         <div class="space-y-6">
           <div class="flex items-center justify-between px-2">
             <div>
@@ -46,8 +56,8 @@ const marketingConsent = ref(true)
           />
 
           <SettingGoToPageItem 
-          label="안심번호 사용 설정" 
-          to="/safenumber"
+            label="안심번호 사용 설정" 
+            to="/safenumber"
           >
             <template #right>
               <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">

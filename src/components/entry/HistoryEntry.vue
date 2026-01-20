@@ -1,7 +1,17 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { MapPin, ArrowRight } from 'lucide-vue-next'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const props = defineProps({
   start: String,
   dest: String,
@@ -12,17 +22,19 @@ const props = defineProps({
   isDone: Boolean,
 })
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언) - [변수]
+ * ==============================================================================
+ */
 // 실시간 계산을 위한 현재 시각 상태
 const now = ref(new Date())
 let timer = null
 
 /**
- * 상대 시간 계산 로직
- * 1. 미래: N일 후 / 오늘 예정 등
- * 2. 과거 (요청 사항 반영):
- * - 12개월 이상 경과: N년 전
- * - 1개월 이상 ~ 12개월 미만 경과: N개월 전
- * - 1개월 미만: N일 전 (오늘인 경우 시간/분 전)
+ * ==============================================================================
+ * 4. COMPUTED (계산된 속성)
+ * ==============================================================================
  */
 const timeLabel = computed(() => {
   if (!props.departure) return ''
@@ -41,30 +53,24 @@ const timeLabel = computed(() => {
   }
 
   // --- 2. 과거 시점 (상대 시간) ---
-
-  // 전체 경과 개월 수 계산
   const totalMonths =
     (now.value.getFullYear() - departureDate.getFullYear()) * 12 +
     (now.value.getMonth() - departureDate.getMonth())
 
-  // 날짜까지 고려하여 정확한 개월 수 조정 (예: 1월 20일 vs 2월 10일이면 아직 1개월 안 된 것)
   let adjustedMonths = totalMonths
   if (now.value.getDate() < departureDate.getDate()) {
     adjustedMonths--
   }
 
-  // 1년 이상 (12개월 이상)
   if (adjustedMonths >= 12) {
     const years = Math.floor(adjustedMonths / 12)
     return `${years}년 전`
   }
 
-  // 1개월 이상 ~ 1년 미만
   if (adjustedMonths >= 1) {
     return `${adjustedMonths}개월 전`
   }
 
-  // 1개월 미만 (일/시간/분 단위)
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   const diffInHours = Math.floor(diffInMinutes / 60)
   const diffInDays = Math.floor(diffInHours / 24)
@@ -76,6 +82,25 @@ const timeLabel = computed(() => {
   return '방금 전'
 })
 
+/**
+ * ==============================================================================
+ * 5. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
+// 해당 컴포넌트에는 별도의 UI 조작 함수가 정의되어 있지 않습니다.
+
+/**
+ * ==============================================================================
+ * 6. METHODS - DATA & NETWORK (데이터 통신 및 소켓) - [연동 API 함수]
+ * ==============================================================================
+ */
+// 해당 컴포넌트에는 별도의 API 연동 함수가 정의되어 있지 않습니다.
+
+/**
+ * ==============================================================================
+ * 7. LIFECYCLE (생명주기 훅) - [마운트 관련]
+ * ==============================================================================
+ */
 onMounted(() => {
   // 1분마다 현재 시각을 갱신
   timer = setInterval(() => {
@@ -128,5 +153,3 @@ onUnmounted(() => {
     />
   </div>
 </template>
-
-<style scoped></style>

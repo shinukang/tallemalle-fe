@@ -1,16 +1,30 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { X, Camera, Send, UserCircle } from 'lucide-vue-next'
+import { useProfileStore } from '@/stores/profile'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import SelectableTag from '@/components/tag/SelectableTag.vue'
 import RoundBox from '@/components/layout/RoundBox.vue'
-import { useProfileStore } from '@/stores/profile'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const profileStore = useProfileStore()
 const emits = defineEmits(['close'])
 
-// --- 상태 관리 ---
-// 스토어의 원본 데이터를 직접 수정하지 않도록 로컬 상태로 복사본을 만듭니다.
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언) - [변수]
+ * ==============================================================================
+ */
+// 프로필 정보 로컬 복사본
 const localProfile = ref({
   name: '',
   nickname: '',
@@ -20,6 +34,7 @@ const localProfile = ref({
   image: '',
 })
 
+// 선택 가능한 스타일 목록
 const availableStyles = [
   '🤫 조용한 이동 선호',
   '🎵 음악 감상',
@@ -28,7 +43,7 @@ const availableStyles = [
   '🚭 금연 필수',
 ]
 
-// 인증 관련 상태
+// 인증 및 타이머 관련 상태
 const isPhoneChanged = ref(false)
 const isPhoneVerified = ref(true)
 const isAuthModalOpen = ref(false)
@@ -36,8 +51,18 @@ const authCode = ref('')
 const timer = ref(180)
 const timerInterval = ref(null)
 
-// --- 메소드 ---
-// 이미지 업로드 및 프리뷰 처리
+/**
+ * ==============================================================================
+ * 4. COMPUTED (계산된 속성)
+ * ==============================================================================
+ */
+
+/**
+ * ==============================================================================
+ * 5. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
+// 이미지 업로드 프리뷰 처리
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
@@ -47,7 +72,7 @@ const handleImageUpload = (event) => {
   }
 }
 
-// 휴대폰 번호 하이픈 자동 입력 및 변경 감지
+// 휴대폰 번호 포맷팅 및 변경 감지
 const handlePhoneInput = (e) => {
   let val = e.target.value.replace(/[^0-9]/g, '')
   if (val.length > 3 && val.length <= 7) {
@@ -57,7 +82,6 @@ const handlePhoneInput = (e) => {
   }
   localProfile.value.phone = val
 
-  // 스토어에 저장된 기존 번호와 다를 경우 인증 절차 필요
   if (val !== profileStore.userInfo.profile.phone) {
     isPhoneChanged.value = true
     isPhoneVerified.value = false
@@ -67,14 +91,7 @@ const handlePhoneInput = (e) => {
   }
 }
 
-// 인증번호 요청
-const requestAuth = () => {
-  if (localProfile.value.phone.length < 12) return
-  isAuthModalOpen.value = true
-  startTimer()
-}
-
-// 3분 타이머 시작
+// 인증 타이머 시작
 const startTimer = () => {
   clearInterval(timerInterval.value)
   timer.value = 180
@@ -87,7 +104,28 @@ const startTimer = () => {
   }, 1000)
 }
 
-// 인증번호 확인 (테스트용: 1234)
+// 타이머 시간 포맷팅
+const formatTimer = (seconds) => {
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0')
+  const s = (seconds % 60).toString().padStart(2, '0')
+  return `${m}:${s}`
+}
+
+/**
+ * ==============================================================================
+ * 6. METHODS - DATA & NETWORK (데이터 통신 및 소켓) - [연동 API 함수]
+ * ==============================================================================
+ */
+// 인증번호 요청
+const requestAuth = () => {
+  if (localProfile.value.phone.length < 12) return
+  isAuthModalOpen.value = true
+  startTimer()
+}
+
+// 인증번호 확인
 const confirmAuth = () => {
   if (authCode.value === '1234') {
     isPhoneVerified.value = true
@@ -98,28 +136,19 @@ const confirmAuth = () => {
   }
 }
 
-// 타이머 포맷팅 (MM:SS)
-const formatTimer = (seconds) => {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, '0')
-  const s = (seconds % 60).toString().padStart(2, '0')
-  return `${m}:${s}`
-}
-
-// 변경사항 저장 및 스토어 업데이트
+// 변경사항 저장
 const handleSave = () => {
   if (!isPhoneVerified.value) return
-
-  // 로컬 데이터를 스토어 원본에 반영
   Object.assign(profileStore.userInfo.profile, localProfile.value)
-
-  // 성공 알림 후 닫기
   emits('close')
 }
 
+/**
+ * ==============================================================================
+ * 7. LIFECYCLE (생명주기 훅) - [마운트 관련]
+ * ==============================================================================
+ */
 onMounted(() => {
-  // 모달이 열릴 때 스토어의 데이터를 로컬 변수로 복제합니다.
   Object.assign(localProfile.value, JSON.parse(JSON.stringify(profileStore.userInfo.profile)))
 })
 
@@ -213,6 +242,7 @@ onUnmounted(() => {
                 @input="handlePhoneInput"
                 label="휴대폰 번호 *"
                 placeholder="010-0000-0000"
+                :length="{ max: 13 }"
                 class="flex-1"
               />
               <button

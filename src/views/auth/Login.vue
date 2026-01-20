@@ -1,4 +1,9 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -8,9 +13,19 @@ import AuthLayout from '@/components/auth/AuthLayout.vue'
 import SocialLogin from '@/components/login/SocialLogin.vue'
 import api from '@/api/user'
 
-const router = useRouter() // 라우터 인스턴스 생성
-const authStore = useAuthStore() // 사용자 정보 관리 저장
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES
+ * ==============================================================================
+ */
+const router = useRouter()
+const authStore = useAuthStore()
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 및 Computed)
+ * ==============================================================================
+ */
 const loginForm = reactive({
   email: '',
   password: '',
@@ -18,30 +33,25 @@ const loginForm = reactive({
 
 // 입력 값 검증을 위한 변수 저장
 const loginInputError = reactive({
-  email: {
-    errorMessage: null,
-    isValid: false,
-  },
-  password: {
-    errorMessage: null,
-    isValid: false,
-  },
+  email: { errorMessage: null, isValid: false },
+  password: { errorMessage: null, isValid: false },
 })
 
-// email 규칙 (유효성 검사)
+/**
+ * ==============================================================================
+ * 4. METHODS - FUNCTIONAL (UI 및 검증 로직)
+ * ==============================================================================
+ */
 const emailRules = () => {
-  if (loginForm.email.length < 0) {
+  if (loginForm.email.length === 0) {
     loginInputError.email.errorMessage = '이메일을 입력해주세요.'
     loginInputError.email.isValid = false
-
-    return false
+    return
   }
-
   loginInputError.email.errorMessage = ''
   loginInputError.email.isValid = true
 }
 
-// 비밀번호 규칙 (유효성 검사)
 const passwordRules = () => {
   const hasLowerLetter = /[a-z]/.test(loginForm.password)
   const hasNumber = /[0-9]/.test(loginForm.password)
@@ -50,56 +60,53 @@ const passwordRules = () => {
   if (loginForm.password.length < 8) {
     loginInputError.password.errorMessage = '비밀번호는 8글자 이상 입력해야합니다.'
     loginInputError.password.isValid = false
-
-    return false
+    return
   }
 
   if (!(hasLowerLetter && hasNumber && hasSpecial)) {
-    loginInputError.password.errorMessage =
-      '비밀번호는 영문 소문자, 숫자, 특수문자를 모두 포함해야합니다.'
+    loginInputError.password.errorMessage = '비밀번호는 영문 소문자, 숫자, 특수문자를 모두 포함해야합니다.'
     loginInputError.password.isValid = false
-
-    return false
+    return
   }
 
   loginInputError.password.errorMessage = ''
   loginInputError.password.isValid = true
 }
 
-// email, 비밀번호 둘다 맞게 썼는지 검증
-const isFormValid = () => {
-  return loginInputError.email.isValid && loginInputError.password.isValid
-}
-
-//로그인 처리
+/**
+ * ==============================================================================
+ * 5. METHODS - API SERVICE METHODS (인증 API 서비스)
+ * ==============================================================================
+ */
+// 로그인 처리
 const handleLogin = async () => {
-  const res = await api.login(loginForm)
+  // 1. 사전 유효성 검사 실행
+  emailRules()
+  passwordRules()
 
-  if (!loginForm.email || !loginForm.password) {
-    alert('이메일과 비밀번호를 입력해주세요.')
-    // return
+  if (!loginInputError.email.isValid || !loginInputError.password.isValid) {
+    return
   }
 
-  if (!loginInputError.email.isValid) {
-    loginInputError.email.errorMessage = '이메일을 확인해주세요.'
-    // return false
-  }
+  // 2. 로그인 시도
+  try {
+    const res = await api.login(loginForm)
 
-  if (!loginInputError.password.isValid) {
-    loginInputError.password.errorMessage = '비밀번호를 확인해주세요.'
-    loginInputError.password.isValid = false
-
-    // return false
-  }
-
-  // 로그인 결과
-  if (res.status == 200) {
+    // 성공 시 처리 (200 OK)
     authStore.login(res.data)
     alert('로그인되었습니다.')
     router.push('/main')
-    // console.log(authStore.user)
-  } else {
-    alert('아이디와 비밀번호를 확인해보세요.')
+
+  } catch (error) {
+    // 실패 시 처리 (401 등 모든 에러)
+    console.error('로그인 실패:', error)
+    
+    // 아이디/비번 불일치 또는 서버 에러 처리
+    const message = error.response?.status === 401 
+      ? '아이디와 비밀번호를 확인해보세요.' 
+      : '로그인 중 오류가 발생했습니다.'
+    
+    alert(message)
   }
 }
 </script>
@@ -111,9 +118,7 @@ const handleLogin = async () => {
       <p class="text-slate-500 mt-2 text-sm">함께 탈 파트너가 기다리고 있어요.</p>
     </template>
 
-    <!-- 로그인 폼 -->
     <form @submit.prevent="handleLogin" class="px-8 py-4 space-y-4">
-      <!-- 이메일 입력 -->
       <AuthBaseInput
         v-model="loginForm.email"
         type="email"
@@ -123,7 +128,6 @@ const handleLogin = async () => {
         @blur="emailRules"
       />
 
-      <!-- 비밀번호 입력 -->
       <div>
         <AuthBaseInput
           v-model="loginForm.password"
@@ -143,7 +147,6 @@ const handleLogin = async () => {
         </div>
       </div>
 
-      <!-- 로그인 버튼 -->
       <button
         type="submit"
         class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all mt-2 active:scale-[0.98]"
@@ -151,11 +154,9 @@ const handleLogin = async () => {
         로그인하기
       </button>
 
-      <!-- 소셜 로그인 -->
       <SocialLogin />
     </form>
 
-    <!-- 하단 안내 -->
     <template #footer>
       <p class="text-sm text-slate-500">
         아직 회원이 아니신가요?

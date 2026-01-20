@@ -197,7 +197,7 @@ const fetchInitialData = async () => {
 const connectWebSocket = () => {
   if (socket && socket.readyState === WebSocket.OPEN) return
 
-  const wsUri = 'ws://localhost:8080/ws/chat'
+  const wsUri = import.meta.env.VITE_WS_URL
   socket = new WebSocket(wsUri)
 
   // 연결 성공
