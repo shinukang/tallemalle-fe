@@ -35,7 +35,7 @@ const router = useRouter()
         <slot></slot>
       </div>
 
-      <div class="mt-8 text-center">
+      <div v-if="$slots.footer" class="mt-8 text-center">
         <slot name="footer"></slot>
       </div>
     </div>
