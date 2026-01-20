@@ -28,6 +28,10 @@ const handleFindPassword = () => {
   // 성공 모달 띄우기
   isModalOpen.value = true
 }
+
+const showAlert = () => {
+  window.alert('고객센터(02-1234-5678)로 문의해주세요.')
+}
 </script>
 
 <template>
@@ -60,10 +64,7 @@ const handleFindPassword = () => {
     <template #footer>
       <p class="text-sm text-slate-500">
         이메일이 기억나지 않나요?
-        <button
-          @click="alert('고객센터(02-1234-5678)로 문의해주세요.')"
-          class="text-indigo-600 font-bold hover:underline ml-1"
-        >
+        <button @click="showAlert" class="text-indigo-600 font-bold hover:underline ml-1">
           고객센터 문의
         </button>
       </p>
@@ -78,7 +79,8 @@ const handleFindPassword = () => {
     @confirm="router.push('/login')"
   >
     <template #description>
-      <span class="font-bold text-indigo-600">{{ email }}</span>으로<br />
+      <span class="font-bold text-indigo-600">{{ email }}</span
+      >으로<br />
       비밀번호 재설정 링크를 보냈습니다.<br />메일함을 확인해주세요.
     </template>
   </PasswordModal>
