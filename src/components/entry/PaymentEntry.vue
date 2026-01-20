@@ -1,5 +1,6 @@
 <script setup>
 import { useProfileStore } from '@/stores/profile'
+import { CheckCircle2 } from 'lucide-vue-next'
 
 const profileStore = useProfileStore()
 
@@ -9,11 +10,14 @@ defineProps({
     required: true,
   },
 })
+
+const emits = defineEmits(['modal'])
 </script>
 
 <template>
   <div
     class="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white shadow-xl shadow-slate-200 cursor-pointer hover:ring-2 hover:ring-indigo-400 transition-all group"
+    @click="emits('modal', 'manage-payment')"
   >
     <div class="flex items-center gap-4">
       <div
@@ -27,7 +31,7 @@ defineProps({
           ({{ card.card_number?.split('-').pop() }})
         </p>
         <p class="text-[10px] text-slate-400">
-          {{ card.id === defaultPaymentId ? '기본 결제 수단' : '결제 수단' }}
+          {{ card.id === profileStore.userInfo.payment.default ? '기본 결제 수단' : '결제 수단' }}
         </p>
       </div>
     </div>
