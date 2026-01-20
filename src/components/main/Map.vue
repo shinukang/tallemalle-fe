@@ -1,7 +1,17 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, onMounted, watch } from 'vue'
 import taxiImg from '@/assets/images/taxi.png'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS
+ * ==============================================================================
+ */
 // 부모(Main.vue)에게 받는 데이터
 const props = defineProps({
     recruitList: { type: Array, default: () => [] },
@@ -11,6 +21,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update-location', 'marker-click', 'update-visible-list'])
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS
+ * ==============================================================================
+ */
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const myMarker = ref(null)
@@ -22,30 +37,15 @@ let polyline = null // 경로 선 객체
 const lat = ref(37.498095)
 const lng = ref(127.02761)
 
-onMounted(() => {
-    if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
-            const options = {
-                center: new window.kakao.maps.LatLng(lat.value, lng.value),
-                level: 3
-            }
-            mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
 
-            initGeolocation()
-
-            // 처음 로드될 때 데이터가 있으면 마커 찍기
-            window.kakao.maps.event.addListener(mapInstance.value, 'idle', updateVisibleMarkers)
-
-            if (props.recruitList.length > 0) {
-                updateRecruitMarkers()
-            }
-        })
-    }
-})
-
-// [핵심 기능] 오프셋을 적용한 좌표 이동 함수
-// [기능 1] 지도 중심 이동 (오프셋 적용)
-const moveWithOffset = (targetLat, targetLng) => {
+/**
+ * ==============================================================================
+ * 4. METHODS - UI & LOGIC (기능 처리 및 이벤트 핸들러)
+ * ==============================================================================
+ */
+// 오프셋을 적용한 좌표 이동 핸들러
+// 지도 중심 이동 (오프셋 적용)
+const handleMoveWithOffset = (targetLat, targetLng) => {
     if (!mapInstance.value || !targetLat || !targetLng) return
 
     const map = mapInstance.value
@@ -76,13 +76,8 @@ const moveWithOffset = (targetLat, targetLng) => {
     map.panTo(newCenterPosition)
 }
 
-// recruitList가 변하면(글이 추가되면) 마커를 다시 그립니다.
-watch(() => props.recruitList, () => {
-    updateRecruitMarkers()
-}, { deep: true })
-
-// [기능 2] 화면에 보이는 마커만 표시
-const updateVisibleMarkers = () => {
+// 화면에 보이는 마커만 표시 핸들러
+const handleUpdateVisibleMarkers = () => {
     // Map size 체크
     if (!mapInstance.value || recruitMarkers.value.size === 0) return
 
@@ -107,9 +102,9 @@ const updateVisibleMarkers = () => {
     emit('update-visible-list', visibleIds)
 }
 
-// --- 모집글 마커 업데이트 함수 (Diffing 로직 적용) ---
-// [기능 3] 모집글 마커 업데이트
-const updateRecruitMarkers = () => {
+// --- 모집글 마커 업데이트 핸들러 (Diffing 로직 적용) ---
+// 모집글 마커 업데이트
+const handleUpdateRecruitMarkers = () => {
     if (!mapInstance.value) return
 
     // 새로운 데이터의 ID 목록을 Set으로 만들기
@@ -159,25 +154,11 @@ const updateRecruitMarkers = () => {
         recruitMarkers.value.set(recruit.id, overlay)
     })
     // 보이는 목록 갱신
-    updateVisibleMarkers()
+    handleUpdateVisibleMarkers()
 }
 
-// --- 내 위치 및 지도 제어 함수들 (기존 유지) ---
-// === 상황 :     브라우저에서 사용자가 "위치 정보 제공"을 거부(Block) 했을 때, 지도가 멈추거나 내 위치 마커가 생성되지 않습니다. ===
-// === 해결 방법: Map.vue에서 에러 콜백을 처리하고, Main.vue로 신호를 보내 사용자에게 "위치 권한이 필요합니다"라고 알려줘야 합니다. ===
-// [기능 4] 내 위치 마커
-const initGeolocation = () => {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition((pos) => {
-            lat.value = pos.coords.latitude
-            lng.value = pos.coords.longitude
-            updateMyMarker()
-            emit('update-location', { lat: lat.value, lng: lng.value })
-        }, (err) => console.warn(err), { enableHighAccuracy: true, timeout: 5000 })
-    }
-}
-
-const updateMyMarker = () => {
+// 내 위치 마커 업데이트 핸들러
+const handleUpdateMyMarker = () => {
     if (!mapInstance.value || !window.kakao) return
     const loc = new window.kakao.maps.LatLng(lat.value, lng.value)
 
@@ -190,14 +171,14 @@ const updateMyMarker = () => {
             yAnchor: 0.5,
             zIndex: 100
         })
-        moveWithOffset(lat.value, lng.value)
+        handleMoveWithOffset(lat.value, lng.value)
     } else {
         myMarker.value.setPosition(loc)
     }
 }
 
-// 기사님 차량 마커
-const updateDriverMarker = ({ lat, lng, bearing }) => {
+// 기사님 차량 마커 업데이트 핸들러
+const handleUpdateDriverMarker = ({ lat, lng, bearing }) => {
     if (!mapInstance.value || !window.kakao) return
 
     const loc = new window.kakao.maps.LatLng(lat, lng)
@@ -229,8 +210,8 @@ const updateDriverMarker = ({ lat, lng, bearing }) => {
     }
 }
 
-// 경로 선 그리기
-const drawPath = (pathData) => {
+// 경로 선 그리기 핸들러
+const handleDrawPath = (pathData) => {
     if (!mapInstance.value || !pathData) return
 
     if (polyline) polyline.setMap(null)
@@ -246,21 +227,70 @@ const drawPath = (pathData) => {
     })
     polyline.setMap(mapInstance.value)
 }
-// 줌 인 버튼
-const zoomIn = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() - 1)
-// 줌 아웃 버튼
-const zoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() + 1)
-// 내 위치로 이동 버튼
-const panToCurrent = () => moveWithOffset(lat.value, lng.value)
-const moveToLocation = (tLat, tLng) => moveWithOffset(tLat, tLng)
+
+// 줌 인 핸들러
+const handleZoomIn = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() - 1)
+// 줌 아웃 핸들러
+const handleZoomOut = () => mapInstance.value?.setLevel(mapInstance.value.getLevel() + 1)
+// 내 위치로 이동 핸들러
+const handlePanToCurrent = () => handleMoveWithOffset(lat.value, lng.value)
+// 특정 위치로 이동 핸들러
+const handleMoveToLocation = (tLat, tLng) => handleMoveWithOffset(tLat, tLng)
+
+/**
+ * ==============================================================================
+ * 5. METHODS - DATA & NETWORK (데이터 초기화)
+ * ==============================================================================
+ */
+const initializeGeolocation = () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition((pos) => {
+            lat.value = pos.coords.latitude
+            lng.value = pos.coords.longitude
+            handleUpdateMyMarker()
+            emit('update-location', { lat: lat.value, lng: lng.value })
+        }, (err) => console.warn(err), { enableHighAccuracy: true, timeout: 5000 })
+    }
+}
+
+// recruitList가 변하면(글이 추가되면) 마커를 다시 그립니다.
+watch(() => props.recruitList, () => {
+    handleUpdateRecruitMarkers()
+}, { deep: true })
+
+/**
+ * ==============================================================================
+ * 6. LIFECYCLE
+ * ==============================================================================
+ */
+onMounted(() => {
+    if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+            const options = {
+                center: new window.kakao.maps.LatLng(lat.value, lng.value),
+                level: 3
+            }
+            mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
+
+            initializeGeolocation()
+
+            // 처음 로드될 때 데이터가 있으면 마커 찍기
+            window.kakao.maps.event.addListener(mapInstance.value, 'idle', handleUpdateVisibleMarkers)
+
+            if (props.recruitList.length > 0) {
+                handleUpdateRecruitMarkers()
+            }
+        })
+    }
+})
 
 defineExpose({
-    zoomIn,
-    zoomOut,
-    panToCurrent,
-    moveToLocation,
-    updateDriverMarker,
-    drawPath
+    zoomIn: handleZoomIn,
+    zoomOut: handleZoomOut,
+    panToCurrent: handlePanToCurrent,
+    moveToLocation: handleMoveToLocation,
+    updateDriverMarker: handleUpdateDriverMarker,
+    drawPath: handleDrawPath
 })
 </script>
 

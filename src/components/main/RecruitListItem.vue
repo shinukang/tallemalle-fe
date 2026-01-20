@@ -1,14 +1,29 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. CONFIG & PROPS
+ * ==============================================================================
+ */
 defineProps({
     item: { type: Object, required: true },
     isSelected: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['click'])
+
+/**
+ * ==============================================================================
+ * 2. METHODS - UI & LOGIC
+ * ==============================================================================
+ */
+// 아이템 클릭 핸들러
+const handleClick = () => {
+    emit('click')
+}
 </script>
 
 <template>
-    <div @click="emit('click')" class="p-5 rounded-3xl border shadow-sm cursor-pointer transition-all duration-200"
+    <div @click="handleClick" class="p-5 rounded-3xl border shadow-sm cursor-pointer transition-all duration-200"
         :class="isSelected
             ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500'
             : 'bg-white border-slate-100 hover:bg-slate-50'">

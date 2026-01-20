@@ -1,13 +1,60 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, onErrorCaptured } from 'vue'
 import { useRouter } from 'vue-router'
 import { AlertTriangle, RefreshCcw, Home, Car } from 'lucide-vue-next'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS
+ * ==============================================================================
+ */
 const router = useRouter()
+
+/**
+ * ==============================================================================
+ * 3. STATE & REFS
+ * ==============================================================================
+ */
 const hasError = ref(false)
 const errorMessage = ref('')
 const showErrorDetails = ref(false) // 에러 상세 내용을 접었다 폈다 할 변수
 
+/**
+ * ==============================================================================
+ * 4. METHODS - UI & LOGIC
+ * ==============================================================================
+ */
+// 에러 초기화 및 새로고침 핸들러
+const handleResetError = () => {
+    hasError.value = false
+    errorMessage.value = ''
+    showErrorDetails.value = false
+    window.location.reload()
+}
+
+// 홈으로 이동 핸들러
+const handleGoHome = () => {
+    // 에러 상태를 끄고 홈으로 이동
+    hasError.value = false
+    errorMessage.value = ''
+    window.location.href = '/' // 가장 확실하게 초기화하며 이동
+}
+
+// 상세 내용 토글 핸들러
+const handleToggleDetails = () => {
+    showErrorDetails.value = !showErrorDetails.value
+}
+
+/**
+ * ==============================================================================
+ * 5. LIFECYCLE
+ * ==============================================================================
+ */
 // 자식 컴포넌트에서 에러가 발생하면 이 함수가 실행됨
 onErrorCaptured((err, instance, info) => {
     console.log('에러 캐치:', err)
@@ -15,20 +62,6 @@ onErrorCaptured((err, instance, info) => {
     errorMessage.value = err.message || '알 수 없는 오류가 발생했습니다.'
     return false // 에러 전파 중단
 })
-
-const resetError = () => {
-    hasError.value = false
-    errorMessage.value = ''
-    showErrorDetails.value = false
-    window.location.reload()
-}
-
-const goHome = () => {
-    // 에러 상태를 끄고 홈으로 이동
-    hasError.value = false
-    errorMessage.value = ''
-    window.location.href = '/' // 가장 확실하게 초기화하며 이동
-}
 </script>
 
 <template>
@@ -57,13 +90,13 @@ const goHome = () => {
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-                <button @click="resetError"
+                <button @click="handleResetError"
                     class="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95">
                     <RefreshCcw class="w-5 h-5" />
                     다시 시도하기
                 </button>
 
-                <button @click="goHome"
+                <button @click="handleGoHome"
                     class="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 px-8 py-3.5 rounded-xl font-bold hover:bg-slate-50 transition-all active:scale-95">
                     <Home class="w-5 h-5" />
                     홈으로 가기
@@ -71,7 +104,7 @@ const goHome = () => {
             </div>
 
             <div class="pt-8">
-                <button @click="showErrorDetails = !showErrorDetails"
+                <button @click="handleToggleDetails"
                     class="text-xs text-slate-400 hover:text-slate-600 underline decoration-slate-300 underline-offset-4">
                     {{ showErrorDetails ? '에러 내용 숨기기' : '상세 에러 내용 보기' }}
                 </button>

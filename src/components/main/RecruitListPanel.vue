@@ -1,9 +1,19 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, computed } from 'vue'
 import { MapPin, Navigation, ListFilter } from 'lucide-vue-next'
-// [추가] 새로 만든 컴포넌트 import
+// 새로 만든 컴포넌트 import
 import RecruitListItem from './RecruitListItem.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS
+ * ==============================================================================
+ */
 const props = defineProps({
     recruitList: { type: Array, default: () => [] },
     isOpen: Boolean,
@@ -13,9 +23,19 @@ const props = defineProps({
 
 const emit = defineEmits(['expand', 'select'])
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS
+ * ==============================================================================
+ */
 const startInput = ref('')
 const destInput = ref('')
 
+/**
+ * ==============================================================================
+ * 4. COMPUTED
+ * ==============================================================================
+ */
 const filteredList = computed(() => {
     return props.recruitList.filter(item => {
         const s = startInput.value.trim()
@@ -23,6 +43,21 @@ const filteredList = computed(() => {
         return (!s || item.start.includes(s)) && (!d || item.dest.includes(d))
     })
 })
+
+/**
+ * ==============================================================================
+ * 5. METHODS - UI & LOGIC
+ * ==============================================================================
+ */
+// 패널 확장 요청 핸들러
+const handleExpand = () => {
+    emit('expand')
+}
+
+// 리스트 아이템 선택 핸들러
+const handleSelectItem = (item) => {
+    emit('select', item)
+}
 </script>
 
 <template>
@@ -39,12 +74,12 @@ const filteredList = computed(() => {
             <div class="space-y-3">
                 <div class="relative group">
                     <MapPin class="absolute left-4 top-3.5 w-4 h-4 text-emerald-500" />
-                    <input v-model="startInput" @focus="emit('expand')" type="text" placeholder="출발지"
+                    <input v-model="startInput" @focus="handleExpand" type="text" placeholder="출발지"
                         class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 outline-none" />
                 </div>
                 <div class="relative group">
                     <Navigation class="absolute left-4 top-3.5 w-4 h-4 text-rose-500" />
-                    <input v-model="destInput" @focus="emit('expand')" type="text" placeholder="목적지"
+                    <input v-model="destInput" @focus="handleExpand" type="text" placeholder="목적지"
                         class="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 rounded-2xl text-sm border border-transparent focus:bg-white focus:border-indigo-100 outline-none" />
                 </div>
                 <button
@@ -63,7 +98,7 @@ const filteredList = computed(() => {
             </div>
 
             <RecruitListItem v-for="item in filteredList" :key="item.id" :item="item"
-                :is-selected="selectedId === item.id" @click="emit('select', item)" />
+                :is-selected="selectedId === item.id" @click="handleSelectItem(item)" />
         </div>
     </div>
 </template>

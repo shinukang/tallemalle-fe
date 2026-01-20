@@ -100,36 +100,170 @@ const mapCenterOffset = computed(() => {
 
 /**
  * ==============================================================================
- * 5. LIFECYCLE (생명주기 훅)
+ * 5. METHODS - UI & LOGIC (기능 처리 및 이벤트 핸들러)
  * ==============================================================================
  */
-onMounted(async () => {
-  // 1. 비로그인 접근 차단
-  if (!authStore.user) {
-    router.push('/login')
+// 리스트 패널 토글 핸들러
+const handleToggleListPanel = () => {
+  isListPanelOpen.value = !isListPanelOpen.value
+}
+
+// 리스트 아이템 클릭 핸들러 (상세 패널 열기)
+const handleSelectRecruit = (recruit) => {
+  isListPanelOpen.value = true
+  if (isDetailOpen.value && selectedRecruit.value?.id === recruit.id) {
+    // 이미 선택된 거 누르면 다시 닫기
+    isDetailOpen.value = false
+    selectedRecruit.value = null
+  } else {
+    // 새로운 마커 선택 시
+    selectedRecruit.value = recruit
+    isDetailOpen.value = true
+    // 지도 이동
+    if (mapComponent.value && recruit.startLat) {
+      mapComponent.value.moveToLocation(recruit.startLat, recruit.startLng)
+    }
+  }
+}
+
+// 채팅방 참여하기 핸들러
+const handleJoinChat = () => {
+  if (!selectedRecruit.value) return
+
+  if (myStatus.value !== 'IDLE') {
+    if (myRecruitId.value === selectedRecruit.value.id) {
+      router.push('/chat')
+      return
+    }
+    alert('이미 참여 중인 다른 모집이 있습니다.')
     return
   }
 
-  // 2. 소켓 연결 시작 (방어 코드 적용된 핸들러 전달)
-  const baseUrl = import.meta.env.VITE_WS_URL
-  const wsUrl = `${baseUrl}?userId=${encodeURIComponent(authStore.user.id)}`
-  connect(wsUrl, handleSocketMessage)
+  // 데이터 필드명 안전하게 체크
+  const recruit = selectedRecruit.value
+  const startName = recruit.startPoint || recruit.start || recruit.departure || '출발지 미정'
+  const destName = recruit.destPoint || recruit.dest || recruit.destination || '목적지 미정'
+  const timeInfo = recruit.time || recruit.startTime || '시간 미정'
 
-  // 3. 초기 데이터 로드
-  await fetchRecruits()
-
-  // 4. 상태 복구/검증 로직
-  if (myStatus.value !== 'IDLE' && myRecruitId.value) {
-    const targetRoom = recruitList.value.find((r) => r.id === myRecruitId.value)
-    if (!targetRoom) {
-      // (TODO: 실제로는 상태 검증 API 호출 필요)
-      // 임시: 방이 없으면 상태 초기화
-      // alert("참여 중이던 방이 종료되었습니다.")
-      // updateMyStatus('IDLE', null)
-    }
+  // 선택된 모집 정보를 스토어에 저장
+  const rideInfoPayload = {
+    driver: {
+      name: '매칭 대기중',
+      car: '-',
+      plate: '-',
+      type: '택시',
+    },
+    route: {
+      start: startName,
+      dest: destName,
+      startTime: timeInfo,
+      endTime: '-',
+    },
+    payment: {
+      total: 0,
+      mine: 0,
+      status: '결제 대기',
+    },
   }
-  console.log(`현재 상태: ${myStatus.value}, 방 ID: ${myRecruitId.value}`)
-})
+
+  recruitStore.setRideInfo(rideInfoPayload)
+  recruitStore.setJoined(selectedRecruit.value.id)
+  router.push('/chat')
+}
+
+// 모집 생성 제출 핸들러 (기능 로직 포함)
+const handleCreateSubmit = (formData) => {
+  if (myStatus.value !== 'IDLE') {
+    alert('이미 진행 중인 모집이 있습니다.')
+    return
+  }
+
+  // 1. 좌표 데이터 안전하게 추출
+  const lat = formData.startLat || formData.lat || formData.y
+  const lng = formData.startLng || formData.lng || formData.x
+
+  if (!lat || !lng) {
+    alert('출발지와 목적지의 위치 정보가 정확하지 않습니다.')
+    return
+  }
+
+  // 2. 출발지/도착지 명칭 데이터 처리
+  let startName = formData.startPoint || formData.start || formData.departure || '출발지'
+  let destName = formData.destPoint || formData.dest || formData.destination || '목적지'
+
+  if (typeof startName === 'object')
+    startName = startName.name || startName.text || startName.address || '출발지'
+  if (typeof destName === 'object')
+    destName = destName.name || destName.text || destName.address || '목적지'
+
+  const newId = Date.now()
+
+  // 3. 데이터 통합
+  const newRecruitData = {
+    id: newId,
+    nickname: authStore.user?.userName || '익명 승객',
+    ...formData,
+    startLat: lat,
+    startLng: lng,
+    startPoint: startName,
+    destPoint: destName,
+    cur: 1,
+    max: formData.max || 4,
+  }
+
+  // 소켓 전송용 payload
+  const payload = {
+    type: 'createRecruit',
+    payload: newRecruitData,
+  }
+
+  try {
+    if (isConnected.value) {
+      sendMessage(payload)
+    }
+
+    // UI 즉시 갱신
+    recruitList.value.unshift(newRecruitData)
+    recruitStore.setOwner(newId)
+    recruitStore.setRideInfo({
+      driver: { name: '매칭 대기중', car: '-', plate: '-', type: '택시' },
+      route: {
+        start: startName,
+        dest: destName,
+        startTime: '방금 출발',
+        endTime: '-',
+      },
+      payment: { total: 0, mine: 0, status: '정산 대기' },
+    })
+
+    isCreateModalOpen.value = false
+    alert('모집이 시작되었습니다!')
+    handleSelectRecruit(newRecruitData)
+  } catch (e) {
+    console.error('전송 실패:', e)
+    alert('전송 중 오류가 발생했습니다.')
+  }
+}
+
+// 내 위치 업데이트 핸들러 (지도 이벤트)
+const handleLocationUpdate = (coords) => {
+  myLat.value = coords.lat
+  myLng.value = coords.lng
+}
+
+// 화면 내 리스트 업데이트 핸들러 (지도 이벤트)
+const handleVisibleListUpdate = (ids) => {
+  visibleRecruitIds.value = ids
+}
+
+// 지도 확대 핸들러 (UI 컨트롤)
+const handleZoomIn = () => mapComponent.value?.zoomIn()
+
+// 지도 축소 핸들러 (UI 컨트롤)
+const handleZoomOut = () => mapComponent.value?.zoomOut()
+
+// 내 위치로 이동 핸들러 (UI 컨트롤)
+const handleMoveToCurrentLocation = () => mapComponent.value?.panToCurrent()
 
 /**
  * ==============================================================================
@@ -156,18 +290,17 @@ const fetchRecruits = async () => {
   }
 }
 
-// WebSocket 메시지 수신 핸들러 (방어 코드 적용됨)
+// WebSocket 메시지 수신 핸들러
 const handleSocketMessage = (event) => {
   if (!event.data) return
 
   try {
     let data = JSON.parse(event.data)
 
-    // 이중 포장 풀기 (서버 payload가 문자열일 경우)
     if (data.payload && typeof data.payload === 'string') {
       try {
         data = JSON.parse(data.payload)
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (!data || typeof data !== 'object') return
@@ -176,7 +309,12 @@ const handleSocketMessage = (event) => {
 
     // 1. 신규 모집글 등록 알림
     if (data.type === 'newRecruit' && data.payload) {
-      recruitList.value.unshift(data.payload)
+      // 현재 리스트에 같은 ID가 있는지 확인
+      const isExist = recruitList.value.some(item => item.id === data.payload.id)
+      // 리스트에 없을 때만 추가
+      if (!isExist) {
+        recruitList.value.unshift(data.payload)
+      }
     }
     // 2. 모집글 수정 알림
     else if (data.type === 'updateRecruit') {
@@ -201,251 +339,67 @@ const handleSocketMessage = (event) => {
   }
 }
 
-const handleCreateSubmit = (formData) => {
-  if (myStatus.value !== 'IDLE') {
-    alert('이미 진행 중인 모집이 있습니다.')
-    return
-  }
-
-  // 1. 좌표 데이터 안전하게 추출
-  const lat = formData.startLat || formData.lat || formData.y
-  const lng = formData.startLng || formData.lng || formData.x
-
-  if (!lat || !lng) {
-    alert('출발지와 목적지의 위치 정보가 정확하지 않습니다.')
-    return
-  }
-
-  // 2. 출발지/도착지 명칭 데이터 처리 (객체일 경우 대비)
-  let startName = formData.startPoint || formData.start || formData.departure || '출발지'
-  let destName = formData.destPoint || formData.dest || formData.destination || '목적지'
-
-  // 만약 데이터가 객체라면(object), 그 안에서 name이나 text를 꺼냄
-  if (typeof startName === 'object')
-    startName = startName.name || startName.text || startName.address || '출발지'
-  if (typeof destName === 'object')
-    destName = destName.name || destName.text || destName.address || '목적지'
-
-  const newId = Date.now()
-
-  // 3. 데이터 통합 (여기가 중요합니다!)
-  const newRecruitData = {
-    // (1) 기본 ID 및 닉네임
-    id: newId,
-    nickname: authStore.user?.userName || '익명 승객',
-
-    // (2) formData의 모든 내용을 먼저 다 넣습니다. (상세 설명, 시간 등 유실 방지)
-    ...formData,
-
-    // (3) 그 위에 우리가 정리한 정확한 이름의 데이터를 덮어씌웁니다.
-    startLat: lat,
-    startLng: lng,
-    startPoint: startName,
-    destPoint: destName,
-
-    // (4) 상태값 강제 주입
-    cur: 1,
-    max: formData.max || 4,
-  }
-
-  // 소켓 전송용 payload
-  const payload = {
-    type: 'createRecruit',
-    payload: newRecruitData,
-  }
-
-  try {
-    if (isConnected.value) {
-      sendMessage(payload)
-    }
-
-    // ============================================================
-    // [UI 즉시 갱신]
-    // ============================================================
-    // 1. 리스트에 추가 (지도 마커 표시용)
-    recruitList.value.unshift(newRecruitData)
-
-    // 2. 내 상태 변경 (방장 모드)
-    recruitStore.setOwner(newId)
-
-    // 3. 스토어에 운행 정보 저장 (채팅방 등에서 사용)
-    recruitStore.setRideInfo({
-      driver: { name: '매칭 대기중', car: '-', plate: '-', type: '택시' },
-      route: {
-        start: startName,
-        dest: destName,
-        startTime: '방금 출발', // 혹은 formData.time 사용
-        endTime: '-',
-      },
-      payment: { total: 0, mine: 0, status: '정산 대기' },
-    })
-
-    // 4. 모달 닫기
-    isCreateModalOpen.value = false
-    alert('모집이 시작되었습니다!')
-
-    // 5. 방금 만든 방을 바로 선택해서 '상세 패널' 열기
-    // 이제 newRecruitData 안에 모든 정보가 있으므로 패널에도 잘 뜹니다.
-    handleSelectRecruit(newRecruitData)
-  } catch (e) {
-    console.error('전송 실패:', e)
-    alert('전송 중 오류가 발생했습니다.')
-  }
-}
-
 /**
  * ==============================================================================
- * 7. METHODS - UI INTERACTION (화면 조작)
+ * 7. LIFECYCLE (생명주기 훅)
  * ==============================================================================
  */
-// 리스트 패널 토글 함수 (버튼 누르면 실행)
-const toggleListPanel = () => {
-  isListPanelOpen.value = !isListPanelOpen.value
-}
-
-// 리스트 아이템 클릭 (상세 패널 열기)
-const handleSelectRecruit = (recruit) => {
-  isListPanelOpen.value = true
-  if (isDetailOpen.value && selectedRecruit.value?.id === recruit.id) {
-    // 이미 선택된 거 누르면 다시 닫기
-    isDetailOpen.value = false
-    selectedRecruit.value = null
-  } else {
-    // 새로운 마커 선택 시
-    selectedRecruit.value = recruit
-    isDetailOpen.value = true
-    // 지도 이동
-    if (mapComponent.value && recruit.startLat) {
-      mapComponent.value.moveToLocation(recruit.startLat, recruit.startLng)
-    }
-  }
-}
-
-// 채팅방 참여하기 (참여자 되기)
-const joinChat = () => {
-  if (!selectedRecruit.value) return
-
-  if (myStatus.value !== 'IDLE') {
-    if (myRecruitId.value === selectedRecruit.value.id) {
-      router.push('/chat')
-      return
-    }
-    alert('이미 참여 중인 다른 모집이 있습니다.')
+onMounted(async () => {
+  // 1. 비로그인 접근 차단
+  if (!authStore.user) {
+    router.push('/login')
     return
   }
 
-  // 데이터 필드명 안전하게 체크 (startPoint, start, departure 등 다양한 케이스 대응)
-  const recruit = selectedRecruit.value
-  const startName = recruit.startPoint || recruit.start || recruit.departure || '출발지 미정'
-  const destName = recruit.destPoint || recruit.dest || recruit.destination || '목적지 미정'
-  const timeInfo = recruit.time || recruit.startTime || '시간 미정'
+  // 2. 소켓 연결 시작
+  const baseUrl = import.meta.env.VITE_WS_URL
+  const wsUrl = `${baseUrl}?userId=${encodeURIComponent(authStore.user.id)}`
+  connect(wsUrl, handleSocketMessage)
 
-  // 선택된 모집(selectedRecruit)의 정보를 스토어에 저장
-  const rideInfoPayload = {
-    driver: {
-      name: '매칭 대기중',
-      car: '-',
-      plate: '-',
-      type: '택시',
-    },
-    route: {
-      // selectedRecruit 객체의 필드명에 따라 수정이 필요할 수 있습니다.
-      start: startName,
-      dest: destName,
-      startTime: timeInfo,
-      endTime: '-',
-    },
-    payment: {
-      total: 0,
-      mine: 0,
-      status: '결제 대기',
-    },
+  // 3. 초기 데이터 로드
+  await fetchRecruits()
+
+  // 4. 상태 복구/검증 로직
+  if (myStatus.value !== 'IDLE' && myRecruitId.value) {
+    const targetRoom = recruitList.value.find((r) => r.id === myRecruitId.value)
+    if (!targetRoom) {
+      // (TODO: 실제로는 상태 검증 API 호출 필요)
+    }
   }
-
-  recruitStore.setRideInfo(rideInfoPayload)
-  recruitStore.setJoined(selectedRecruit.value.id)
-  router.push('/chat')
-}
-
-// 지도 관련 핸들러
-const handleLocationUpdate = (coords) => {
-  myLat.value = coords.lat
-  myLng.value = coords.lng
-}
-
-const handleVisibleListUpdate = (ids) => {
-  visibleRecruitIds.value = ids
-}
-
-// 지도 컨트롤 프록시 함수
-const zoomIn = () => mapComponent.value?.zoomIn()
-const zoomOut = () => mapComponent.value?.zoomOut()
-const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
+  console.log(`현재 상태: ${myStatus.value}, 방 ID: ${myRecruitId.value}`)
+})
 </script>
 
 <template>
   <div class="relative w-full h-full">
-    <Map
-      ref="mapComponent"
-      :recruit-list="recruitList"
-      :center-offset="mapCenterOffset"
-      @update-location="handleLocationUpdate"
-      @marker-click="handleSelectRecruit"
-      @update-visible-list="handleVisibleListUpdate"
-    />
+    <Map ref="mapComponent" :recruit-list="recruitList" :center-offset="mapCenterOffset"
+      @update-location="handleLocationUpdate" @marker-click="handleSelectRecruit"
+      @update-visible-list="handleVisibleListUpdate" />
 
     <div class="absolute inset-0 z-10 flex p-4 pointer-events-none">
       <div class="hidden md:block w-20 shrink-0 h-full"></div>
 
       <div class="flex h-full items-center">
         <Transition name="slide-fade">
-          <div
-            v-show="isListPanelOpen"
-            class="pointer-events-auto h-full shadow-xl z-20 ml-4 rounded-3xl overflow-hidden"
-          >
-            <RecruitListPanel
-              :recruit-list="displayRecruitList"
-              :is-open="true"
-              :selected-id="selectedRecruit?.id"
-              :is-socket-connected="isConnected"
-              @expand="isPanelOpen = true"
-              @select="handleSelectRecruit"
-            />
+          <div v-show="isListPanelOpen"
+            class="pointer-events-auto h-full shadow-xl z-20 ml-4 rounded-3xl overflow-hidden">
+            <RecruitListPanel :recruit-list="displayRecruitList" :is-open="true" :selected-id="selectedRecruit?.id"
+              :is-socket-connected="isConnected" @expand="isPanelOpen = true" @select="handleSelectRecruit" />
           </div>
         </Transition>
 
-        <button
-          v-show="!isDetailOpen"
-          @click="toggleListPanel"
+        <button v-show="!isDetailOpen" @click="handleToggleListPanel"
           class="pointer-events-auto w-6 h-12 bg-white border-y border-r border-slate-200 rounded-r-md shadow-md flex items-center justify-center hover:bg-slate-50 text-slate-400 z-10 -ml-[1px]"
-          :class="{ 'self-center': isListPanelOpen }"
-          title="목록 토글"
-        >
+          :class="{ 'self-center': isListPanelOpen }" title="목록 토글">
           <span v-if="isListPanelOpen">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
           </span>
           <span v-else>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m9 18 6-6-6-6" />
             </svg>
           </span>
@@ -455,56 +409,29 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
       <Transition name="slide-shrink">
         <div v-if="isDetailOpen" class="flex h-full items-center">
           <div class="pointer-events-auto h-full">
-            <RecruitDetailPanel
-              :recruit="selectedRecruit"
-              :is-open="isDetailOpen"
-              :my-status="myStatus"
-              :my-recruit-id="myRecruitId"
-              @close="isDetailOpen = false"
-              @join="joinChat"
-            />
+            <RecruitDetailPanel :recruit="selectedRecruit" :is-open="isDetailOpen" :my-status="myStatus"
+              :my-recruit-id="myRecruitId" @close="isDetailOpen = false" @join="handleJoinChat" />
           </div>
 
-          <button
-            @click="isDetailOpen = false"
+          <button @click="isDetailOpen = false"
             class="pointer-events-auto w-6 h-12 bg-white border-y border-r border-slate-200 rounded-r-md shadow-md flex items-center justify-center hover:bg-slate-50 text-slate-400 z-10 -ml-[1px]"
-            title="상세정보 닫기"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            title="상세정보 닫기">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
         </div>
       </Transition>
     </div>
-    <MapControls
-      :nickname="authStore.user?.userName"
-      @zoom-in="zoomIn"
-      @zoom-out="zoomOut"
-      @move-location="moveToCurrentLocation"
-    />
 
-    <BottomActionBar
-      :class="bottomBarClass"
-      :route-info="displayRoute"
-      :button-state="actionButtonState"
-      @open-create="isCreateModalOpen = true"
-    />
+    <MapControls :nickname="authStore.user?.userName" @zoom-in="handleZoomIn" @zoom-out="handleZoomOut"
+      @move-location="handleMoveToCurrentLocation" />
 
-    <CreateRecruitModal
-      :is-open="isCreateModalOpen"
-      @close="isCreateModalOpen = false"
-      @submit="handleCreateSubmit"
-    />
+    <BottomActionBar :class="bottomBarClass" :route-info="displayRoute" :button-state="actionButtonState"
+      @open-create="isCreateModalOpen = true" />
+
+    <CreateRecruitModal :is-open="isCreateModalOpen" @close="isCreateModalOpen = false" @submit="handleCreateSubmit" />
   </div>
 </template>
 <style scoped>
@@ -513,9 +440,6 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
 .slide-fade-leave-active {
   transition: all 0.3s ease;
   overflow: hidden;
-
-  /* ★ 핵심 1: 800px -> 400px로 수정 
-     (실제 패널 너비보다 살짝만 크게 잡아야 반응이 빠릅니다) */
   max-width: 400px;
   opacity: 1;
 }
@@ -534,7 +458,6 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
   transition: all 0.3s ease;
   overflow: hidden;
   max-width: 400px;
-  /* 여기도 400px로 맞추면 더 좋습니다 */
   opacity: 1;
 }
 
@@ -548,8 +471,6 @@ const moveToCurrentLocation = () => mapComponent.value?.panToCurrent()
 
 /* 3. 버튼 애니메이션 수정 */
 button {
-  /* ★ 핵심 2: 위치 이동(all)에 대한 transition 제거 */
-  /* 배경색이나 테두리 색상만 부드럽게 바뀌도록 한정합니다. */
   transition:
     background-color 0.2s,
     color 0.2s;

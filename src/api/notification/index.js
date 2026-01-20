@@ -17,7 +17,8 @@ import api from '@/plugins/axiosinterceptor'
  * url: /json/notifications
  */
 const getNotificationList = () => {
-  return api.get('/json/notifications')
+  const res = api.get('/json/notifications')
+  return res
 }
 
 export default {

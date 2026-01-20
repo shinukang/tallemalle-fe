@@ -1,31 +1,51 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, watch } from 'vue'
 
-// 부모에게 받을 데이터 (기존과 동일)
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS
+ * ==============================================================================
+ */
+// 부모에게 받을 데이터
 const props = defineProps({
     label: String,
-    modelValue: String, // 입력창에 표시될 텍스트 (예: "강남역")
+    modelValue: String, // 입력창에 표시될 텍스트
     placeholder: String,
     labelColor: { type: String, default: 'text-slate-500' }
 })
 
 // 부모에게 보낼 이벤트 정의
 // 'update:modelValue': 텍스트 업데이트 (v-model용)
-// 'select-location': 장소 선택 시 좌표 정보 전달용 (새로 추가됨!)
+// 'select-location': 장소 선택 시 좌표 정보 전달용
 const emit = defineEmits(['update:modelValue', 'select-location'])
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS
+ * ==============================================================================
+ */
 // 검색 상태 변수
-const searchResults = ref([]) // 검색 결과 리스트를 담을 배열
+const searchResults = ref([]) // 검색 결과 리스트
 const showDropdown = ref(false) // 드롭다운 표시 여부
 
 // 타이머 변수
 let timer = null
 
-// --- 장소 검색 함수 (카카오 API) ---
+/**
+ * ==============================================================================
+ * 4. METHODS - UI & LOGIC
+ * ==============================================================================
+ */
+// 장소 검색 핸들러 (카카오 API, 디바운싱 적용)
 const handleInput = (e) => {
     const keyword = e.target.value
 
-    // 1. 입력된 텍스트를 부모에게 알림 (화면 갱신용)
+    // 1. 입력된 텍스트를 부모에게 알림
     emit('update:modelValue', keyword)
 
     // 타이핑할 때마다 기존에 예약된 0.3초 뒤 검색 취소
@@ -35,7 +55,7 @@ const handleInput = (e) => {
 
     // 새로운 0.3초 뒤 검색 예약
     timer = setTimeout(() => {
-        // 검색어가 없으면 초기화하고  종료
+        // 검색어가 없으면 초기화하고 종료
         if (!keyword.trim()) {
             searchResults.value = []
             showDropdown.value = false
@@ -64,13 +84,10 @@ const handleInput = (e) => {
             }
         })
     }, 300)
-
-
-
 }
 
-// --- 장소 선택 핸들러 ---
-const selectPlace = (place) => {
+// 장소 선택 핸들러
+const handleSelectPlace = (place) => {
     // 입력창 텍스트를 선택한 장소 이름으로 변경
     emit('update:modelValue', place.place_name)
 
@@ -83,7 +100,7 @@ const selectPlace = (place) => {
         address: place.road_address_name || place.address_name
     })
 
-    // 3. 드롭다운 닫기
+    // 드롭다운 닫기
     showDropdown.value = false
 }
 </script>
@@ -101,7 +118,7 @@ const selectPlace = (place) => {
         <div v-if="showDropdown && searchResults.length > 0"
             class="absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 z-50 max-h-[200px] overflow-y-auto custom-scroll">
             <ul>
-                <li v-for="place in searchResults" :key="place.id" @click="selectPlace(place)"
+                <li v-for="place in searchResults" :key="place.id" @click="handleSelectPlace(place)"
                     class="p-3 hover:bg-indigo-50 cursor-pointer border-b border-slate-50 last:border-0">
                     <div class="text-sm font-bold text-slate-800">{{ place.place_name }}</div>
                     <div class="text-[10px] text-slate-400 mt-0.5 truncate">
