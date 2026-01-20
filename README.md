@@ -295,16 +295,45 @@
 <details>
 <summary>💬 [채팅 기능 시연 영상]</summary>
 
-[알림 기능 영상 보기](https://github.com/user-attachments/assets/034d5f62-f1e7-48ec-98a1-d849418d7581)
+[채팅 기능 영상 보기](https://github.com/user-attachments/assets/034d5f62-f1e7-48ec-98a1-d849418d7581)
 
 </details>
 
-▶️ [마이 페이지 시연 영상 보기](video/driverpage.mp4)
+<details>
+<summary>💬 [결제 수단 편집 시연 영상]</summary>
+
+[결제 수단 편집 영상 보기](https://github.com/user-attachments/assets/5d30b5d9-9a49-4eea-8327-5560bc49d6ee
+)
+
+</details>
+
+<details>
+<summary>💬 [회원 탈퇴 시연 영상]</summary>
+
+[회원 탈퇴 영상 보기](https://github.com/user-attachments/assets/f16808b7-ad11-452a-911a-55156444cb9a
+)
+
+</details>
+
+<details>
+<summary>💬 [리뷰 및 탑승 기록 시연 영상]</summary>
+
+[리뷰 및 탑승 기록 영상 보기](https://github.com/user-attachments/assets/195a1dc7-df97-44fc-9117-440f37e732c2
+)
+
+</details>
+
+<details>
+<summary>💬 [프로필 편집 시연 영상]</summary>
+
+[프로필 편집 영상 보기](https://github.com/user-attachments/assets/034d5f62-f1e7-48ec-98a1-d849418d7581)
+
+</details>
 
 <details>
 <summary>🔔 [알림 기능 시연 영상]</summary>
 
-[알림 기능 영상 보기](https://github.com/user-attachments/assets/24a70d17-5dbc-47b7-bb25-79a55d9bdd95)
+[알림 기능 영상 보기](https://github.com/user-attachments/assets/0fc18b98-6ba7-4198-bdf2-9511492c8a9f)
 
 </details>
 
