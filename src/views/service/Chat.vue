@@ -25,6 +25,7 @@ import ProfileModal from '@/components/chat/ProfileModal.vue'
 const authStore = useAuthStore()
 const recruitStore = useRecruitStore()
 const { user } = storeToRefs(authStore)
+const { recruitId } = storeToRefs(recruitStore)
 
 // 하위 컴포넌트(Header, MemberList)에서 내 이름을 쓸 수 있도록 전달
 const myUserName = ref('익명')
@@ -269,6 +270,14 @@ const handleSocketMessage = (data) => {
       }
     } catch (e) {}
   }
+  // [중요] 2. 방 번호 필터링 (내 방 메시지가 아니면 무시)
+  // 메인 페이지나 다른 방에서 온 메시지를 차단합니다.
+  if (data.recruitId && String(data.recruitId) !== String(recruitId.value)) return
+
+  // [중요] 3. 타입 필터링 (채팅 관련 이벤트만 처리)
+  // location 제거, 채팅 관련 타입만 허용
+  const allowedTypes = ['enter', 'leave', 'exist', 'text', 'image', 'me', 'other', 'system']
+  if (data.type && !allowedTypes.includes(data.type)) return
 
   const now = new Date()
   const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
