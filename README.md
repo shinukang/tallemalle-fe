@@ -87,38 +87,43 @@
 **TalleMalle은 같은 경로로 이동하는 사람들을 실시간으로 연결하는 위치 기반 동승 커뮤니티 서비스**
 
 <table width="100%">
-<tr>
-<td width="50%" valign="top">
-
-### 🌐 Service Deployment
-
-<a href="https://www.testjake.kro.kr/" target="_blank">👉 TalleMalle - 사용자 사이트</a><br />
-<a href="https://driver.testjake.kro.kr/" target="_blank">👉 TalleMalle - 기사님 사이트</a>
-
-</td>
-<td width="50%" valign="top">
-
-### 🎨 Design
-
-<a href="https://www.figma.com/design/6BxeWDZ9Ex9Xqae0dqT3tJ/TalleMalle?t=HvXokjkooTvJFMmy-1" target="_blank">👉 Figma 보러가기</a>
-
-</td>
-</tr>
+  <thead>
+    <tr>
+      <th width="50%" align="left">🌐 Service Deployment</th>
+      <th width="50%" align="left">🎨 Design</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top">
+        <br />
+        <a href="https://www.testjake.kro.kr/">
+          <img src="https://img.shields.io/badge/TalleMalle-사용자_사이트-blue?style=for-the-badge&logo=googlechrome&logoColor=white" data-canonical-src="https://img.shields.io/badge/TalleMalle-사용자_사이트-blue?style=for-the-badge&logo=googlechrome&logoColor=white" style="max-width: 100%;">
+        </a>
+        <br /><br />
+        <a href="https://driver.testjake.kro.kr/">
+          <img src="https://img.shields.io/badge/TalleMalle-기사님_사이트-4dabf7?style=for-the-badge&logo=googlechrome&logoColor=white" data-canonical-src="https://img.shields.io/badge/TalleMalle-기사님_사이트-4dabf7?style=for-the-badge&logo=googlechrome&logoColor=white" style="max-width: 100%;">
+        </a>
+      </td>
+      <td valign="top">
+        <br />
+        <a href="https://www.figma.com/design/6BxeWDZ9Ex9Xqae0dqT3tJ/TalleMalle">
+          <img src="https://img.shields.io/badge/Figma-보러가기-F24E1E?style=for-the-badge&logo=figma&logoColor=white" data-canonical-src="https://img.shields.io/badge/Figma-보러가기-F24E1E?style=for-the-badge&logo=figma&logoColor=white" style="max-width: 100%;">
+        </a>
+      </td>
+    </tr>
+  </tbody>
 </table>
+
+---
 
 ### 🧩 기획 배경
 
-- 늦은 시간 혼자 귀가하기 불안한 상황
-- 택시 합승의 불편함과 신뢰 문제
-- 실시간 위치 기반 커뮤니티형 매칭 서비스 필요
+- 같은 목적지·동선 사용자 간 자발적이고 투명한 매칭 필요
 
-### 💡 해결 방향
+- 늦은 시간 혼자 귀가해야 하는 사용자들의 안전 이슈
 
-| 문제               | 프론트엔드 접근            |
-| ------------------ | -------------------------- |
-| 정보 탐색이 느림   | 지도 기반 UI로 직관적 탐색 |
-| 소통이 번거로움    | 채팅 UI 즉시 연결          |
-| 모바일 사용성 부족 | 전 화면 모바일 반응형 설계 |
+  ➡️ 이를 해결하기 위해 지도 기반 실시간 동승 커뮤니티 형태의 서비스를 기획했습니다.
 
 ---
 
@@ -126,50 +131,105 @@
 
 | 기능                | 설명                           |
 | ------------------- | ------------------------------ |
-| 📝 동승 모집글 작성 | 위치 검색 + 시간 + 인원 설정   |
-| 🗺 실시간 지도 매칭 | 주변 동승글 마커 표시          |
-| 🤝 참여 요청 & 승인 | 상태에 따른 버튼 UI 분기       |
-| 💬 실시간 채팅 UI   | WebSocket 기반 채팅 인터페이스 |
-| 📱 모바일 UX 최적화 | 하단 네비게이션 구조           |
+| 📝 동승 모집글 작성 | 출발/도착 위치, 시간, 인원 설정   |
+| 🗺 실시간 지도 매칭 | 지도 이동 기준 주변 모집글 실시간 조회 |
+| 🤝 참여 요청 & 승인 | 모집 상태에 따른 버튼/권한 분기     |
+| 💬 실시간 채팅 UI   | WebSocket 기반 참여자 전용 채팅 |
+| 👤 마이페이지  | 참여 이력, 작성 글, 프로필 관리 |
 
 ---
 
-## 🧠 프론트엔드 구현 포인트
+# 🧠 프론트엔드 구현 포인트
 
-### 📍 지도 기반 UI 상태 관리
+###  📍 지도 기반 UI 상태 관리
 
-- 지도 이동 시 API 재호출
-- Pinia로 모집글 전역 관리
-- 마커 클릭 → 상세 패널 연동
+- 지도 이동/줌 변경 시 API 재호출 최적화
+
+- Pinia를 활용한 모집글 전역 상태 관리
+
+- 마커 클릭 → 상세 패널/모달 연동
 
 ### 💬 실시간 채팅 처리
 
-- WebSocket 연결 유지
+- WebSocket 연결 유지 및 재연결 처리
+
 - 메시지 수신 시 자동 스크롤
-- 참여자 권한에 따른 UI 제어
 
-### 📱 반응형 컴포넌트 구조
-
-- 모바일 우선 설계
-- 공통 컴포넌트 분리 (Nav, Modal, Toast)
-- viewport 변경 시 레이아웃 자동 전환
+- 참여자/모집자 권한에 따른 UI 분기
 
 ---
 
 ## 🔄 서비스 흐름
 
-<div align="center">
 회원가입 / 로그인 ➡️ 지도에서 주변 동승글 탐색 ➡️ 모집글 참여 요청 ➡️ 승인 후 채팅방 입장 ➡️ 동승 이동
-</div>
 
 ---
 
 ## 📸 서비스 화면
 
-- 메인 지도 화면
-- 모집글 작성 모달
-- 채팅 화면
-- 마이페이지
+<details>
+<summary>로그인</summary>
+
+<br/>
+
+<img src="/img/login.png" width="700"/>
+
+</details>
+
+<details>
+<summary>회원가입</summary>
+
+<br/>
+
+<img src="/img/signup.png" width="700"/>
+
+</details>
+
+<details>
+<summary>메인 지도 화면</summary>
+
+<br/>
+
+<img src="/img/main.png" width="700"/>
+
+</details>
+
+<details>
+<summary>모집글 작성 모달</summary>
+
+<br/>
+
+<img src="/img/main_create.png" width="700"/>
+
+</details>
+
+<details>
+<summary>채팅 화면</summary>
+
+<br/>
+
+<img src="/img/chat.png" width="700"/>
+
+</details>
+
+<details>
+<summary>마이페이지</summary>
+
+<br/>
+
+<img src="/img/mypage.png" width="700"/>
+
+</details>
+
+<details>
+<summary>기사님 페이지</summary>
+
+<br/>
+
+<img src="/img/driverpage.png" width="700"/>
+
+</details>
+
 
 ---
 
