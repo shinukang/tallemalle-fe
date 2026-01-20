@@ -213,6 +213,7 @@ onUnmounted(() => {
                 @input="handlePhoneInput"
                 label="휴대폰 번호 *"
                 placeholder="010-0000-0000"
+                :length="{ max: 13 }"
                 class="flex-1"
               />
               <button

@@ -17,71 +17,39 @@ export const useProfileStore = defineStore('profile', () => {
     review: [],
     payment: {
       default: 0,
-      list: [],
+      method: [],
     },
   })
 
-  const loadUserInfo = async () => {
-    try {
-      await Promise.all([loadProfile(), loadHistory(), loadReview(), loadPayment()])
-    } catch (error) {
-      console.error('USERINFO: ', error)
-    }
+  const loadProfile = (loadedProfile) => {
+    userInfo.profile = loadedProfile
+    sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
-  const loadProfile = async () => {
-    try {
-      const res = await api.profile()
-      if (res.data) {
-        Object.assign(userInfo.profile, res.data)
-      }
-    } catch (error) {
-      console.error('PROFILE: ', error)
-    }
+  const loadHistory = (loadedHistory) => {
+    userInfo.history = loadedHistory
+    sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
-  const loadHistory = async () => {
-    try {
-      const res = await api.history()
-      if (res.data) {
-        userInfo.history = res.data
-      }
-    } catch (error) {
-      console.error('HISTORY: ', error)
-    }
+  const loadReview = (loadedReview) => {
+    userInfo.review = loadedReview
+    sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
-  const loadReview = async () => {
-    try {
-      const res = await api.review()
-      if (res.data) {
-        userInfo.review = res.data
-      }
-    } catch (error) {
-      console.error('REVIEW: ', error)
-    }
-  }
-
-  const loadPayment = async () => {
-    try {
-      const res = await api.payment()
-      if (res.data) {
-        userInfo.payment = res.data
-      }
-    } catch (error) {
-      console.error('PAYMENT', error)
-    }
+  const loadPayment = (loadedPayment) => {
+    userInfo.payment = loadedPayment
+    sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
   const addPayment = async (payment) => {
-    if (userInfo.payment.list.length < 2) {
-      userInfo.payment.list.push(payment)
+    if (userInfo.payment.method.length < 2) {
+      userInfo.payment.method.push(payment)
 
-      if (userInfo.payment.list.length === 1) {
+      if (userInfo.payment.method.length === 1) {
         userInfo.payment.default = payment.id
       }
     }
   }
 
-  return { userInfo, loadUserInfo, addPayment }
+  return { userInfo, loadProfile, loadPayment, loadHistory, loadReview }
 })

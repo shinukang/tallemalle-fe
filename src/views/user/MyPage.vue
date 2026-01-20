@@ -17,8 +17,11 @@ import HistoryEntry from '@/components/entry/HistoryEntry.vue'
 import ReviewEntry from '@/components/entry/ReviewEntry.vue'
 import PaymentEntry from '@/components/entry/PaymentEntry.vue'
 import { useProfileStore } from '@/stores/profile'
+import api from '@/api/profile'
+import { useRouter } from 'vue-router'
 
 const profileStore = useProfileStore()
+const router = useRouter()
 
 // --- 상태 ---
 const activeTab = ref('history') // 'history' | 'reviews'
@@ -102,7 +105,7 @@ const openMyReview = (item) => {
 }
 
 const handleAddPayment = () => {
-  if (profileStore.userInfo.payment.list.length >= 2) {
+  if (profileStore.userInfo.payment.method.length >= 2) {
     isLimitReachedModalOpen.value = true
     return
   }
@@ -123,7 +126,7 @@ const setAsDefaultPayment = () => {
 
 const deletePaymentMethod = () => {
   if (selectedPayment.value) {
-    const list = profileStore.userInfo.payment.list
+    const list = profileStore.userInfo.payment.method
     const index = list.findIndex((c) => c.id === selectedPayment.value.id)
 
     if (index !== -1) {
@@ -137,12 +140,40 @@ const deletePaymentMethod = () => {
 }
 
 const handleWithdrawConfirm = () => {
-  console.log('회원 탈퇴 처리됨')
   isWithdrawModalOpen.value = false
+  router.push('login')
+}
+
+const fetchAllUserInfo = async () => {
+  try {
+    const results = await Promise.allSettled([
+      api.profile(),
+      api.payment(),
+      api.history(),
+      api.review(),
+    ])
+
+    const [profileResult, paymentResult, historyResult, reviewResult] = results
+
+    if (profileResult.status === 'fulfilled' && profileResult.value.data) {
+      profileStore.loadProfile(profileResult.value.data)
+    }
+    if (paymentResult.status === 'fulfilled' && paymentResult.value.data) {
+      profileStore.loadPayment(paymentResult.value.data)
+    }
+    if (historyResult.status === 'fulfilled' && historyResult.value.data) {
+      profileStore.loadHistory(historyResult.value.data)
+    }
+    if (reviewResult.status === 'fulfilled' && reviewResult.value.data) {
+      profileStore.loadReview(reviewResult.value.data)
+    }
+  } catch (error) {
+    console.error('Critical error during fetchAllData:', error)
+  }
 }
 
 onMounted(async () => {
-  await profileStore.loadUserInfo()
+  fetchAllUserInfo()
 })
 </script>
 
@@ -255,7 +286,7 @@ onMounted(async () => {
           <div class="col-span-12 lg:col-span-8 space-y-6 flex flex-col min-h-0">
             <!-- 분리된 결제 수단 컴포넌트 적용 -->
             <PaymentEntry
-              :payment-list="profileStore.userInfo.payment.list"
+              :payment-list="profileStore.userInfo.payment.method"
               :default-payment-id="profileStore.userInfo.payment.default"
               @add-card="handleAddPayment"
               @manage-card="handleManagePayment"
