@@ -10,6 +10,7 @@
 
 import { ref } from 'vue'
 import { X, UserCheck, Ban, BarChart3, MessageSquare } from 'lucide-vue-next' // 아이콘들
+import BlockConfirmModal from './BlockConfirmModal.vue'
 
 /**
  * Props 정의
@@ -52,6 +53,8 @@ const emit = defineEmits(['close', 'toggle-block'])
  */
 const reviewsExpanded = ref(false)
 
+const isBlockModalOpen = ref(false)
+
 /**
  * [기능 함수] 창 닫기
  */
@@ -59,11 +62,15 @@ const close = () => {
   emit('close')
 }
 
-/**
- * [기능 함수] 차단하기/해제하기
- */
-const toggleBlock = () => {
-  emit('toggle-block')
+// [UPDATE] 차단 버튼 클릭 핸들러
+const handleBlockClick = () => {
+  if (props.profile.isBlocked) {
+    // 이미 차단된 상태라면 -> 바로 차단 해제 (별도 확인 없이)
+    emit('toggle-block')
+  } else {
+    // 차단되지 않은 상태라면 -> 경고 모달 띄우기
+    isBlockModalOpen.value = true
+  }
 }
 </script>
 
@@ -101,7 +108,7 @@ const toggleBlock = () => {
             <!-- 차단 버튼 -->
             <!-- :class -> 차단 상태(isBlocked)에 따라 빨간색/회색으로 색상이 변합니다. -->
             <button
-              @click="toggleBlock"
+              @click="handleBlockClick"
               class="p-2.5 border rounded-xl transition-all"
               :class="
                 profile.isBlocked
@@ -109,7 +116,6 @@ const toggleBlock = () => {
                   : 'bg-slate-50 border-slate-100 text-slate-400 hover:text-rose-500 hover:bg-rose-50'
               "
             >
-              <!-- component :is -> 상태에 따라 아이콘 모양(UserCheck/Ban)도 바뀝니다. -->
               <component :is="profile.isBlocked ? UserCheck : Ban" class="w-5 h-5" />
             </button>
 
@@ -245,6 +251,12 @@ const toggleBlock = () => {
         </div>
       </div>
     </div>
+    <!-- [NEW] 차단 확인 모달 연결 -->
+    <BlockConfirmModal
+      :is-open="isBlockModalOpen"
+      @close="isBlockModalOpen = false"
+      @confirm="confirmBlock"
+    />
   </Teleport>
 </template>
 
