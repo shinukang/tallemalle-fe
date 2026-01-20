@@ -39,7 +39,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     { path: '/blocklist', name: 'blocklist', component: BlockList, meta: { requiresAuth: true } },
-    { path: '/safenumber', name: 'safenumber', component: SafeNumberSetting, meta: { requiresAuth: true } },
+    {
+      path: '/safenumber',
+      name: 'safenumber',
+      component: SafeNumberSetting,
+      meta: { requiresAuth: true },
+    },
     { path: '/notice', name: 'notice', component: Notice, meta: { requiresAuth: true } },
     {
       path: '/noticedetail/:num',
@@ -109,23 +114,46 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const recruitStore = useRecruitStore()
   const user = localStorage.getItem('USERINFO')
-  const myStatus = localStorage.getItem('myStatus')
+  const hostname = window.location.hostname // 현재 접속한 도메인 확인
 
-  // 로그인 체크 (requiresAuth)
-  if (to.meta.requiresAuth && !user) {
-    next('/login')
-  }
+  // 1. 기사님 도메인(driver) 처리
+  if (hostname.includes('driver')) {
+    // 기사님 로그인/회원가입 페이지는 무조건 허용 (무한 루프 방지)
+    if (to.path === '/driverlogin' || to.path === '/driversignup') {
+      return next()
+    }
 
-  // 참여 상태 체크
-  if (to.meta.requiresActiveStatus) {
-    if (recruitStore.status === 'IDLE') {
-      alert('참여 중인 채팅방이 없습니다.')
-      next('/') // 메인으로 강제 이동
-      return
+    // 기사님 도메인인데 로그인이 없으면 무조건 기사 로그인으로
+    if (!user) {
+      return next('/driverlogin')
+    }
+
+    // 로그인이 되어 있다면 기사 전용 페이지로 (유저용 메인 접근 차단)
+    if (to.path === '/' || to.path === '/login') {
+      return next('/driverpage')
     }
   }
 
-  next()
+  // 2. 일반 유저 도메인(www) 처리
+  else {
+    // 유저 도메인인데 기사 전용 페이지로 가려 하면 차단
+    if (to.path.startsWith('/driver')) {
+      return next('/login')
+    }
+
+    // 로그인 체크
+    if (to.meta.requiresAuth && !user) {
+      return next('/login')
+    }
+
+    // 참여 상태 체크
+    if (to.meta.requiresActiveStatus && recruitStore.status === 'IDLE') {
+      alert('참여 중인 채팅방이 없습니다.')
+      return next('/')
+    }
+  }
+
+  next() // 모든 조건 통과 시 이동
 })
 
 export default router

@@ -1,5 +1,15 @@
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { ref, onUnmounted } from 'vue'
 
+/**
+ * ==============================================================================
+ * 2. GLOBAL STATE (싱글톤: 앱 전체에서 소켓 상태 공유)
+ * ==============================================================================
+ */
 // Socket 인스턴스를 관리할 변수
 const ws = ref(null)
 const isConnected = ref(false)
@@ -7,7 +17,18 @@ const isConnected = ref(false)
 // 재연결을 위한 타이머 ID 저장소
 let reconnectTimer = null
 
+/**
+ * ==============================================================================
+ * 3. COMPOSABLE DEFINITION
+ * ==============================================================================
+ */
 export function useWebSocket() {
+
+    /**
+     * ==============================================================================
+     * 4. METHODS - SOCKET LOGIC
+     * ==============================================================================
+     */
     // 소켓 연결 함수
     const connect = (url, onMessageCallback) => {
         // 이미 연결되어 있다면 패스
@@ -30,14 +51,12 @@ export function useWebSocket() {
             }
         }
 
-        // 메시지 수신 시 
+        // [이벤트] 메시지 수신 시 
         ws.value.onmessage = (event) => {
-
             // 콜백이 없으면 무시
             if (!onMessageCallback) {
                 return
             }
-
             // event.data가 있는지 검증
             if (event.data) {
                 onMessageCallback(event)
@@ -68,7 +87,7 @@ export function useWebSocket() {
         }
     }
 
-    // 메세지 전송 함수
+    // 메시지 전송 함수
     const sendMessage = (data) => {
         if (ws.value && isConnected.value) {
             ws.value.send(JSON.stringify(data))
@@ -79,25 +98,39 @@ export function useWebSocket() {
 
     // 연결 해제 함수
     const disconnect = () => {
-        // 연결 재시도 중단
+        // 재연결 타이머 중단
         if (reconnectTimer) {
             clearTimeout(reconnectTimer)
             reconnectTimer = null
         }
 
+        // 소켓 종료
         if (ws.value) {
-            ws.value.onclose = null
             ws.value.close()
             ws.value = null
-            isConnected.value = false
         }
+        isConnected.value = false
     }
 
-    // 컴포넌트가 사라질 때 자동으로 연결 끊기
+    /**
+     * ==============================================================================
+     * 5. LIFECYCLE
+     * ==============================================================================
+     */
+    // 컴포넌트가 사라질 때 자동 연결 해제
     onUnmounted(() => {
         disconnect()
     })
 
-    // 외부에서 쓸 변수와 함수들을 반환
-    return { ws, isConnected, connect, disconnect, sendMessage }
+    /**
+     * ==============================================================================
+     * 6. RETURN
+     * ==============================================================================
+     */
+    return {
+        isConnected,
+        connect,
+        sendMessage,
+        disconnect
+    }
 }

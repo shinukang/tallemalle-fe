@@ -108,8 +108,8 @@ const handleLogin = async () => {
 
     // 성공 시
     if (res && res.status == 200) {
-      localStorage.setItem('tm_driver_id', loginForm.name)
-      router.push({ name: 'driverpage' })
+      localStorage.setItem('USERINFO', JSON.stringify(res.data));
+      router.push({ name: 'driverpage' });
     }
   } catch (error) {
     console.error('로그인 에러:', error)
