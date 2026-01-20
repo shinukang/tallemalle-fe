@@ -85,9 +85,10 @@
 <table width="100%">
   <thead>
     <tr>
-      <th width="33%" align="left">🌐 Service Deployment</th>
-      <th width="33%" align="left">🎨 Design</th>
-      <th width="33%" align="left">📘 API Docs</th>
+      <th width="25%" align="left">🌐 Service Deployment</th>
+      <th width="25%" align="left">🎨 Design</th>
+      <th width="25%" align="left">📘 API Docs</th>
+      <th width="25%" align="left">📏 Code Convention</th>
     </tr>
   </thead>
   <tbody>
@@ -117,9 +118,17 @@
           </a>
         </p>
       </td>
+      <td valign="top">
+        <p>
+          <a href="https://www.notion.so/2dfa4b6b459480e693d3f1e81cf9134a?source=copy_link">
+            <img src="https://img.shields.io/badge/Code-Convention-111827?style=for-the-badge&logo=github&logoColor=white">
+          </a>
+        </p>
+      </td>
     </tr>
   </tbody>
 </table>
+
 
 ### 🎯 서비스 한 줄 요약
 
