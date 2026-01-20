@@ -308,6 +308,22 @@
 </details>
 
 <details>
+<summary>⚙️ [설정 페이지 시연 영상]</summary>
+
+[설정 페이지 영상 보기](https://github.com/user-attachments/assets/56ade880-f195-4ce2-9fb7-897092241388
+)
+
+</details>
+
+<details>
+<summary>📢 [공지사항 페이지 시연 영상]</summary>
+
+[공지사항 페이지 영상 보기](https://github.com/user-attachments/assets/320badeb-a28b-43e0-a5e7-9c6fc437176f
+)
+
+</details>
+
+<details>
 <summary>💬 [회원 탈퇴 시연 영상]</summary>
 
 [회원 탈퇴 영상 보기](https://github.com/user-attachments/assets/f16808b7-ad11-452a-911a-55156444cb9a
@@ -324,9 +340,10 @@
 </details>
 
 <details>
-<summary>💬 [프로필 편집 시연 영상]</summary>
+<summary>👤 [프로필 편집 시연 영상]</summary>
 
-[프로필 편집 영상 보기](https://github.com/user-attachments/assets/034d5f62-f1e7-48ec-98a1-d849418d7581)
+[프로필 편집 영상 보기](https://github.com/user-attachments/assets/cb06f0b4-67c8-429d-86a9-bc521e3df89b
+)
 
 </details>
 
