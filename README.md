@@ -279,7 +279,12 @@
 
 ▶️ [모집 영상 보기](video/driverpage.mp4)
 
-▶️ [채팅 시연 영상 보기](video/driverpage.mp4)
+<details>
+<summary>💬 [채팅 기능 시연 영상]</summary>
+
+[알림 기능 영상 보기](https://github.com/user-attachments/assets/034d5f62-f1e7-48ec-98a1-d849418d7581)
+
+</details>
 
 ▶️ [마이 페이지 시연 영상 보기](video/driverpage.mp4)
 
