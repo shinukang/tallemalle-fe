@@ -1,35 +1,38 @@
 <script setup>
 /**
- * [파일 설명]
- * 이 파일은 사이드바의 '여정 정보 카드'를 클릭했을 때 뜨는 '상세 정보 모달'입니다.
- * * * 주요 역할:
- * 1. Props로 전달받은 데이터를 표시합니다.
- * 2. 출발지부터 도착지까지의 경로와 현재 위치를 시각적으로 보여줍니다.
- * 3. 예상 결제 금액과 내 부담금(N분의 1)을 계산해서 보여줍니다.
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 컴포넌트)
+ * ==============================================================================
  */
-
-import { ref, onMounted } from 'vue'
 import { X, Car } from 'lucide-vue-next'
 
 /**
- * Props 정의
- * - isOpen: 모달을 열지 닫을지 결정하는 값 (true: 열림)
+ * ==============================================================================
+ * 2. CONFIG & PROPS (설정 및 Props/Emits 정의)
+ * ==============================================================================
  */
+// Props 정의
 defineProps({
   isOpen: {
     type: Boolean,
     required: true,
   },
-  rideInfo: { type: Object, default: null },
+  rideInfo: {
+    type: Object,
+    default: null,
+  },
 })
 
-/**
- * Emits 정의
- * - close: 닫기 버튼을 누르면 부모에게 "닫아주세요"라고 요청합니다.
- */
+// Emits 정의
 const emit = defineEmits(['close'])
 
-const close = () => {
+/**
+ * ==============================================================================
+ * 3. METHODS - UI INTERACTION (화면 조작 및 이벤트 처리)
+ * ==============================================================================
+ */
+// 닫기 핸들러
+const handleClose = () => {
   emit('close')
 }
 </script>
@@ -38,14 +41,16 @@ const close = () => {
   <Teleport to="body">
     <!-- 
       1. 배경 오버레이 (Overlay)
+      - @click="handleClose": 배경 클릭 시 닫기
     -->
     <div
       v-if="isOpen"
       class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-      @click="close"
+      @click="handleClose"
     >
       <!-- 
           2. 모달 윈도우 (Content)
+          - @click.stop: 이벤트 전파 방지
         -->
       <div
         class="bg-white w-full max-w-[580px] max-h-[85vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up"
@@ -57,7 +62,7 @@ const close = () => {
         >
           <h3 class="text-lg font-bold text-slate-900">탑승 상세 정보</h3>
           <button
-            @click="close"
+            @click="handleClose"
             class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
           >
             <X class="w-5 h-5" />
@@ -71,7 +76,6 @@ const close = () => {
         </div>
 
         <!-- 데이터 로드 완료 시 표시 -->
-        <!-- rideInfo가 있을 때만 렌더링 (v-else-if) -->
         <div
           v-else-if="rideInfo"
           class="overflow-y-auto custom-scroll p-6 space-y-6 bg-slate-50/50 flex-1"
@@ -91,7 +95,6 @@ const close = () => {
             <div class="flex-1">
               <div class="flex justify-between items-start">
                 <div>
-                  <!-- API 데이터 바인딩 -->
                   <span
                     class="text-[10px] font-bold text-white bg-slate-800 px-2 py-0.5 rounded-full"
                   >
@@ -168,7 +171,6 @@ const close = () => {
             </div>
             <div class="flex justify-between items-end border-b border-indigo-100/50 pb-4 mb-4">
               <span class="text-slate-500 text-sm">총 택시 요금 (예상)</span>
-              <!-- toLocaleString(): 숫자에 쉼표(,)를 찍어줍니다 (예: 18,000) -->
               <span class="text-slate-900 font-bold"
                 >{{ rideInfo.payment.total.toLocaleString() }}원</span
               >
@@ -185,7 +187,7 @@ const close = () => {
         <!-- (3) 하단 푸터 -->
         <div class="p-6 bg-white border-t border-slate-100">
           <button
-            @click="close"
+            @click="handleClose"
             class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg"
           >
             확인

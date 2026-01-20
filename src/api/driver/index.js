@@ -16,8 +16,9 @@ import api from '@/plugins/axiosinterceptor'
  * method: GET
  * url: /json/driverNavigation
  */
-const getNavigationPath = () => {
-  return api.get('/json/driverNavigation')
+const getNavigationPath = async () => {
+  const res = await api.get('/json/driverNavigation')
+  return res
 }
 
 export default {

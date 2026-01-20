@@ -1,60 +1,60 @@
 <script setup>
 /**
- * [파일 설명]
- * 이 파일은 채팅 패널의 '상단 헤더' 영역입니다.
- * * * 주요 역할:
- * 1. 경로 정보(예: 강남역 -> 판교역)를 표시합니다.
- * 2. 현재 WebSocket 연결 상태(LIVE / Disconnected)를 시각적으로 보여줍니다.
- * 3. '나가기' 버튼을 통해 채팅방을 종료하고 메인으로 돌아갑니다.
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어 -> 컴포넌트)
+ * ==============================================================================
  */
-
 import { ref, inject } from 'vue'
-import { MapPin, LogOut, Wifi, WifiOff } from 'lucide-vue-next' // 예쁜 아이콘들
-import { useRouter } from 'vue-router' // 페이지 이동을 위한 도구
-import { useRecruitStore } from '@/stores/recruit'
-import ExitConfirmModal from './ExitConfirmModal.vue' // [NEW] 확인 모달 임포트
+import { useRouter } from 'vue-router'
+import { MapPin, LogOut, Wifi, WifiOff } from 'lucide-vue-next' // 아이콘
 
-const recruitStore = useRecruitStore()
+import { useRecruitStore } from '@/stores/recruit'
+import ExitConfirmModal from './ExitConfirmModal.vue'
 
 /**
- * Props 정의
- * - isConnected: 부모(ChatPanel -> ChatView)로부터 받은 실시간 연결 상태입니다.
- * 이 값이 true면 초록불(LIVE), false면 빨간불(Disconnected)을 띄웁니다.
+ * ==============================================================================
+ * 2. CONFIG & PROPS (설정 및 Props/Inject 정의)
+ * ==============================================================================
  */
+// Props 정의
 const props = defineProps({
   isConnected: {
     type: Boolean,
     default: false,
   },
-  rideInfo: { type: Object, default: null },
+  rideInfo: {
+    type: Object,
+    default: null,
+  },
 })
 
-// 페이지 이동을 담당하는 라우터 객체 가져오기
+// 라우터 및 스토어 설정
 const router = useRouter()
+const recruitStore = useRecruitStore()
 
-/**
- * Inject (데이터 주입 받기)
- * - ChatView.vue(할아버지 컴포넌트)에서 provide('myUserName') 한 값을 여기서 바로 꺼내 씁니다.
- * - Props로 계속 내려받기 귀찮을 때 쓰는 '직통 터널' 같은 기능입니다.
- * - 두 번째 인자 '나'는 만약 값이 없을 때 사용할 기본값(Fallback)입니다.
- */
+// Inject (상위 컴포넌트에서 데이터 주입)
 const myUserName = inject('myUserName', '나')
 
-// [NEW] 모달 상태 관리
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언)
+ * ==============================================================================
+ */
+// 모달 상태 관리
 const isExitModalOpen = ref(false)
 
 /**
- * [이벤트 핸들러] 나가기 버튼 클릭
- * - 바로 나가지 않고 모달을 엽니다.
+ * ==============================================================================
+ * 4. METHODS - UI INTERACTION (화면 조작 및 이벤트 처리)
+ * ==============================================================================
  */
+// 나가기 버튼 클릭 핸들러 (모달 열기)
 const handleExitClick = () => {
   isExitModalOpen.value = true
 }
 
-/**
- * [실제 동작] 모달에서 '확인'을 눌렀을 때 실행
- */
-const confirmExit = () => {
+// 나가기 확정 핸들러 (모달 확인 버튼 클릭 시)
+const handleConfirmExit = () => {
   recruitStore.clear()
   router.push('/main')
 }
@@ -80,22 +80,19 @@ const confirmExit = () => {
       <div>
         <div class="flex items-center gap-2">
           <!-- 경로 제목 -->
-          <!-- rideInfo가 로딩 전일 수 있으므로 Optional Chaining(?.) 사용 -->
           <h2 class="font-bold text-slate-900 text-sm md:text-base">
             {{
               rideInfo ? `${rideInfo.route.start} → ${rideInfo.route.dest}` : '경로 정보 로딩 중...'
             }}
           </h2>
 
-          <!-- 연결 상태 배지 (조건부 렌더링 v-if / v-else) -->
-          <!-- 연결 성공 시: 초록색 LIVE -->
+          <!-- 연결 상태 배지 -->
           <span
             v-if="isConnected"
             class="flex items-center text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full font-bold"
           >
             <Wifi class="w-3 h-3 mr-1" /> LIVE
           </span>
-          <!-- 연결 끊김 시: 빨간색 Disconnected -->
           <span
             v-else
             class="flex items-center text-[10px] text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full font-bold"
@@ -104,7 +101,7 @@ const confirmExit = () => {
           </span>
         </div>
 
-        <!-- 부가 정보: 실시간 표시 + 내 닉네임(Inject로 받은 값) -->
+        <!-- 부가 정보 -->
         <p class="text-xs text-slate-400">
           실시간 채팅방 · <span class="text-indigo-600 font-bold ml-1">{{ myUserName }}</span
           >님 참여중
@@ -112,10 +109,7 @@ const confirmExit = () => {
       </div>
     </div>
 
-    <!-- 
-            [UPDATE] 오른쪽 영역: 나가기 버튼 
-            - 눈에 잘 띄도록 디자인 변경 (배경색, 텍스트 추가)
-        -->
+    <!-- 오른쪽 영역: 나가기 버튼 -->
     <button
       @click="handleExitClick"
       class="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm"
@@ -124,11 +118,11 @@ const confirmExit = () => {
       <LogOut class="w-4 h-4" />
     </button>
 
-    <!-- [NEW] 나가기 확인 모달 -->
+    <!-- 나가기 확인 모달 -->
     <ExitConfirmModal
       :is-open="isExitModalOpen"
       @close="isExitModalOpen = false"
-      @confirm="confirmExit"
+      @confirm="handleConfirmExit"
     />
   </div>
 </template>

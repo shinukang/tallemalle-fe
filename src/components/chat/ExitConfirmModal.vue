@@ -1,11 +1,17 @@
 <script setup>
 /**
- * [파일 설명]
- * 채팅방 나가기 전 확인을 받는 모달입니다.
- * - Teleport를 사용하여 z-index 문제 없이 최상단에 표시됩니다.
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 컴포넌트)
+ * ==============================================================================
  */
 import { AlertTriangle } from 'lucide-vue-next'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS (설정 및 Props/Emits 정의)
+ * ==============================================================================
+ */
+// Props 정의
 defineProps({
   isOpen: {
     type: Boolean,
@@ -13,12 +19,23 @@ defineProps({
   },
 })
 
+// Emits 정의
 const emit = defineEmits(['close', 'confirm'])
 
-const close = () => emit('close')
-const confirm = () => {
+/**
+ * ==============================================================================
+ * 3. METHODS - UI INTERACTION (화면 조작 및 이벤트 처리)
+ * ==============================================================================
+ */
+// 닫기 핸들러
+const handleClose = () => {
+  emit('close')
+}
+
+// 확인(나가기) 핸들러
+const handleConfirm = () => {
   emit('confirm')
-  close()
+  handleClose()
 }
 </script>
 
@@ -28,7 +45,7 @@ const confirm = () => {
     <div
       v-if="isOpen"
       class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity"
-      @click="close"
+      @click="handleClose"
     >
       <!-- 모달 컨텐츠 -->
       <div
@@ -45,19 +62,20 @@ const confirm = () => {
         <!-- 텍스트 -->
         <h3 class="text-lg font-bold text-slate-900 mb-2">채팅방을 나가시겠습니까?</h3>
         <p class="text-sm text-slate-500 mb-8 leading-relaxed">
-          나가시면 대화 내용이 초기화되며,<br />다시 복구할 수 없습니다.
+          채팅방을 나가면 이 모집에서 나가집니다.
+          <br />다시 복구할 수 없습니다.
         </p>
 
         <!-- 버튼 그룹 -->
         <div class="flex gap-3 w-full">
           <button
-            @click="close"
+            @click="handleClose"
             class="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all"
           >
             취소
           </button>
           <button
-            @click="confirm"
+            @click="handleConfirm"
             class="flex-1 py-3.5 bg-rose-500 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-rose-600 transition-all"
           >
             나가기

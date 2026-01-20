@@ -1,4 +1,9 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 컴포넌트)
+ * ==============================================================================
+ */
 import { ref } from 'vue'
 import { X } from 'lucide-vue-next'
 
@@ -9,30 +14,44 @@ import MemberCounter from '@/components/main/inputs/MemberCounter.vue'
 import TagInput from '@/components/main/inputs/TagInput.vue'
 import Textarea from '@/components/main/inputs/Textarea.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS (설정 및 Props/Emits)
+ * ==============================================================================
+ */
 defineProps({ isOpen: Boolean })
 const emit = defineEmits(['close', 'submit'])
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언)
+ * ==============================================================================
+ */
 // 폼 데이터
 const form = ref({
     start: '',
-    // 출발지 위도
-    startLat: null,
-    // 출발지 경도
-    startLng: null,
-
+    startLat: null, // 출발지 위도
+    startLng: null, // 출발지 경도
     dest: '',
-    // 도착지 위도
-    destLat: null,
-    // 도착지 경도
-    destLng: null,
-
+    destLat: null,  // 도착지 위도
+    destLng: null,  // 도착지 경도
     time: 'Now',
     maxMember: 3,
     tags: '',
     desc: ''
 })
 
-// [추가] 출발지 선택 시 좌표 저장 함수
+/**
+ * ==============================================================================
+ * 4. METHODS - UI & LOGIC (기능 처리 및 이벤트 핸들러)
+ * ==============================================================================
+ */
+// 모달 닫기 핸들러
+const handleClose = () => {
+    emit('close')
+}
+
+// 출발지 선택 시 좌표 저장 핸들러
 const handleStartSelect = (location) => {
     console.log("출발지 선택됨:", location)
     form.value.start = location.name
@@ -40,7 +59,7 @@ const handleStartSelect = (location) => {
     form.value.startLng = location.lng
 }
 
-// [추가] 목적지 선택 시 좌표 저장 함수
+// 목적지 선택 시 좌표 저장 핸들러
 const handleDestSelect = (location) => {
     console.log("목적지 선택됨:", location)
     form.value.dest = location.name
@@ -48,7 +67,8 @@ const handleDestSelect = (location) => {
     form.value.destLng = location.lng
 }
 
-const handleSubmit = () => {
+// 폼 제출 핸들러
+const handleFormSubmit = () => {
     // 구조 분해 할당으로 폼 데이터 가져오기
     const { start, startLat, startLng, dest, destLat, destLng, time, maxMember, tags, desc } = form.value
 
@@ -59,7 +79,10 @@ const handleSubmit = () => {
     }
 
     // 좌표가 누락되었을 경우 (텍스트만 입력하고 리스트 선택 안 했을 때) 경고 처리 가능
-    if (!startLat || !destLat) { alert('목록에서 정확한 장소를 선택해주세요.'); return; }
+    if (!startLat || !destLat) {
+        alert('목록에서 정확한 장소를 선택해주세요.')
+        return
+    }
 
     const tagArray = tags ? tags.split(' ').map(t => t.startsWith('#') ? t : `#${t}`) : []
 
@@ -88,7 +111,7 @@ const handleSubmit = () => {
 
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h2 class="text-xl font-bold text-slate-900">동승 모집하기</h2>
-                    <button @click="emit('close')"
+                    <button @click="handleClose"
                         class="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
                         <X class="w-5 h-5" />
                     </button>
@@ -114,7 +137,7 @@ const handleSubmit = () => {
                 </div>
 
                 <div class="p-6 border-t border-slate-100 bg-white">
-                    <button @click="handleSubmit"
+                    <button @click="handleFormSubmit"
                         class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95">
                         모집 시작하기
                     </button>

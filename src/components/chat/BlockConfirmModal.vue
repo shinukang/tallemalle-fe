@@ -1,11 +1,17 @@
 <script setup>
 /**
- * [파일 설명]
- * 사용자 차단 전 확인을 받는 모달입니다.
- * - 차단 시 메시지 및 매칭 제한에 대한 안내 문구를 보여줍니다.
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 컴포넌트)
+ * ==============================================================================
  */
 import { Ban } from 'lucide-vue-next'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS (설정 및 Props/Emits 정의)
+ * ==============================================================================
+ */
+// Props 정의
 defineProps({
   isOpen: {
     type: Boolean,
@@ -13,12 +19,23 @@ defineProps({
   },
 })
 
+// Emits 정의
 const emit = defineEmits(['close', 'confirm'])
 
-const close = () => emit('close')
-const confirm = () => {
+/**
+ * ==============================================================================
+ * 3. METHODS - UI INTERACTION (화면 조작 및 이벤트 처리)
+ * ==============================================================================
+ */
+// 닫기 핸들러
+const handleClose = () => {
+  emit('close')
+}
+
+// 확인(차단) 핸들러
+const handleConfirm = () => {
   emit('confirm')
-  close()
+  handleClose()
 }
 </script>
 
@@ -28,7 +45,7 @@ const confirm = () => {
     <div
       v-if="isOpen"
       class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity"
-      @click="close"
+      @click="handleClose"
     >
       <!-- 모달 컨텐츠 -->
       <div
@@ -51,13 +68,13 @@ const confirm = () => {
         <!-- 버튼 그룹 -->
         <div class="flex gap-3 w-full">
           <button
-            @click="close"
+            @click="handleClose"
             class="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all"
           >
             취소
           </button>
           <button
-            @click="confirm"
+            @click="handleConfirm"
             class="flex-1 py-3.5 bg-rose-500 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-rose-600 transition-all"
           >
             차단하기

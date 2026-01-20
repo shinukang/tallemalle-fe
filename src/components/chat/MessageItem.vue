@@ -1,29 +1,29 @@
 <script setup>
 /**
- * [파일 설명]
- * 이 파일은 메시지 목록 안에 들어가는 '메시지 한 줄(말풍선)' 컴포넌트입니다.
- * * * 주요 역할:
- * 1. 메시지 타입(날짜, 시스템 알림, 남이 보낸 것, 내가 보낸 것)을 구분해서 다르게 보여줍니다.
- * 2. 상대방 프로필 사진을 클릭하면 부모에게 알려주는 역할을 합니다.
+ * ==============================================================================
+ * 1. CONFIG & PROPS (설정 및 Props/Emits 정의)
+ * ==============================================================================
  */
-
-/**
- * Props 정의
- * - msg: 부모(MessageList)로부터 받은 메시지 데이터 객체 하나입니다.
- * - msg 내부 구조 예시: { type: 'me', text: '안녕', time: '14:00', user: {...} }
- */
-defineProps({
+// Props 정의
+const props = defineProps({
   msg: {
     type: Object,
-    required: true, // 데이터가 없으면 에러를 띄움 (필수값)
+    required: true,
   },
 })
 
-/**
- * Emits 정의
- * - open-profile: 상대방 프사를 눌렀을 때 "이 사람 누군지 보여줘!"라고 신호를 보냅니다.
- */
+// Emits 정의
 const emit = defineEmits(['open-profile'])
+
+/**
+ * ==============================================================================
+ * 2. METHODS - UI INTERACTION (화면 조작 및 이벤트 처리)
+ * ==============================================================================
+ */
+// 프로필 클릭 핸들러 (MessageItem -> Parent)
+const handleOpenProfile = (userId) => {
+  emit('open-profile', userId)
+}
 </script>
 
 <template>
@@ -69,7 +69,7 @@ const emit = defineEmits(['open-profile'])
   <div v-else-if="msg.type === 'image'" class="flex items-end gap-3">
     <div
       class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:scale-105 transition-transform"
-      @click="emit('open-profile', msg.userId)"
+      @click="handleOpenProfile(msg.userId)"
     >
       <img :src="msg.user?.img || msg.avatar" alt="user" class="w-full h-full object-cover" />
     </div>
@@ -96,7 +96,7 @@ const emit = defineEmits(['open-profile'])
     <!-- hover:scale-105: 마우스를 올리면 살짝 커지는 애니메이션 -->
     <div
       class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:scale-105 transition-transform"
-      @click="emit('open-profile', msg.userId)"
+      @click="handleOpenProfile(msg.userId)"
     >
       <!-- 이미지가 없으면 엑박 대신 빈 공간이 나오도록 처리 -->
       <img :src="msg.user?.img || msg.avatar" alt="user" class="w-full h-full object-cover" />

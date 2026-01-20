@@ -1,7 +1,17 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { Navigation2, Rocket, Loader2 } from 'lucide-vue-next'
 
-defineProps({
+/**
+ * ==============================================================================
+ * 2. CONFIG & PROPS
+ * ==============================================================================
+ */
+const props = defineProps({
     routeInfo: {
         type: String, default: '경로 미지정'
     },
@@ -12,6 +22,18 @@ defineProps({
         })
     }
 })
+
+/**
+ * ==============================================================================
+ * 3. METHODS - UI & LOGIC
+ * ==============================================================================
+ */
+// 모집 생성 버튼 클릭 핸들러
+const handleOpenCreate = () => {
+    if (!props.buttonState.disabled) {
+        emit('openCreate')
+    }
+}
 
 const emit = defineEmits(['openCreate'])
 </script>
@@ -32,7 +54,7 @@ const emit = defineEmits(['openCreate'])
                 </div>
             </div>
 
-            <button @click="!buttonState.disabled && emit('openCreate')"
+            <button @click="handleOpenCreate"
                 :class="buttonState.disabled ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-indigo-600'"
                 class="text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all shadow-xl whitespace-nowrap">
                 <span>{{ buttonState.text }}</span>
