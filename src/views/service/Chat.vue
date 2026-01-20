@@ -234,6 +234,13 @@ const connectWebSocket = () => {
   socket.addEventListener('message', (e) => {
     try {
       const parsedData = JSON.parse(e.data)
+
+      // [수정 1] 글로벌 타입 필터링 (여기가 핵심입니다!)
+      // DriverPage에서 쓰는 타입들이 들어오면 아예 무시합니다.
+      const ignoreTypes = ['driverLocation', 'drivingPath', 'newRecruit', 'createRecruit']
+      if (parsedData.type && ignoreTypes.includes(parsedData.type)) return
+
+      // [수정 2] payload 추출
       const payload = parsedData.payload !== undefined ? parsedData.payload : parsedData
       handleSocketMessage(payload)
     } catch (err) {
@@ -270,13 +277,26 @@ const handleSocketMessage = (data) => {
       }
     } catch (e) {}
   }
-  // [중요] 2. 방 번호 필터링 (내 방 메시지가 아니면 무시)
-  // 메인 페이지나 다른 방에서 온 메시지를 차단합니다.
+  // 2. [쓰레기 데이터 차단] 지도/드라이버 전용 메시지 즉시 차단
+  // Chat.vue에서는 절대 쓰지 않는 type들이 들어오면 바로 함수 종료
+  const ignoreTypes = ['driverLocation', 'drivingPath', 'newRecruit', 'createRecruit']
+  if (data.type && ignoreTypes.includes(data.type)) return
+
+  // 3. [다른 방 메시지 차단] 방 번호(recruitId)가 존재하는데 내 방과 다르면 차단
+  // (이 코드가 있어야 "다른 방" 메시지가 안 들어옵니다)
   if (data.recruitId && String(data.recruitId) !== String(recruitId.value)) return
 
-  // [중요] 3. 타입 필터링 (채팅 관련 이벤트만 처리)
-  // location 제거, 채팅 관련 타입만 허용
+  // 4. [유효성 검사] 최소한의 채팅 포맷을 갖췄는지 확인
+  // type도 없고, text도 없는 데이터(예: 순수 좌표값 {lat:37...})가 들어오면 차단
+  // 지도 데이터가 type 없이 payload만 벗겨져서 들어올 경우를 대비한 2차 방어선입니다.
+  if (!data.type && !data.text && !data.userId) return
+
+  // ============================================================
+
+  // [중요] 5. 허용된 타입만 처리 (화이트리스트)
+  // location 등을 제거하고 순수 채팅 관련 이벤트만 처리
   const allowedTypes = ['enter', 'leave', 'exist', 'text', 'image', 'me', 'other', 'system']
+  // 데이터에 type이 명시되어 있다면, 허용 목록에 있는치 체크
   if (data.type && !allowedTypes.includes(data.type)) return
 
   const now = new Date()
