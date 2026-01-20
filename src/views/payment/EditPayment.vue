@@ -1,10 +1,20 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { CreditCard, X, ShieldCheck } from 'lucide-vue-next'
 import LabeledInput from '@/components/Input/LabeledInput.vue'
 import RoundBox from '@/components/layout/RoundBox.vue'
 import { useProfileStore } from '@/stores/profile'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const profileStore = useProfileStore()
 
 const props = defineProps({
@@ -13,6 +23,11 @@ const props = defineProps({
 
 const emits = defineEmits(['close'])
 
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 변수 선언) - [변수]
+ * ==============================================================================
+ */
 // 카드 정보 상태 관리
 const cardNum = ref({ p1: '', p2: '', p3: '', p4: '' })
 const expiry = reactive({
@@ -22,7 +37,12 @@ const expiry = reactive({
 const cvc = ref('')
 const ownerName = ref('')
 
-// 화면 표시용 카드 번호 (Computed)
+/**
+ * ==============================================================================
+ * 4. COMPUTED (계산된 속성)
+ * ==============================================================================
+ */
+// 화면 표시용 카드 번호
 const displayCardNum = computed(() => {
   const n = cardNum.value
   const p1 = n.p1.padEnd(4, '•')
@@ -32,6 +52,11 @@ const displayCardNum = computed(() => {
   return `${p1} ${p2} ${p3} ${p4}`
 })
 
+/**
+ * ==============================================================================
+ * 5. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
 // 입력 핸들러: 4자리 입력 시 다음 포커스로 이동
 const handleCardNum = (part, event, nextId) => {
   const val = event.target.value
@@ -54,6 +79,15 @@ const handleCvc = (event, nextId) => {
   }
 }
 
+const handleClose = () => {
+  emits('close')
+}
+
+/**
+ * ==============================================================================
+ * 6. METHODS - DATA & NETWORK (데이터 통신 및 소켓) - [연동 API 함수]
+ * ==============================================================================
+ */
 const handleSubmit = () => {
   // 1. 유효성 검사 (모든 필드가 채워졌는지 확인)
   if (
@@ -86,13 +120,15 @@ const handleSubmit = () => {
     cvc: cvc.value,
   }
 
-  profileStore.addPayment(newCard)
+  if (profileStore.userInfo.payment.method.length < 2) {
+    profileStore.userInfo.payment.method.push(newCard)
+
+    if (profileStore.userInfo.payment.method.length === 1) {
+      profileStore.userInfo.payment.default = newCard.id
+    }
+  }
 
   handleClose()
-}
-
-const handleClose = () => {
-  emits('close')
 }
 </script>
 

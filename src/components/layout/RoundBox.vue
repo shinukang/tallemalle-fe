@@ -1,10 +1,9 @@
-<template>
-  <div class="round-box" :style="{ padding: padding }">
-    <slot></slot>
-  </div>
-</template>
-
 <script setup>
+/**
+ * ==============================================================================
+ * 1. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 defineProps({
   // 박스 내부 여백을 조절하고 싶을 때 사용
   padding: {
@@ -13,6 +12,12 @@ defineProps({
   },
 })
 </script>
+
+<template>
+  <div class="round-box" :style="{ padding: padding }">
+    <slot></slot>
+  </div>
+</template>
 
 <style scoped>
 .round-box {

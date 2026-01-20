@@ -1,8 +1,18 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { computed } from 'vue'
 import { CreditCard, CheckCircle2 } from 'lucide-vue-next'
 import RoundBox from '@/components/layout/RoundBox.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
 const props = defineProps({
   paymentList: {
     type: Array,
@@ -16,6 +26,11 @@ const props = defineProps({
 
 const emit = defineEmits(['add-card', 'manage-card'])
 
+/**
+ * ==============================================================================
+ * 3. COMPUTED (계산된 속성)
+ * ==============================================================================
+ */
 // 기본 결제 수단을 최상단으로 올리는 정렬 로직
 const sortedList = computed(() => {
   const list = [...props.paymentList]
@@ -26,6 +41,11 @@ const sortedList = computed(() => {
   })
 })
 
+/**
+ * ==============================================================================
+ * 4. METHODS - UI INTERACTION (화면 조작) - [기능 함수]
+ * ==============================================================================
+ */
 const handleAdd = () => emit('add-card')
 const handleManage = (card) => emit('manage-card', card)
 </script>
@@ -73,7 +93,6 @@ const handleManage = (card) => emit('manage-card', card)
         />
       </div>
 
-      <!-- 데이터가 없을 때 -->
       <div
         v-if="!paymentList || paymentList.length === 0"
         class="flex items-center justify-center p-5 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-sm font-bold col-span-full"

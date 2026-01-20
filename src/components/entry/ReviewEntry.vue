@@ -1,7 +1,17 @@
 <script setup>
-// 1. 필요한 아이콘 컴포넌트를 반드시 임포트해야 합니다.
+/**
+ * ==============================================================================
+ * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
+ * ==============================================================================
+ */
 import { Quote, Star } from 'lucide-vue-next'
-defineProps({
+
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES (설정 및 스토어 초기화)
+ * ==============================================================================
+ */
+const props = defineProps({
   review: {
     type: Object,
     required: true,
@@ -29,7 +39,6 @@ defineProps({
     <p class="text-sm text-slate-600 leading-relaxed italic">"{{ review.contents }}"</p>
 
     <div class="mt-4 flex gap-1">
-      <!-- 2. 별을 5개 고정으로 그리고, 점수에 따라 색상을 다르게 입힙니다. -->
       <Star
         v-for="i in 5"
         :key="i"
@@ -41,7 +50,6 @@ defineProps({
 </template>
 
 <style scoped>
-/* 텍스트가 너무 길어질 경우를 대비해 2줄 제한 스타일 추가 */
 p {
   display: -webkit-box;
   -webkit-line-clamp: 2;

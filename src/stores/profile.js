@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import api from '@/api/profile'
 import { reactive } from 'vue'
 
 export const useProfileStore = defineStore('profile', () => {
@@ -21,35 +20,28 @@ export const useProfileStore = defineStore('profile', () => {
     },
   })
 
+  // 프로필 정보 로드 및 세션 스토리지 동기화
   const loadProfile = (loadedProfile) => {
     userInfo.profile = loadedProfile
     sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
+  // 탑승 기록 로드 및 세션 스토리지 동기화
   const loadHistory = (loadedHistory) => {
     userInfo.history = loadedHistory
     sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
+  // 리뷰 정보 로드 및 세션 스토리지 동기화
   const loadReview = (loadedReview) => {
     userInfo.review = loadedReview
     sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
 
+  // 결제 정보 로드 및 세션 스토리지 동기화
   const loadPayment = (loadedPayment) => {
     userInfo.payment = loadedPayment
     sessionStorage.setItem('UserInfo', JSON.stringify(userInfo))
   }
-
-  const addPayment = async (payment) => {
-    if (userInfo.payment.method.length < 2) {
-      userInfo.payment.method.push(payment)
-
-      if (userInfo.payment.method.length === 1) {
-        userInfo.payment.default = payment.id
-      }
-    }
-  }
-
   return { userInfo, loadProfile, loadPayment, loadHistory, loadReview }
 })
