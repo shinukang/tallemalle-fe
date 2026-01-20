@@ -45,7 +45,10 @@ const marketingConsent = ref(true)
             to="/blocklist" 
           />
 
-          <SettingGoToPageItem label="안심번호 사용 설정">
+          <SettingGoToPageItem 
+          label="안심번호 사용 설정" 
+          to="/safenumber"
+          >
             <template #right>
               <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
                 사용 중

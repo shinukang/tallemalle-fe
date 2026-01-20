@@ -18,6 +18,7 @@ import DriverLogin from '@/views/driver/DriverLogin.vue'
 import DriverSignup from '@/views/driver/DriverSignup.vue'
 import DriverPage from '@/views/driver/DriverPage.vue'
 import NoticeDetail from '@/views/info/NoticeDetail.vue'
+import SafeNumberSetting from '@/views/info/SafeNumberSetting.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     { path: '/blocklist', name: 'blocklist', component: BlockList, meta: { requiresAuth: true } },
+    { path: '/safenumber', name: 'safenumber', component: SafeNumberSetting, meta: { requiresAuth: true } },
     { path: '/notice', name: 'notice', component: Notice, meta: { requiresAuth: true } },
     {
       path: '/noticedetail/:num',
