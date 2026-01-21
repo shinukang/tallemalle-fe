@@ -1,14 +1,38 @@
 <script setup>
+/**
+ * ==============================================================================
+ * 1. IMPORTS
+ * ==============================================================================
+ */
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api/notice/index.js' // API 임포트
 import { Calendar, Eye } from 'lucide-vue-next' // 아이콘 직접 임포트
 import PageHeader from '@/components/layout/PageHeader.vue'
 
+/**
+ * ==============================================================================
+ * 2. CONFIG & STORES
+ * ==============================================================================
+ */
 const route = useRoute()
+
+/**
+ * ==============================================================================
+ * 3. STATE & REFS (상태 관리)
+ * ==============================================================================
+ */
 const notice = ref(null) // 공지사항 전체 데이터를 담을 객체
 const isLoading = ref(true)
 
+/**
+ * ==============================================================================
+ * 5. METHODS - API SERVICE METHODS (서버 연동)
+ * ==============================================================================
+ */
+/**
+ * 공지사항 상세 데이터 호출
+ */
 const fetchNoticeDetail = async () => {
   try {
     const noticeId = route.params.num // URL에서 번호 가져오기
@@ -28,6 +52,11 @@ const fetchNoticeDetail = async () => {
   }
 }
 
+/**
+ * ==============================================================================
+ * 6. LIFECYCLE (생명주기 훅)
+ * ==============================================================================
+ */
 onMounted(() => {
   fetchNoticeDetail()
 })
@@ -39,8 +68,10 @@ onMounted(() => {
 
     <div class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
       <PageHeader title="공지사항 상세" description="탈래말래의 새로운 소식을 확인하세요." />
+      
       <div class="flex-1 overflow-y-auto custom-scroll p-8">
         <div class="max-w-5xl mx-auto">
+          
           <div v-if="isLoading" class="text-center py-20">
             <p class="text-slate-400 animate-pulse">내용을 읽어오는 중입니다...</p>
           </div>
@@ -61,12 +92,12 @@ onMounted(() => {
                 {{ notice.title }}
               </h2>
               <div class="flex items-center text-slate-400 text-sm gap-4">
-                <span class="flex items-center gap-1.5"
-                  ><Calendar class="w-4 h-4" /> {{ notice.date }}</span
-                >
-                <span class="flex items-center gap-1.5"
-                  ><Eye class="w-4 h-4" /> 조회수 {{ notice.views.toLocaleString() }}</span
-                >
+                <span class="flex items-center gap-1.5">
+                  <Calendar class="w-4 h-4" /> {{ notice.date }}
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <Eye class="w-4 h-4" /> 조회수 {{ notice.views.toLocaleString() }}
+                </span>
               </div>
             </div>
 
