@@ -6,7 +6,7 @@
 
 <img src="img/tallemalle_logo.png" width="300"/>
 
-같은 방향, 같은 시간 — 더 스마트한 이동을 함께
+**같은 방향, 같은 시간 — 더 스마트한 이동을 함께**
 
 </div>
 
