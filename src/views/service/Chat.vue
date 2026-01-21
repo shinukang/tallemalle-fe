@@ -89,6 +89,8 @@ const handleSendMessage = (textToSend) => {
   // 실제 서버 전송
   if (socket && isConnected.value) {
     const payload = {
+      // ▼▼▼ [추가] 방 번호를 함께 전송 ▼▼▼
+      recruitId: recruitId.value,
       userId: myUserId.value,
       userName: myUserName.value,
       userImg: myUserImg.value,
@@ -122,6 +124,8 @@ const handleSendImage = (imageData) => {
   // 2. 소켓 전송
   if (socket && isConnected.value) {
     const payload = {
+      // ▼▼▼ [추가] 방 번호를 함께 전송 ▼▼▼
+      recruitId: recruitId.value,
       type: 'image',
       userId: myUserId.value,
       userName: myUserName.value,
@@ -209,6 +213,8 @@ const connectWebSocket = () => {
     // 입장 메시지 전송
     const enterMsg = {
       type: 'enter',
+      // ▼▼▼ [추가] 입장할 방 번호 전송 ▼▼▼
+      recruitId: recruitId.value,
       userId: myUserId.value,
       userName: myUserName.value,
       userImg: myUserImg.value,
@@ -288,8 +294,11 @@ const handleSocketMessage = (data) => {
   if (data.type && ignoreTypes.includes(data.type)) return
 
   // 3. [방 번호 검사] recruitId가 있는데 내 방과 다르면 차단
-  if (data.recruitId && String(data.recruitId) !== String(recruitId.value)) return
-
+  //if (data.recruitId && String(data.recruitId) !== String(recruitId.value)) return
+  if (data.recruitId && String(data.recruitId) !== String(recruitId.value)) {
+    return
+  }
+  
   // 4. [필수 데이터 검사] 채팅 메시지의 자격 요건 확인
   // 텍스트(text)도 없고, 이미지(image) 타입도 아니면 채팅으로 인정하지 않음
   // (이 부분이 없으면 {lat:37...} 같은 객체가 강제로 채팅창에 뜸)
