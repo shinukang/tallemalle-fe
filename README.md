@@ -85,52 +85,43 @@
 ### 🔗 링크 바로가기
 
 <table width="100%">
-  <thead>
-    <tr>
-      <th width="25%" align="left">🌐 Service Deployment</th>
-      <th width="25%" align="left">🎨 Design</th>
-      <th width="25%" align="left">📘 API Docs</th>
-      <th width="25%" align="left">📏 Code Convention</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <td valign="top">
-        <p>
-          <a href="https://www.tallemalle.kro.kr/">
-            <img src="https://img.shields.io/badge/TalleMalle-사용자_사이트-blue?style=for-the-badge&logo=googlechrome&logoColor=white">
-          </a>
-          &nbsp;
-          <a href="https://driver.tallemalle.kro.kr/">
-            <img src="https://img.shields.io/badge/TalleMalle-기사님_사이트-7c3aed?style=for-the-badge&logo=googlechrome&logoColor=white">
-          </a>
-        </p>
+      <th align="left">🌐 Service Deployment</th>
+      <td>
+        사용자 사이트<br/>
+        https://www.tallemalle.kro.kr/
+        <br/>
+        기사님 사이트<br/>
+        https://driver.tallemalle.kro.kr/
       </td>
-      <td valign="top">
-        <p>
-          <a href="https://www.figma.com/design/6BxeWDZ9Ex9Xqae0dqT3tJ/TalleMalle">
-            <img src="https://img.shields.io/badge/Figma-보러가기-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
-          </a>
-        </p>
+    </tr>
+    <tr>
+      <th align="left">🎨 Design</th>
+      <td>
+        <a href="https://www.figma.com/design/6BxeWDZ9Ex9Xqae0dqT3tJ/TalleMalle">
+          Figma 바로가기
+        </a>
       </td>
-      <td valign="top">
-        <p>
-          <a href="https://docs.google.com/spreadsheets/d/1iabBDvrhTMOP8ass_cav91xfmSoGrhqvT-ViAemRS54/edit?usp=sharing">
-            <img src="https://img.shields.io/badge/API-명세서-6DB33F?style=for-the-badge&logo=swagger&logoColor=white">
-          </a>
-        </p>
+    </tr>
+    <tr>
+      <th align="left">📘 API Docs</th>
+      <td>
+        <a href="https://docs.google.com/spreadsheets/d/1iabBDvrhTMOP8ass_cav91xfmSoGrhqvT-ViAemRS54/edit?usp=sharing">
+          API 명세서 바로가기
+        </a>
       </td>
-      <td valign="top">
-        <p>
-          <a href="https://www.notion.so/2dfa4b6b459480e693d3f1e81cf9134a?source=copy_link">
-            <img src="https://img.shields.io/badge/Code-Convention-111827?style=for-the-badge&logo=github&logoColor=white">
-          </a>
-        </p>
+    </tr>
+    <tr>
+      <th align="left">📏 Code Convention</th>
+      <td>
+        <a href="https://www.notion.so/2dfa4b6b459480e693d3f1e81cf9134a">
+          코드 컨벤션 바로가기
+        </a>
       </td>
     </tr>
   </tbody>
 </table>
-
 
 ### 🎯 서비스 한 줄 요약
 
