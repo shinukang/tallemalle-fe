@@ -361,7 +361,7 @@
 <details>
 <summary>🔔 [알림 기능 시연 영상]</summary>
 
-[알림 기능 영상 보기](https://github.com/user-attachments/assets/1c2c2263-5fc0-4932-8a44-fcbc72f26375)
+[알림 기능 영상 보기](https://github.com/user-attachments/assets/c683903f-f1d8-4088-8ac1-7134f37c4f08)
 
 </details>
 
