@@ -14,6 +14,7 @@ pinia.use(piniaPluginPersistedstate)
 
 app.use(pinia)
 app.use(router)
+app.mount('#app')
 
 // .env 파일에서 키 가져오기
 const kakaoKey = import.meta.env.VITE_KAKAO_MAP_KEY

@@ -4,7 +4,7 @@
  * 1. IMPORTS (라이브러리 -> 스토어/API/Composable -> 컴포넌트)
  * ==============================================================================
  */
-import { computed } from 'vue'
+import { computed, onMounted, shallowRef } from 'vue'
 import { CreditCard } from 'lucide-vue-next'
 
 // Stores
@@ -14,6 +14,8 @@ import { useProfileStore } from '@/stores/profile'
 import RoundBox from '@/components/layout/RoundBox.vue'
 import PaymentEntry from '@/components/entry/PaymentEntry.vue'
 
+import * as PortOne from "@portone/browser-sdk/v2";
+
 /**
  * ==============================================================================
  * 2. CONFIG & STORES (설정 및 스토어 초기화)
@@ -21,6 +23,11 @@ import PaymentEntry from '@/components/entry/PaymentEntry.vue'
  */
 const profileStore = useProfileStore()
 const emits = defineEmits(['register-payment', 'manage-payment'])
+
+const paymentInst = shallowRef(null)
+
+const clientKey = "test_ck_Gv6LjeKD8aYKA6qPb5QL8wYxAdXy"
+const customerKey = "j0SuRMJPCavNZRpeHnfBB"
 
 /**
  * ==============================================================================
@@ -45,15 +52,40 @@ const sortedList = computed(() => {
  * 4. METHODS - UI & LOGIC (기능 처리 및 이벤트 핸들러)
  * ==============================================================================
  */
+// 토스 페이먼츠 SDK 초기회 
+const initTossPaymentsSDK = () => {
+    // ------  SDK 초기화 ------
+  // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
+  const tossPayments = TossPayments(clientKey);
+  // 회원 결제
+  // @docs https://docs.tosspayments.com/sdk/v2/js#tosspaymentspayment
+  paymentInst.value = tossPayments.payment({ customerKey });
+  // 비회원 결제
+  // const payment = tossPayments.payment({customerKey: TossPayments.ANONYMOUS})
+  // ------ '카드 등록하기' 버튼 누르면 결제창 띄우기 ------
+  // @docs https://docs.tosspayments.com/sdk/v2/js#paymentrequestpayment
+}
 // 결제 수단 추가 핸들러
-const handleRegisterPayment = () => {
-  emits('register-payment')
+const handleRegisterPayment = async() => {
+    await paymentInst.value.requestBillingAuth({
+      method: "CARD", // 자동결제(빌링)는 카드만 지원합니다
+      successUrl: window.location.origin + "/api/payment/enroll", // 요청이 성공하면 리다이렉트되는 URL
+      failUrl: window.location.origin + "/fail", // 요청이 실패하면 리다이렉트되는 URL
+      customerEmail: "customer123@gmail.com",
+      customerName: "김토스",
+    });
+
+    
 }
 
 // 결제 수단 관리(수정/삭제) 핸들러
 const handleManagePayment = (card) => {
   emits('manage-payment', card)
 }
+
+onMounted(() => {
+  initTossPaymentsSDK()
+})
 </script>
 
 <template>
